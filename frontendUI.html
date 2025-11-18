@@ -1,0 +1,160 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Restaurant Ordering (Customer)</title>
+    <link rel="stylesheet" href="frontendUI.css">
+</head>
+
+<body>
+    <div class="app-container">
+
+        <!-- ================= HEADER ================= -->
+        <header class="header">
+            <h1 class="app-title">AI-Enabled Restaurant Ordering System</h1>
+
+            <div class="auth-box">
+                <input type="text" placeholder="Email" class="input-field">
+                <input type="password" placeholder="Password" class="input-field">
+                <button class="btn">Login</button>
+                <button class="btn btn-alt">Sign Up</button>
+            </div>
+
+            <div class="status-panel">
+                <div class="status-item">
+                    <span class="label">VIP Status:</span>
+                    <span class="vip-badge">NOT VIP</span>
+                </div>
+
+                <div class="status-item">
+                    <span class="label">Warnings:</span>
+                    <span class="warning-count">0</span>
+                </div>
+
+                <div class="status-item">
+                    <span class="label">Deposit Wallet:</span>
+                    <span class="wallet-balance">$0.00</span>
+                </div>
+            </div>
+        </header>
+
+
+        <!-- ================= RECOMMENDATIONS ================= -->
+        <section class="section">
+            <h2 class="section-title">Recommended for You</h2>
+            <div class="recommendations-grid">
+                <div class="card placeholder-card">Most Ordered Dish</div>
+                <div class="card placeholder-card">Highest Rated Dish</div>
+            </div>
+        </section>
+
+
+        <!-- ================= MENU BROWSING ================= -->
+        <section class="section">
+            <h2 class="section-title">Browse Menu</h2>
+
+            <input type="text" placeholder="Search dishes..." class="search-bar">
+
+            <div class="menu-grid">
+                <div class="menu-card">
+                    <div class="menu-img placeholder"></div>
+                    <h3 class="menu-title">Dish Name</h3>
+                    <p class="menu-desc">Short description of the dish.</p>
+                    <p class="menu-price">$0.00</p>
+                    <button class="btn full">Add to Cart</button>
+                </div>
+
+                <!-- Duplicate as many menu-card items as needed -->
+            </div>
+        </section>
+
+
+        <!-- ================= CART UI ================= -->
+        <section class="section">
+            <h2 class="section-title">Your Cart</h2>
+
+            <div class="cart-container">
+                <div class="cart-items">
+                    <div class="cart-item">
+                        <span>Dish Name x1</span>
+                        <span>$0.00</span>
+                    </div>
+                </div>
+
+                <div class="cart-summary">
+                    <p>Subtotal: $0.00</p>
+                    <p>Delivery: $0.00</p>
+                    <p class="vip-discount">VIP Discount: -$0.00</p>
+                    <hr>
+                    <h3>Total: $0.00</h3>
+                    <button class="btn full">Checkout</button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= RATINGS ================= -->
+        <section class="section">
+            <h2 class="section-title">Rate Your Order</h2>
+            <div class="rating-block">
+                <h3>Dish Rating</h3>
+                <div class="stars">★★★★★</div>
+
+                <h3>Delivery Rating</h3>
+                <div class="stars">★★★★★</div>
+            </div>
+        </section>
+
+
+        <!-- ================= COMPLAINTS & COMPLIMENTS ================= -->
+        <section class="section">
+            <h2 class="section-title">Complaints & Compliments</h2>
+
+            <textarea class="textarea" placeholder="Write a complaint or compliment..."></textarea>
+            <button class="btn full">Submit</button>
+        </section>
+
+
+        <!-- ================= DISCUSSION FORUM ================= -->
+        <section class="section">
+            <h2 class="section-title">Discussion Forum</h2>
+
+            <div class="forum">
+                <div class="forum-topics">
+                    <h3>Topics</h3>
+                    <div class="topic-item">Best Chef?</div>
+                    <div class="topic-item">Favorite Dish?</div>
+                </div>
+
+                <div class="forum-thread">
+                    <h3>Topic Title</h3>
+                    <div class="post">User comment goes here...</div>
+
+                    <textarea class="textarea" placeholder="Write a reply..."></textarea>
+                    <button class="btn full">Post Reply</button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= AI CHAT BOX ================= -->
+        <section class="section">
+            <h2 class="section-title">Ask the Restaurant (AI Chat)</h2>
+
+            <div class="chat-container">
+                <div class="chat-messages">
+                    <div class="chat-message kb">[KB] Local knowledge response...</div>
+                    <div class="chat-message llm">[LLM] AI-generated response...</div>
+                </div>
+
+                <div class="chat-input-area">
+                    <input type="text" placeholder="Ask a question..." class="chat-input">
+                    <button class="btn">Send</button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</body>
+
+</html>
