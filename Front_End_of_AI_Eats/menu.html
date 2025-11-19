@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Eats - Menu</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <h1>AI Eats</h1>
+
+    <nav>
+      <div class="nav-left">
+        <a href="login.html">Login/Register</a>
+      </div>
+
+      <div class="nav-center">
+        <a href="index.html">Home</a>
+        <a href="menu.html">Menu</a>
+        <a href="chat.html">AI Chat</a>
+      </div>
+
+      <div class="nav-right">
+        <a href="cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- MENU SECTION -->
+  <section class="menu">
+    <h2>Our Menu</h2>
+    <div class="menu-grid">
+
+      <div class="menu-card">
+        <img src="images/spaghetti_bolognese.jpeg" alt="Spaghetti Bolognese">
+        <h3>Spaghetti Bolognese</h3>
+        <p>Classic Italian pasta with meat sauce.</p>
+        <span>$12.99</span>
+        <span class="vip-badge">VIP</span>
+        <button class="like-btn">♡ Like</button>
+        <button class="add-to-cart" onclick="addToCart('Spaghetti Bolognese', 12.99)">Add to Cart</button>
+      </div>
+
+      <div class="menu-card">
+        <img src="images/salad.jpeg" alt="Grilled Chicken Salad">
+        <h3>Grilled Chicken Salad</h3>
+        <p>Fresh greens with chicken and dressing.</p>
+        <span>$10.99</span>
+        <button class="like-btn">♡ Like</button>
+        <button class="add-to-cart" onclick="addToCart('Grilled Chicken Salad', 10.99)">Add to Cart</button>
+      </div>
+
+      <div class="menu-card">
+        <img src="images/margherita_pizza.jpeg" alt="Margherita Pizza">
+        <h3>Margherita Pizza</h3>
+        <p>Tomatoes, mozzarella, and fresh basil.</p>
+        <span>$14.99</span>
+        <span class="vip-badge">VIP</span>
+        <button class="like-btn">♡ Like</button>
+        <button class="add-to-cart" onclick="addToCart('Margherita Pizza', 14.99)">Add to Cart</button>
+      </div>
+
+      <div class="menu-card">
+        <img src="images/chicken_parmesan.jpeg" alt="Chicken Parmesan">
+        <h3>Chicken Parmesan</h3>
+        <p>Breaded chicken topped with marinara and cheese.</p>
+        <span>$15.99</span>
+        <button class="like-btn">♡ Like</button>
+        <button class="add-to-cart" onclick="addToCart('Chicken Parmesan', 15.99)">Add to Cart</button>
+      </div>
+
+      <div class="menu-card">
+        <img src="images/penne_alla_vodka.jpeg" alt="Penne alla Vodka">
+        <h3>Penne alla Vodka</h3>
+        <p>Pasta in a creamy tomato-vodka sauce.</p>
+        <span>$13.99</span>
+        <button class="like-btn">♡ Like</button>
+        <button class="add-to-cart" onclick="addToCart('Penne alla Vodka', 13.99)">Add to Cart</button>
+      </div>
+
+      <div class="menu-card">
+        <img src="images/chicken_wings.jpeg" alt="Chicken Wings">
+        <h3>Chicken Wings</h3>
+        <p>Spicy and crispy chicken wings with dipping sauce.</p>
+        <span>$11.99</span>
+        <button class="like-btn">♡ Like</button>
+        <button class="add-to-cart" onclick="addToCart('Chicken Wings', 11.99)">Add to Cart</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    &copy; 2025 AI Eats. All rights reserved.
+  </footer>
+
+  <!-- ADD TO CART SCRIPT -->
+  <script>
+    function addToCart(name, price) {
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      cart.push({ name, price });
+      localStorage.setItem("cart", JSON.stringify(cart));
+      updateCartCount();
+      alert(name + " added to cart!");
+    }
+
+    function updateCartCount() {
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      document.getElementById("cart-count").textContent = cart.length;
+    }
+
+    updateCartCount();
+  </script>
+
+</body>
+</html>
