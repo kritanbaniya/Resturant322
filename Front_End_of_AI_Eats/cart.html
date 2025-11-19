@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Cart</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .cart-item { padding: 10px; border-bottom: 1px solid #ccc; }
+        .total { font-size: 20px; margin-top: 20px; font-weight: bold; }
+        button { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Your Cart</h1>
+    <div id="cart-items"></div>
+    <p class="total">Total: $<span id="total">0.00</span></p>
+
+    <button onclick="checkout()">Checkout</button>
+    <button onclick="clearCart()">Clear Cart</button>
+
+<script>
+function loadCart() {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    let container = document.getElementById("cart-items");
+    let total = 0;
+
+    container.innerHTML = "";
+
+    cart.forEach(item => {
+        container.innerHTML += `
+            <div class="cart-item">
+                ${item.name} — $${item.price}
+            </div>
+        `;
+        total += item.price;
+    });
+
+    document.getElementById("total").textContent = total.toFixed(2);
+}
+
+function clearCart() {
+    localStorage.removeItem("cart");
+    loadCart();
+}
+
+function checkout() {
+    alert("Checkout not implemented — frontend-only demo!");
+}
+
+loadCart();
+</script>
+
+</body>
+</html>
