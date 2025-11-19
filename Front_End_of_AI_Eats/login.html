@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Login / Register</title>
+ <style>
+   body {
+     font-family: Arial, sans-serif;
+     background: #f2f2f2;
+     display: flex;
+     flex-direction: column;
+     justify-content: center;
+     align-items: center;
+     height: 100vh;
+     margin: 0;
+     gap: 30px;
+   }
+
+   .container {
+     background: white;
+     padding: 30px;
+     width: 350px;
+     border-radius: 10px;
+     box-shadow: 0 0 15px rgba(0,0,0,0.1);
+   }
+
+   h2 {
+     text-align: center;
+     margin-bottom: 20px;
+   }
+
+   input {
+     width: 100%;
+     padding: 12px;
+     margin: 10px 0;
+     border-radius: 5px;
+     border: 1px solid #ccc;
+   }
+
+   button {
+     width: 100%;
+     padding: 12px;
+     background: #4CAF50;
+     color: white;
+     border: none;
+     border-radius: 5px;
+     cursor: pointer;
+     margin-top: 10px;
+   }
+
+   button:hover {
+     background: #45a049;
+   }
+
+   .error {
+     color: red;
+     margin-top: 10px;
+     text-align: center;
+   }
+
+   .success {
+     color: green;
+     margin-top: 10px;
+     text-align: center;
+   }
+ </style>
+</head>
+<body>
+ <!-- Login Box -->
+ <div class="container">
+   <h2>Login</h2>
+   <input type="text" id="loginUser" placeholder="Username">
+   <input type="password" id="loginPass" placeholder="Password">
+   <button onclick="login()">Login</button>
+   <p id="loginMessage"></p>
+ </div>
+
+ <!-- Register Box -->
+ <div class="container">
+   <h2>Register</h2>
+   <input type="text" id="regUser" placeholder="Create Username">
+   <input type="password" id="regPass" placeholder="Create Password">
+   <button onclick="register()">Register</button>
+   <p id="registerMessage"></p>
+ </div>
+
+<script>
+function register() {
+  const user = document.getElementById("regUser").value;
+  const pass = document.getElementById("regPass").value;
+
+  if (!user || !pass) {
+    document.getElementById("registerMessage").textContent = "Error: Fill all fields.";
+    document.getElementById("registerMessage").className = "error";
+    return;
+  }
+
+  localStorage.setItem("username", user);
+  localStorage.setItem("password", pass);
+
+  document.getElementById("registerMessage").textContent = "Registered successfully!";
+  document.getElementById("registerMessage").className = "success";
+}
+
+function login() {
+  const loginUser = document.getElementById("loginUser").value;
+  const loginPass = document.getElementById("loginPass").value;
+
+  const savedUser = localStorage.getItem("username");
+  const savedPass = localStorage.getItem("password");
+
+  if (!savedUser) {
+    document.getElementById("loginMessage").textContent = "Error: No user registered.";
+    document.getElementById("loginMessage").className = "error";
+    return;
+  }
+
+  if (loginUser === savedUser && loginPass === savedPass) {
+    document.getElementById("loginMessage").textContent = "Login Successful!";
+    document.getElementById("loginMessage").className = "success";
+    setTimeout(() => {
+      window.location.href = "index.html"; // Redirect to home page
+    }, 1000);
+  } else {
+    document.getElementById("loginMessage").textContent = "Error: Wrong username or password.";
+    document.getElementById("loginMessage").className = "error";
+  }
+}
+</script>
+</body>
+</html>
