@@ -1,1 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>AI Eats - Home</title>
+ <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+ <!-- HEADER -->
+ <header>
+   <h1>AI Eats</h1>
+
+   <nav>
+     <div class="nav-left">
+       <a href="login.html">Login/Register</a>
+     </div>
+
+     <div class="nav-center">
+       <a href="index.html">Home</a>
+       <a href="menu.html">Menu</a>
+       <a href="chat.html">AI Chat</a>
+     </div>
+
+     <div class="nav-right">
+       <a href="cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+     </div>
+   </nav>
+ </header>
+
+ <!-- HERO SECTION -->
+ <section class="hero">
+   <h2>Delicious Food, AI-Powered Service</h2>
+   <a href="menu.html" class="btn">Browse Menu</a>
+ </section>
+
+ <!-- POPULAR DISHES SECTION -->
+<section class="home-section">
+  <h2>Most Popular Dishes</h2>
+  <div class="menu-grid">
+    <div class="menu-card">
+      <img src="images/burger.jpeg" alt="Cheese Burger">
+      <h3>Cheese Burger</h3>
+      <p>Juicy beef burger with cheese and fresh lettuce.</p>
+      <span>$9.99</span>
+      <button class="like-btn">♡ Like</button>
+    </div>
+
+    <div class="menu-card">
+      <img src="images/sushi.jpeg" alt="Salmon Sushi">
+      <h3>Salmon Sushi</h3>
+      <p>Fresh salmon with perfectly seasoned rice.</p>
+      <span>$14.99</span>
+      <button class="like-btn">♡ Like</button>
+    </div>
+
+    <div class="menu-card">
+      <img src="images/pasta.jpeg" alt="Fettuccine Alfredo">
+      <h3>Fettuccine Alfredo</h3>
+      <p>Creamy pasta with parmesan cheese and herbs.</p>
+      <span>$12.99</span>
+      <span class="vip-badge">VIP</span>
+      <button class="like-btn">♡ Like</button>
+    </div>
+  </div>
+</section>
+
+<!-- VIP SECTION -->
+<section class="vip-section">
+  <h2>VIP Specials</h2>
+  <div class="menu-grid">
+    <div class="menu-card">
+      <img src="images/lobster.jpeg" alt="Grilled Lobster">
+      <h3>Grilled Lobster</h3>
+      <p>Succulent lobster grilled to perfection.</p>
+      <span>$35.99</span>
+      <span class="vip-badge">VIP</span>
+      <button class="like-btn">♡ Like</button>
+    </div>
+
+    <div class="menu-card">
+      <img src="images/ribeye.jpeg" alt="Ribeye Steak">
+      <h3>Ribeye Steak</h3>
+      <p>Juicy ribeye steak, perfectly seared.</p>
+      <span>$29.99</span>
+      <span class="vip-badge">VIP</span>
+      <button class="like-btn">♡ Like</button>
+    </div>
+
+    <div class="menu-card">
+      <img src="images/tomahawk.jpeg" alt="Tomahawk Steak">
+      <h3>Tomahawk Steak</h3>
+      <p>Premium tomahawk cut with rich marbling.</p>
+      <span>$49.99</span>
+      <span class="vip-badge">VIP</span>
+      <button class="like-btn">♡ Like</button>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="home-section reviews">
+  <h2>What Our Customers Say</h2>
+  <div class="reviews-grid">
+    <div class="review-card">
+      <p>"Amazing food and super fast delivery! Highly recommend AI Eats."</p>
+      <span>- Sarah M.</span>
+    </div>
+
+    <div class="review-card">
+      <p>"VIP specials are worth every penny. Love the personalized AI recommendations."</p>
+      <span>- James K.</span>
+    </div>
+
+    <div class="review-card">
+      <p>"The AI chat helped me decide my order easily. Great experience!"</p>
+      <span>- Linda R.</span>
+    </div>
+  </div>
+</section>
+
+<!-- CHAT CTA -->
+<section class="home-section chat-cta">
+  <h2>Need Help Choosing?</h2>
+  <p>Ask our AI assistant for personalized recommendations!</p>
+  <a href="chat.html" class="btn">Chat with AI</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>&copy; 2025 AI Eats. All rights reserved.</p>
+  <p>
+    <a href="#">Facebook</a> |
+    <a href="#">Instagram</a> |
+    <a href="#">Twitter</a>
+  </p>
+</footer>
+
+<!-- UPDATE CART COUNT -->
+<script>
+  function updateCartCount() {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    document.getElementById("cart-count").textContent = cart.length;
+  }
+  updateCartCount();
+</script>
+
+</body>
+</html>
 
