@@ -257,3 +257,26 @@ footer a:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- Chat Page Centering (Only for chat.html) --- */
+/* --- Chat Page Centering (Only for chat.html) --- */
+.chat-section {
+  min-height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* move content upward */
+  align-items: center;
+  text-align: center;
+  padding-top: 80px;  /* adjust this number to move it more/less */
+  padding-bottom: 40px;
+}
+
+.chat-box {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  max-width: 500px;
+  width: 90%;
+  margin-top: 20px;
+}
