@@ -19,56 +19,246 @@ const modelName = process.env.OLLAMA_MODEL || 'mistral:instruct';
 function isRestaurantQuestion(text) {
   const lower = text.toLowerCase();
 
+  // exclude general knowledge questions and personal questions that should go to LLM
+  // these patterns take precedence - if matched, it's NOT a restaurant question
+  const generalKnowledgePatterns = [
+    /^tell me a story$/i,
+    /^tell me a (story|joke|tale)/i,
+    /tell me (a|the) (story|joke|tale)/i,
+    /^recommend a (movie|film|book|show|tv show)/i,
+    /recommend (a|me) (movie|film|book|show)/i,
+    /^explain (the|a) /i,
+    /explain (the|a) (moon|python|programming|science|history|computer)/i,
+    /^what is (python|programming|science|history|chemistry|physics)/i,
+    /^how does (the|a) (moon|earth|computer|internet|phone)/i,
+    /^what (is|are) (python|programming|science|history|chemistry|physics)/i
+  ];
+
+  // exclude personal/identity questions
+  const personalQuestionPatterns = [
+    /^what'?s? my name$/i,
+    /^what is my name$/i,
+    /^who am i$/i,
+    /^what am i$/i
+  ];
+
+  // if it matches a general knowledge or personal pattern, it's NOT a restaurant question
+  if (generalKnowledgePatterns.some((pattern) => pattern.test(text)) ||
+      personalQuestionPatterns.some((pattern) => pattern.test(text))) {
+    return false;
+  }
+
   const restaurantKeywords = [
+    // basic restaurant terms
     'restaurant',
+    'resturant',
+    'restraunt',
     'menu',
     'dish',
     'dishes',
     'food',
     'serve',
     'serv',
+    'sell',
+    'sel',
+    'cook',
+    'cooking',
+    'kitchen',
+    
+    // menu items
     'momo',
     'momoz',
+    'mommos',
     'chow mein',
+    'chowmein',
     'fried rice',
+    'friedrice',
     'dal bhat',
+    'dalbhat',
+    'dhal bhat',
     'himalayan curry',
+    'curry',
     'thukpa',
     'samosa',
+    'samosas',
     'masala fries',
+    'fries',
+    
+    // pricing
     'price',
+    'prices',
     'cost',
+    'costs',
     'how much',
+    'cheap',
+    'cheapest',
+    'expensive',
+    'priciest',
+    'discount',
+    'discounts',
+    'fee',
+    'fees',
+    
+    // hours and operations
     'hours',
+    'hour',
     'open',
+    'opening',
     'close',
-    'reservation',
-    'catering',
-    'delivery',
-    'pickup',
-    'order online',
+    'closing',
+    'breakfast',
+    'lunch',
+    'dinner',
+    
+    // location
     'address',
+    'adrres',
+    'adres',
     'where are you',
     'where is this',
+    'where is the',
+    'where is',
     'location',
+    'locate',
     'zip',
+    'zipcode',
+    'postal code',
+    'street',
+    'city',
+    'borough',
+    'brooklyn',
+    'queens',
+    'manhattan',
+    
+    // dietary and ingredients
     'halal',
     'vegan',
     'vegetarian',
     'gluten',
     'dairy',
     'nut',
+    'nuts',
     'allergy',
+    'allergies',
+    'allergen',
+    'ingredient',
+    'ingredients',
+    'spice',
+    'spices',
+    'recipe',
+    'recipes',
+    'sauce',
+    'sauces',
+    'secret',
+    'msg',
+    'monosodium',
+    'monosodium glutamate',
+    'glutamate',
+    'oil',
+    'oils',
+    'fry',
+    'fried',
+    'supplier',
+    'suppliers',
+    'source',
+    'sourcing',
+    'certification',
+    'certified',
+    'nutrition',
+    'nutritional',
+    'calorie',
+    'calories',
+    'protein',
+    'carbs',
+    'carbohydrates',
+    
+    // staff and ownership
     'chef',
     'chefs',
+    'cook',
+    'cooks',
     'owner',
+    'owners',
+    'ownership',
     'staff',
+    'employee',
+    'employees',
+    'team',
+    'workers',
+    'payroll',
+    'budget',
+    
+    // policies and services
+    'reservation',
+    'reservations',
+    'book',
+    'booking',
+    'catering',
+    'cater',
+    'delivery',
+    'deliver',
+    'pickup',
+    'pick up',
+    'takeout',
+    'take out',
+    'order online',
+    'online order',
+    'refund',
+    'refunds',
+    'return',
+    'returns',
+    'policy',
+    'policies',
+    'cancellation',
+    'cancel',
+    
+    // restaurant details
     'tables',
+    'table',
     'seating',
-    'founded'
+    'seats',
+    'capacity',
+    'size',
+    'big',
+    'large',
+    'small',
+    'founded',
+    'opened',
+    'established',
+    'history',
+    'story',
+    'best',
+    'recommend',
+    'recommendation',
+    'popular',
+    'favorite',
+    'favourite'
   ];
 
-  return restaurantKeywords.some((kw) => lower.includes(kw));
+  // direct keyword match
+  if (restaurantKeywords.some((kw) => lower.includes(kw))) {
+    return true;
+  }
+
+  // context-aware: check for possessive pronouns + restaurant context
+  const possessivePatterns = [
+    // "your [restaurant term]" or "you [restaurant term]"
+    /\b(your|you|ur)\s+(food|menu|dish|dishes|restaurant|kitchen|chef|chefs|owner|staff|ingredient|ingredients|spice|spices|recipe|recipes|sauce|sauces|oil|oils|supplier|suppliers|secret|best|recommendation|recommend|popular|favorite|favourite)\b/i,
+    // "you use/cook/make [restaurant term]" or "[restaurant term] you use"
+    /\b(your|you|ur)\s+(use|uses|using|fry|fries|fried|cook|cooks|cooking|make|makes|making|sell|sells|selling|serve|serves|serving|have|has|had)\b/i,
+    // "what [restaurant term] do you use" - catches "what spices do you use"
+    /\b(what|which)\s+(spice|spices|ingredient|ingredients|oil|oils|recipe|recipes|sauce|sauces|supplier|suppliers|secret|msg|monosodium)\s+(do|does|did)\s+(you|your|ur|they|the restaurant|the kitchen|the chef|the chefs|the staff)\s+(use|uses|using|make|makes|making|cook|cooks|cooking|have|has|had)\b/i,
+    // "what do you use [restaurant term]" - catches "what do you use for cooking"
+    /\b(what|which)\s+(do|does|did)\s+(you|your|ur|they|the restaurant|the kitchen|the chef|the chefs|the staff)\s+(use|uses|using|make|makes|making|cook|cooks|cooking|fry|fries|fried)\s+(for|in|with|to)\s+(food|dish|dishes|cooking|frying|making)\b/i,
+    // general "what/which/how/who/when/where do you [action]" with restaurant context
+    /\b(what|which|how|who|when|where)\s+(do|does|did|is|are|was|were)\s+(you|your|ur|the restaurant|the kitchen|the chef|the chefs|the staff)\s+(use|uses|using|make|makes|making|cook|cooks|cooking|sell|sells|selling|serve|serves|serving|have|has|had)\b/i
+  ];
+
+  if (possessivePatterns.some((pattern) => pattern.test(text))) {
+    return true;
+  }
+
+  return false;
 }
 
 // helper: find a menu item by name or alias
@@ -123,7 +313,7 @@ function getPriceExtremes() {
   return { cheapest, priciest };
 }
 
-// main kb routing function
+// main kb routing function - returns { answer, kbItem } or null
 function getKbAnswer(message) {
   const lower = message.toLowerCase();
 
@@ -142,15 +332,15 @@ function getKbAnswer(message) {
     lower.includes('wher is the resturant') ||
     lower.includes('wher is the restaurant')
   ) {
-    return restaurant.address;
+    return { answer: restaurant.address, kbItem: 'restaurant.address' };
   }
 
   if (lower.includes('zip') || lower.includes('zipcode') || lower.includes('postal code')) {
-    return restaurant.zip;
+    return { answer: restaurant.zip, kbItem: 'restaurant.zip' };
   }
 
   if (lower.includes('brooklyn')) {
-    return `${restaurant.address}`;
+    return { answer: `${restaurant.address}`, kbItem: 'restaurant.address' };
   }
 
   // hours / open / close
@@ -165,7 +355,7 @@ function getKbAnswer(message) {
     lower.includes('closing time') ||
     lower.includes('opening time')
   ) {
-    return restaurant.hours.summary;
+    return { answer: restaurant.hours.summary, kbItem: 'restaurant.hours.summary' };
   }
 
   // menu overview and synonyms / typos
@@ -185,7 +375,7 @@ function getKbAnswer(message) {
     lower.includes('do u sel momoz') ||
     lower.includes('menu')
   ) {
-    return faq.menu_overview;
+    return { answer: faq.menu_overview, kbItem: 'faq.menu_overview' };
   }
 
   // most popular / recommendations
@@ -197,42 +387,42 @@ function getKbAnswer(message) {
     lower.includes('what do u recommend') ||
     (lower.includes('recommend') && lower.includes('dish'))
   ) {
-    return faq.popular_items;
+    return { answer: faq.popular_items, kbItem: 'faq.popular_items' };
   }
 
   // desserts
   if (lower.includes('dessert') || lower.includes('desert')) {
-    return faq.desserts;
+    return { answer: faq.desserts, kbItem: 'faq.desserts' };
   }
 
   // fun fact
   if (lower.includes('fun fact')) {
-    return restaurant.fun_fact;
+    return { answer: restaurant.fun_fact, kbItem: 'restaurant.fun_fact' };
   }
 
   // halal / vegan / gluten / dairy / nuts
   if (lower.includes('halal')) {
-    return restaurant.dietary.halal_status;
+    return { answer: restaurant.dietary.halal_status, kbItem: 'restaurant.dietary.halal_status' };
   }
 
   if (lower.includes('vegan')) {
-    return faq.vegan_options;
+    return { answer: faq.vegan_options, kbItem: 'faq.vegan_options' };
   }
 
   if (lower.includes('vegetarian')) {
-    return faq.vegetarian_options;
+    return { answer: faq.vegetarian_options, kbItem: 'faq.vegetarian_options' };
   }
 
   if (lower.includes('gluten')) {
-    return faq.gluten_info;
+    return { answer: faq.gluten_info, kbItem: 'faq.gluten_info' };
   }
 
   if (lower.includes('dairy')) {
-    return faq.dairy_info;
+    return { answer: faq.dairy_info, kbItem: 'faq.dairy_info' };
   }
 
   if (lower.includes('nut') || lower.includes('allergy')) {
-    return faq.nut_allergy_info;
+    return { answer: faq.nut_allergy_info, kbItem: 'faq.nut_allergy_info' };
   }
 
   // reservations / refund / delivery / catering / cancellation
@@ -241,7 +431,7 @@ function getKbAnswer(message) {
     lower.includes('reservations') ||
     lower.includes('book a table')
   ) {
-    return restaurant.policies.reservations;
+    return { answer: restaurant.policies.reservations, kbItem: 'restaurant.policies.reservations' };
   }
 
   if (
@@ -249,7 +439,7 @@ function getKbAnswer(message) {
     lower.includes('refund') ||
     lower.includes('return policy')
   ) {
-    return restaurant.policies.refunds;
+    return { answer: restaurant.policies.refunds, kbItem: 'restaurant.policies.refunds' };
   }
 
   if (
@@ -259,14 +449,14 @@ function getKbAnswer(message) {
     lower.includes('can i order online') ||
     lower.includes('order online')
   ) {
-    return restaurant.policies.delivery;
+    return { answer: restaurant.policies.delivery, kbItem: 'restaurant.policies.delivery' };
   }
 
   if (
     lower.includes('catering') ||
     lower.includes('cater')
   ) {
-    return restaurant.policies.catering;
+    return { answer: restaurant.policies.catering, kbItem: 'restaurant.policies.catering' };
   }
 
   if (
@@ -274,7 +464,7 @@ function getKbAnswer(message) {
     lower.includes('cancel reservation') ||
     lower.includes('cancellation policy')
   ) {
-    return restaurant.policies.cancellation;
+    return { answer: restaurant.policies.cancellation, kbItem: 'restaurant.policies.cancellation' };
   }
 
   // staff / chefs / owner / seating / founded
@@ -284,7 +474,7 @@ function getKbAnswer(message) {
     lower.includes('chef') ||
     lower.includes('chefs')
   ) {
-    return restaurant.chefs_summary;
+    return { answer: restaurant.chefs_summary, kbItem: 'restaurant.chefs_summary' };
   }
 
   if (
@@ -293,7 +483,7 @@ function getKbAnswer(message) {
     lower.includes('how many seats') ||
     lower.includes('seating')
   ) {
-    return restaurant.seating_summary;
+    return { answer: restaurant.seating_summary, kbItem: 'restaurant.seating_summary' };
   }
 
   if (
@@ -302,11 +492,11 @@ function getKbAnswer(message) {
     lower.includes('when did you open') ||
     lower.includes('how long have you been open')
   ) {
-    return `the himalayan house opened in ${restaurant.founded_year}.`;
+    return { answer: `the himalayan house opened in ${restaurant.founded_year}.`, kbItem: 'restaurant.founded_year' };
   }
 
   if (lower.includes('who owns') || lower.includes('owner')) {
-    return restaurant.owner_info;
+    return { answer: restaurant.owner_info, kbItem: 'restaurant.owner_info' };
   }
 
   // prices and drinks
@@ -315,15 +505,28 @@ function getKbAnswer(message) {
     lower.includes('drink prices') ||
     (lower.includes('drinks') && lower.includes('price'))
   ) {
-    return price_info.drinks_price_range;
+    return { answer: price_info.drinks_price_range, kbItem: 'price_info.drinks_price_range' };
   }
 
   if (lower.includes('cheapest')) {
+    // if asking "why" it's cheapest, provide a brief explanation along with the fact
+    if (lower.includes('why')) {
+      const extremes = getPriceExtremes();
+      if (!extremes) return null;
+      const { cheapest } = extremes;
+      const itemKey = Object.keys(menu_items).find(k => menu_items[k].name === cheapest.name);
+      return { 
+        answer: `among our main dishes, the cheapest is ${cheapest.name} at $${cheapest.base_price}. it's priced lower because it's a simpler snack item compared to our main entrees.`, 
+        kbItem: `menu_items.${itemKey}.base_price` 
+      };
+    }
+    
     const extremes = getPriceExtremes();
     if (!extremes) return null;
 
     const { cheapest } = extremes;
-    return `among our main dishes, the cheapest is ${cheapest.name} at $${cheapest.base_price}.`;
+    const itemKey = Object.keys(menu_items).find(k => menu_items[k].name === cheapest.name);
+    return { answer: `among our main dishes, the cheapest is ${cheapest.name} at $${cheapest.base_price}.`, kbItem: `menu_items.${itemKey}.base_price` };
   }
 
   if (lower.includes('most expensive')) {
@@ -331,11 +534,13 @@ function getKbAnswer(message) {
     if (!extremes) return null;
 
     const { priciest } = extremes;
-    return `among our main dishes, the most expensive is ${priciest.name} at $${priciest.base_price}.`;
+    const itemKey = Object.keys(menu_items).find(k => menu_items[k].name === priciest.name);
+    return { answer: `among our main dishes, the most expensive is ${priciest.name} at $${priciest.base_price}.`, kbItem: `menu_items.${itemKey}.base_price` };
   }
 
   // per-dish logic: price / spicy / gluten / vegan / description
   const item = findMenuItem(lower);
+  const itemKey = item ? Object.keys(menu_items).find(k => menu_items[k] === item) : null;
 
   if (item) {
     // price for this dish
@@ -345,59 +550,81 @@ function getKbAnswer(message) {
       lower.includes('cost')
     ) {
       if (typeof item.base_price === 'number') {
-        return `${item.name}: $${item.base_price}.`;
+        return { answer: `${item.name}: $${item.base_price}.`, kbItem: `menu_items.${itemKey}.base_price` };
       }
     }
 
     // spicy / spice level
     if (lower.includes('spicy') || lower.includes('spice')) {
       if (item.spice_level === 'mild') {
-        return `${item.name} is mildly spiced, but we can usually adjust the heat level on request.`;
+        return { answer: `${item.name} is mildly spiced, but we can usually adjust the heat level on request.`, kbItem: `menu_items.${itemKey}.spice_level` };
       } else if (item.spice_level === 'medium') {
-        return `${item.name} has a medium level of heat. please let us know if you prefer it milder.`;
+        return { answer: `${item.name} has a medium level of heat. please let us know if you prefer it milder.`, kbItem: `menu_items.${itemKey}.spice_level` };
       } else if (item.spice_level === 'hot') {
-        return `${item.name} is one of our spicier dishes.`;
+        return { answer: `${item.name} is one of our spicier dishes.`, kbItem: `menu_items.${itemKey}.spice_level` };
       }
     }
 
     // gluten
     if (lower.includes('gluten')) {
       if (item.contains_gluten) {
-        return `${item.name} is not gluten free because it contains wheat-based ingredients. our kitchen also handles wheat, so cross contact is possible.`;
+        return { answer: `${item.name} is not gluten free because it contains wheat-based ingredients. our kitchen also handles wheat, so cross contact is possible.`, kbItem: `menu_items.${itemKey}.contains_gluten` };
       } else {
-        return `${item.name} does not use gluten ingredients, but our kitchen handles wheat and we cannot guarantee an entirely gluten free preparation.`;
+        return { answer: `${item.name} does not use gluten ingredients, but our kitchen handles wheat and we cannot guarantee an entirely gluten free preparation.`, kbItem: `menu_items.${itemKey}.contains_gluten` };
       }
     }
 
     // vegan / vegetarian
     if (lower.includes('vegan')) {
       if (item.vegan) {
-        return `${item.name} can be prepared as a vegan-friendly option. please confirm with the staff when ordering.`;
+        return { answer: `${item.name} can be prepared as a vegan-friendly option. please confirm with the staff when ordering.`, kbItem: `menu_items.${itemKey}.vegan` };
       }
-      return `${item.name} is not fully vegan, but some ingredients may be adaptable. please check with the staff for details.`;
+      return { answer: `${item.name} is not fully vegan, but some ingredients may be adaptable. please check with the staff for details.`, kbItem: `menu_items.${itemKey}.vegan` };
     }
 
     if (lower.includes('vegetarian')) {
       if (item.vegetarian) {
-        return `${item.name} can be prepared as a vegetarian-friendly option. please confirm with the staff when ordering.`;
+        return { answer: `${item.name} can be prepared as a vegetarian-friendly option. please confirm with the staff when ordering.`, kbItem: `menu_items.${itemKey}.vegetarian` };
       }
-      return `${item.name} is not a vegetarian dish.`;
+      return { answer: `${item.name} is not a vegetarian dish.`, kbItem: `menu_items.${itemKey}.vegetarian` };
     }
 
     // default: describe dish with ingredients and price
-    return formatMenuItemSummary(item);
+    return { answer: formatMenuItemSummary(item), kbItem: `menu_items.${itemKey}` };
   }
 
   // generic dietary questions if not tied to a single dish
   if (lower.includes('dairy free') || lower.includes('dairy-free')) {
-    return faq.dairy_info;
+    return { answer: faq.dairy_info, kbItem: 'faq.dairy_info' };
   }
 
   // no kb match
   return null;
 }
 
+// helper: remove all emojis and Unicode symbols from text
+function removeEmojis(text) {
+  if (!text) return text;
+  
+  // Remove emojis using regex pattern that matches most Unicode emoji ranges
+  // This covers: Emoticons, Miscellaneous Symbols, Dingbats, Supplemental Symbols, etc.
+  return text
+    .replace(/[\u{1F600}-\u{1F64F}]/gu, '') // Emoticons
+    .replace(/[\u{1F300}-\u{1F5FF}]/gu, '') // Misc Symbols and Pictographs
+    .replace(/[\u{1F680}-\u{1F6FF}]/gu, '') // Transport and Map
+    .replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '') // Flags
+    .replace(/[\u{2600}-\u{26FF}]/gu, '') // Misc symbols
+    .replace(/[\u{2700}-\u{27BF}]/gu, '') // Dingbats
+    .replace(/[\u{FE00}-\u{FE0F}]/gu, '') // Variation Selectors
+    .replace(/[\u{200D}]/gu, '') // Zero Width Joiner
+    .replace(/[\u{200B}-\u{200D}]/gu, '') // Zero Width spaces
+    .replace(/[\u{FEFF}]/gu, '') // Zero Width No-Break Space
+    .replace(/[\u{2060}]/gu, '') // Word Joiner
+    .trim();
+}
+
 // call local ollama mistral:instruct for general (non-restaurant) questions
+// returns { answer, responseTime }
 async function callLLM(prompt) {
   const fullPrompt = `${systemPrompt.trim()}
 
@@ -419,18 +646,27 @@ assistant:`;
 
   const data = await response.json();
   const end = Date.now();
+  const responseTime = end - start;
 
   console.log('====== llm log ======');
   console.log('model:', modelName);
   console.log('llm raw response:', data);
-  console.log('llm response time:', end - start, 'ms');
+  console.log('llm response time:', responseTime, 'ms');
   console.log('=====================');
 
   if (!data || !data.response) {
-    return "sorry, i couldn't generate a response.";
+    return { answer: "sorry, i couldn't generate a response.", responseTime };
   }
 
-  return data.response.trim();
+  // Remove emojis from response as a safety measure
+  const cleanedAnswer = removeEmojis(data.response.trim());
+  
+  // Log if emojis were removed
+  if (cleanedAnswer !== data.response.trim()) {
+    console.log('⚠️  Emojis were removed from LLM response');
+  }
+
+  return { answer: cleanedAnswer, responseTime };
 }
 
 // main chat endpoint
@@ -445,6 +681,8 @@ router.post('/', async (req, res) => {
       });
     }
 
+    // STEP 1: Normalize message FIRST (before KB lookup or LLM)
+    // This ensures typos like "wut food u hav" are fixed to "what food do you have"
     const normalized = normalizeMessage(message);
 
     console.log(`🔥 original: ${message}`);
@@ -463,39 +701,57 @@ router.post('/', async (req, res) => {
 
     console.log('🧠 session memory:', req.session.history);
 
+    // track total response time
+    const totalStart = Date.now();
+
     // knowledge base lookup
     const kbStart = Date.now();
-    const kbAnswer = getKbAnswer(normalized);
+    const kbResult = getKbAnswer(normalized);
     const kbEnd = Date.now();
+    const kbLookupTime = kbEnd - kbStart;
 
-    console.log(`🔎 kb lookup time: ${kbEnd - kbStart} ms`);
+    console.log(`🔎 kb lookup time: ${kbLookupTime} ms`);
 
-    if (kbAnswer) {
+    if (kbResult) {
       console.log('✅ kb hit for:', normalized);
-      console.log('✅ kb answer:', kbAnswer);
+      console.log('✅ kb answer:', kbResult.answer);
+      console.log('✅ kb item:', kbResult.kbItem);
+
+      const totalTime = Date.now() - totalStart;
 
       return res.json({
         source: 'kb',
-        answer: kbAnswer
+        answer: kbResult.answer,
+        kbHit: true,
+        kbItem: kbResult.kbItem,
+        responseTime: totalTime
       });
     }
 
     // if this is still a restaurant-related question but we have no kb entry, do not let llm guess
     if (isRestaurantQuestion(normalized)) {
       console.log('🚫 restaurant question with no kb match, using safe fallback.');
+      const totalTime = Date.now() - totalStart;
+
       return res.json({
         source: 'kb-fallback',
         answer:
-          "i'm not sure about that specific restaurant detail. please ask the staff or check the official menu for the most accurate information."
+          "i'm not sure about that specific restaurant detail. please check the official menu or ask the staff directly.",
+        kbHit: false,
+        responseTime: totalTime
       });
     }
 
     // non-restaurant question → use llm freely
-    const llmAnswer = await callLLM(normalized);
+    const llmResult = await callLLM(normalized);
+    const totalTime = Date.now() - totalStart;
 
     return res.json({
       source: 'llm',
-      answer: llmAnswer
+      answer: llmResult.answer,
+      kbHit: false,
+      responseTime: totalTime,
+      llmResponseTime: llmResult.responseTime
     });
   } catch (err) {
     console.error('chat error:', err);

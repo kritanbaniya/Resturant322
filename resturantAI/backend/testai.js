@@ -147,6 +147,7 @@ fs.writeFileSync(OUTPUT_FILE, "=== Restaurant AI Test Results ===\n\n");
 
 async function runTest(prompt) {
   try {
+    const startTime = Date.now();
     const res = await fetch("http://localhost:3000/chat", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -154,13 +155,30 @@ async function runTest(prompt) {
     });
 
     const data = await res.json();
-    const output = `Q: ${prompt}\nA: ${data.answer}\n\n`;
+    const endTime = Date.now();
+    const totalTime = data.responseTime || (endTime - startTime);
+
+    let output = `Q: ${prompt}\n`;
+    output += `A: ${data.answer}\n`;
+    output += `KBHit: ${data.kbHit ? 'true' : 'false'}\n`;
+    
+    if (data.kbHit && data.kbItem) {
+      output += `KBItem: ${data.kbItem}\n`;
+    }
+    
+    output += `ResponseTime: ${totalTime}ms\n`;
+    
+    if (data.llmResponseTime) {
+      output += `LLMResponseTime: ${data.llmResponseTime}ms\n`;
+    }
+    
+    output += `\n`;
 
     fs.appendFileSync(OUTPUT_FILE, output);
 
-    console.log(`✔ Tested: "${prompt}"`);
+    console.log(`✔ Tested: "${prompt}" (${data.kbHit ? 'KB' : 'LLM'}, ${totalTime}ms)`);
   } catch (err) {
-    const errorOutput = `Q: ${prompt}\nA: [ERROR: ${err.message}]\n\n`;
+    const errorOutput = `Q: ${prompt}\nA: [ERROR: ${err.message}]\nKBHit: false\nResponseTime: N/A\n\n`;
     fs.appendFileSync(OUTPUT_FILE, errorOutput);
 
     console.log(`✘ Error on: "${prompt}"`);
