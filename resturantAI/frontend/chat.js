@@ -23,7 +23,7 @@ sendBtn.onclick = async () => {
   addMessage(msg, 'you');
   input.value = '';
 
-  const res = await fetch('http://localhost:3000/api/chat', {
+  const res = await fetch('http://localhost:3000/chat', {
     method: 'POST',
     headers: {
       'content-type': 'application/json'

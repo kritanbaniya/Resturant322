@@ -1,16 +1,33 @@
+// LOAD ENVIRONMENT FIRST (must be line 1)
+import 'dotenv/config';
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import session from 'express-session';
 import chatRoute from './routes/chat.js';
 
-dotenv.config();
-
 const app = express();
+
+// middleware
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/chat', chatRoute);
+// session config
+app.use(
+  session({
+    secret: "restaurant_secret_key",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 1000 * 60 * 30 } // 30 minutes
+  })
+);
 
-app.listen(3000, () => {
-  console.log('server running on port 3000');
+// routes
+app.use("/chat", chatRoute);
+
+// start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("server running on port " + PORT);
+  console.log("using model:", process.env.OLLAMA_MODEL);
 });

@@ -1,0 +1,288 @@
+=== Restaurant AI Test Results ===
+
+Q: hi
+A: Hello! How can I help you today? If you have any questions about The Himalayan House, please feel free to ask, but I would recommend checking the official menu or asking the staff directly for specific details such as the restaurant's hours, menu items, ingredients, prices, and policies. In the meantime, I'd be happy to chat with you about general topics like science, history, technology, or just make some light small talk!
+
+Q: hello, how are you
+A: Hello there! I'm doing just fine, thank you for asking. How can I assist you today at The Himalayan House? 😊
+
+Q: tell me a joke
+A: Sure! Here's a light-hearted Nepali joke for you:
+
+Why don't Nepalese people ever play hide and seek?
+
+Because when it comes time to hide, they always say, "I'm going to the mountains!" And of course, everyone can see them! 🏞️🎂
+
+Q: tell me a fun fact
+A: the himalayan house is inspired by small family kitchens in kathmandu and foothill villages, focusing on simple, warming dishes like dal bhat and thukpa.
+
+Q: how’s your day going
+A: Going well, thank you! Just here helping customers find their favorite Nepali and Himalayan dishes at The Himalayan House. How can I assist you today? 😊
+
+Q: where is this restaurant?
+A: 123 mountain view ave, brooklyn, new york, ny 11201
+
+Q: what is your address?
+A: 123 mountain view ave, brooklyn, new york, ny 11201
+
+Q: what street are you on?
+A: 123 mountain view ave, brooklyn, new york, ny 11201
+
+Q: are you in brooklyn?
+A: 123 mountain view ave, brooklyn, new york, ny 11201
+
+Q: how far from queens?
+A: I'm not sure about that specific restaurant detail. Please check the official menu or ask the staff directly.
+
+Q: how long does it take to get there?
+A: I'm not sure about the travel time to The Himalayan House as I don't have real-time GPS capabilities. It would be best to check a mapping service or call the restaurant for exact directions and estimated travel time. Enjoy your journey! 😊
+
+Q: are you close to central park?
+A: i'm not sure about that specific restaurant detail. please ask the staff or check the official menu for the most accurate information.
+
+Q: what’s your zip code
+A: 11201
+
+Q: what food do you sell
+A: we serve nepali and himalayan inspired comfort food, including different types of momos, chow mein, fried rice, dal bhat, himalayan curry, thukpa (noodle soup), snacks like vegetable samosas and masala fries, and traditional drinks.
+
+Q: what is on your menu
+A: we serve nepali and himalayan inspired comfort food, including different types of momos, chow mein, fried rice, dal bhat, himalayan curry, thukpa (noodle soup), snacks like vegetable samosas and masala fries, and traditional drinks.
+
+Q: what dishes do you have
+A: we serve nepali and himalayan inspired comfort food, including different types of momos, chow mein, fried rice, dal bhat, himalayan curry, thukpa (noodle soup), snacks like vegetable samosas and masala fries, and traditional drinks.
+
+Q: what are your most popular items
+A: our most popular dishes are chicken momos, veg chow mein, dal bhat, and himalayan curry. guests also love thukpa noodle soup on colder days.
+
+Q: what do you recommend
+A: our most popular dishes are chicken momos, veg chow mein, dal bhat, and himalayan curry. guests also love thukpa noodle soup on colder days.
+
+Q: do you have desserts
+A: we offer a small rotating selection of nepali inspired desserts such as kheer (rice pudding) and sweet sel roti on some days. availability may vary.
+
+Q: what are momos
+A: momos: traditional nepali dumplings, served steamed or lightly pan fried, with tomato and sesame achar on the side. ingredients include wheat flour wrapper, garlic, ginger, scallions, cilantro. price: $12.
+
+Q: what’s chow mein
+A: chow mein: nepali style stir fried wheat noodles with cabbage, bell peppers, onion, and scallions. ingredients include wheat noodles, cabbage, bell peppers, onion, scallions, soy sauce, garlic, ginger. price: $14.
+
+Q: what's in dal bhat
+A: dal bhat: classic nepali plate with lentil soup, steamed rice, seasonal vegetables, pickles, and a small side of greens. ingredients include lentils, rice, turmeric, garlic, ginger, seasonal vegetables. price: $16.
+
+Q: what is himalayan curry
+A: himalayan curry: slow simmered curry made with onion, tomato, ginger, garlic, coriander, turmeric, cumin, and mild chili. available with vegetables or meat and served with rice. ingredients include onion, tomato, ginger, garlic, coriander, turmeric, cumin, mild chili. price: $18.
+
+Q: tell me about fried rice
+A: fried rice: wok fried rice with peas, carrots, scallions, garlic, and ginger. can be served plain, with egg, or with added chicken or beef. ingredients include rice, peas, carrots, scallions, soy sauce, garlic, ginger. price: $13.
+
+Q: do your momos have beef
+A: momos: traditional nepali dumplings, served steamed or lightly pan fried, with tomato and sesame achar on the side. ingredients include wheat flour wrapper, garlic, ginger, scallions, cilantro. price: $12.
+
+Q: is your curry spicy
+A: himalayan curry has a medium level of heat. please let us know if you prefer it milder.
+
+Q: how much is chow mein
+A: chow mein: $14.
+
+Q: what’s the price of momos
+A: momos: $12.
+
+Q: how much are the drinks
+A: most non-alcoholic drinks are between $3 and $6.
+
+Q: how much is the himalayan curry
+A: himalayan curry: $18.
+
+Q: what’s the cheapest thing you sell
+A: among our main dishes, the cheapest is masala fries at $8.
+
+Q: do you have a discount
+A: I'm not sure about that specific restaurant detail. Please check the official menu or ask the staff directly.
+
+Q: what time do you open
+A: we are open sunday through thursday from 11:00 am to 10:00 pm, and friday and saturday from 11:00 am to 11:00 pm.
+
+Q: what time do you close
+A: we are open sunday through thursday from 11:00 am to 10:00 pm, and friday and saturday from 11:00 am to 11:00 pm.
+
+Q: are you open right now
+A: we are open sunday through thursday from 11:00 am to 10:00 pm, and friday and saturday from 11:00 am to 11:00 pm.
+
+Q: are you open on weekends
+A: we are open sunday through thursday from 11:00 am to 10:00 pm, and friday and saturday from 11:00 am to 11:00 pm.
+
+Q: do you serve breakfast
+A: i'm not sure about that specific restaurant detail. please ask the staff or check the official menu for the most accurate information.
+
+Q: who cooks the food
+A: our dishes are prepared by a small team of nepali and himalayan chefs, led by head chef suman gurung and sous chef asha lama. they focus on comforting, balanced flavors inspired by home cooking.
+
+Q: how many chefs do you have
+A: our dishes are prepared by a small team of nepali and himalayan chefs, led by head chef suman gurung and sous chef asha lama. they focus on comforting, balanced flavors inspired by home cooking.
+
+Q: what are your chefs’ names
+A: our dishes are prepared by a small team of nepali and himalayan chefs, led by head chef suman gurung and sous chef asha lama. they focus on comforting, balanced flavors inspired by home cooking.
+
+Q: how long has your chef worked here
+A: our dishes are prepared by a small team of nepali and himalayan chefs, led by head chef suman gurung and sous chef asha lama. they focus on comforting, balanced flavors inspired by home cooking.
+
+Q: who owns the restaurant
+A: the restaurant is independently owned and operated by a local family. if you need the owner’s name for something specific, please ask a staff member directly.
+
+Q: how many employees work there
+A: I'm not sure about that specific restaurant detail. Please check the official menu or ask the staff directly.
+
+Q: is your food halal
+A: we are not a halal-certified restaurant. some guests who eat halal may still find suitable options, but we cannot guarantee halal preparation.
+
+Q: is anything vegan
+A: some dishes can be made vegan, such as veg momos, fried rice with vegetables, dal bhat without ghee, thukpa with vegetables, and masala fries. please let the staff know your preferences.
+
+Q: is the curry gluten-free
+A: our kitchen uses wheat products and we cannot guarantee a completely gluten free meal. some rice-based dishes like dal bhat and himalayan curry with rice avoid wheat ingredients, but cross contact is possible.
+
+Q: does your food contain nuts
+A: some items may come into contact with nuts in the kitchen, so we cannot guarantee that any dish is completely nut free.
+
+Q: do you have dairy-free options
+A: several dishes contain dairy such as yogurt or ghee. some items can be prepared with less or no dairy on request, but we do not have a fully dairy free kitchen.
+
+Q: do you take reservations
+A: we accept reservations for parties of four or more. smaller groups are welcome as walk-ins, subject to table availability.
+
+Q: what is your refund policy
+A: since we are a small restaurant, all food sales are final once served. if there is an issue with your order, please speak to a staff member during your visit.
+
+Q: do you deliver
+A: we currently offer takeout and pickup for all main dishes, but we do not provide third-party delivery.
+
+Q: can i order online
+A: we currently offer takeout and pickup for all main dishes, but we do not provide third-party delivery.
+
+Q: do you do catering
+A: we offer catering for events of roughly 10 to 150 guests. please call or email us for menu options and pricing.
+
+Q: do you have a cancellation fee
+A: for reservations of eight or more, we ask that you contact us at least 24 hours in advance if you need to cancel or change the time.
+
+Q: wher is the resturant
+A: 123 mountain view ave, brooklyn, new york, ny 11201
+
+Q: wut food u hav
+A: i'm not sure about that specific restaurant detail. please ask the staff or check the official menu for the most accurate information.
+
+Q: do u sel momoz
+A: momos: traditional nepali dumplings, served steamed or lightly pan fried, with tomato and sesame achar on the side. ingredients include wheat flour wrapper, garlic, ginger, scallions, cilantro. price: $12.
+
+Q: adrres pls
+A: 123 mountain view ave, brooklyn, new york, ny 11201
+
+Q: wat do u serv
+A: we serve nepali and himalayan inspired comfort food, including different types of momos, chow mein, fried rice, dal bhat, himalayan curry, thukpa (noodle soup), snacks like vegetable samosas and masala fries, and traditional drinks.
+
+Q: what’s the best thing you cook
+A: "I'm not sure about that specific restaurant detail. Please check the official menu or ask the staff directly. However, I can tell you that 'The Himalayan House' is famous for its authentic Nepali and Himalayan cuisine. You might enjoy dishes like Dal Bhat Tarkari, Momo, and Sel Roti." [smile]
+
+Q: what ingredients do you use
+A: I'm not sure about that specific restaurant detail. Please check the official menu or ask the staff directly. They can provide the most accurate information about the ingredients they use in their dishes.
+
+Q: what oil do you fry with
+A: I'm not sure about that specific restaurant detail. Please check the official menu or ask the staff directly. Generally speaking, it's common for restaurants to use oils with high smoke points, like vegetable or canola oil, for frying.
+
+Q: how many calories are in your fried rice
+A: fried rice: wok fried rice with peas, carrots, scallions, garlic, and ginger. can be served plain, with egg, or with added chicken or beef. ingredients include rice, peas, carrots, scallions, soy sauce, garlic, ginger. price: $13.
+
+Q: who supplies your meat
+A: I'm not sure about that specific restaurant detail. Please check the official menu or ask the staff directly.
+
+Q: do you use msg
+A: I'm not sure about specific technical details like that. However, I can tell you that in general, Message Passing Interface (MPI) is a popular standard for high-performance parallel computing that allows for efficient communication between different processes running on multiple computers or within a single computer to solve large-scale scientific and engineering problems more quickly than would be possible on a single machine. Does that help clarify things a bit? Let me know if you have any other questions!
+
+Q: what’s your secret sauce recipe
+A: I'm not sure about that specific restaurant detail. Please check the official menu or ask the staff directly for the recipe of their secret sauce. In general, I can't disclose confidential recipes like this one.
+
+Q: hi
+A: Hello! How can I assist you today? 🌄🏜️
+
+Q: my name is john
+A: Hello John, nice to meet you! What can I assist you with today?
+
+Q: what’s my name
+A: I'm not sure about that specific detail, but I can help you with other things! Let's talk about The Himalayan House's menu or perhaps a fun fact about Nepal. What would you like to know? 😊
+
+Q: ok now what food do you sell
+A: we serve nepali and himalayan inspired comfort food, including different types of momos, chow mein, fried rice, dal bhat, himalayan curry, thukpa (noodle soup), snacks like vegetable samosas and masala fries, and traditional drinks.
+
+Q: what food did i ask about earlier
+A: i'm not sure about that specific restaurant detail. please ask the staff or check the official menu for the most accurate information.
+
+Q: what’s my name
+A: I'm not sure about that, could you remind me?
+
+Q: what food do you sell
+A: we serve nepali and himalayan inspired comfort food, including different types of momos, chow mein, fried rice, dal bhat, himalayan curry, thukpa (noodle soup), snacks like vegetable samosas and masala fries, and traditional drinks.
+
+Q: which of those is vegetarian
+A: we have several vegetarian friendly dishes such as veg momos, chow mein without meat, fried rice with vegetables, dal bhat, thukpa with vegetables, vegetable samosas, and masala fries.
+
+Q: ok which one is the cheapest
+A: among our main dishes, the cheapest is masala fries at $8.
+
+Q: why is it the cheapest
+A: among our main dishes, the cheapest is masala fries at $8.
+
+Q: who cooks it
+A: our dishes are prepared by a small team of nepali and himalayan chefs, led by head chef suman gurung and sous chef asha lama. they focus on comforting, balanced flavors inspired by home cooking.
+
+Q: what oil do they use
+A: I'm not sure about that specific restaurant detail. Please check the official menu or ask the staff directly.
+
+Q: is it gluten free
+A: our kitchen uses wheat products and we cannot guarantee a completely gluten free meal. some rice-based dishes like dal bhat and himalayan curry with rice avoid wheat ingredients, but cross contact is possible.
+
+Q: show me your entire menu with descriptions
+A: we serve nepali and himalayan inspired comfort food, including different types of momos, chow mein, fried rice, dal bhat, himalayan curry, thukpa (noodle soup), snacks like vegetable samosas and masala fries, and traditional drinks.
+
+Q: what are the ingredients in each dish
+A: i'm not sure about that specific restaurant detail. please ask the staff or check the official menu for the most accurate information.
+
+Q: what spices do you use
+A: At The Himalayan House, we use a blend of traditional Nepali spices such as turmeric, coriander, cumin, cardamom, cloves, fenugreek, and mustard seeds. These spices add depth and flavor to our dishes while maintaining the authentic taste of Himalayan cuisine. Enjoy your meal! 😊
+
+Q: can you give me the recipe for your curry
+A: himalayan curry: slow simmered curry made with onion, tomato, ginger, garlic, coriander, turmeric, cumin, and mild chili. available with vegetables or meat and served with rice. ingredients include onion, tomato, ginger, garlic, coriander, turmeric, cumin, mild chili. price: $18.
+
+Q: how many tables do you have
+A: we have indoor seating for about 50 guests, with a mix of tables for two, four, and a few larger tables for groups.
+
+Q: how big is your restaurant
+A: we have indoor seating for about 50 guests, with a mix of tables for two, four, and a few larger tables for groups.
+
+Q: when was the restaurant founded
+A: the himalayan house opened in 2018.
+
+Q: who is the owner
+A: the restaurant is independently owned and operated by a local family. if you need the owner’s name for something specific, please ask a staff member directly.
+
+Q: what’s the staff payroll budget
+A: i'm not sure about that specific restaurant detail. please ask the staff or check the official menu for the most accurate information.
+
+Q: tell me a story
+A: Of course! Let's travel back in time to the beautiful Himalayan region where there once was a small village nestled between towering mountains. In this village lived an old woman named Laxmi, who had a magical touch with spices. She could take simple ingredients and turn them into dishes that warmed the hearts of those who tasted them.
+
+One day, a wandering traveler passed through the village. Tempted by the delicious aroma wafting from Laxmi's home, he approached her and asked for something to eat. With a kind smile, she prepared a dish called "Dal Bhat," a staple food of the Nepali people, consisting of lentils, rice, vegetables, and spices cooked together to perfection.
+
+The traveler was astonished by the flavors and textures of Dal Bhat, and he asked Laxmi about her secret. With a twinkle in her eye, she shared the recipe with him. From that day on, the traveler made it his mission to share the taste of Laxmi's cooking across the world. And as word spread, more and more people discovered the magic of Nepali cuisine.
+
+The story of Laxmi is a testament to the power of food to bring people together and create connections across cultures. At The Himalayan House, we strive to keep that tradition alive by offering authentic dishes from the heart of Nepal for everyone to enjoy!
+
+Q: explain the moon landing
+A: The moon landing was a historic event that occurred on July 20, 1969, when NASA's Apollo 11 spacecraft landed on the lunar surface. Astronauts Neil Armstrong and Buzz Aldrin became the first humans to walk on the moon while Michael Collins orbited above in the command module. The event was a significant achievement for humanity and marked a successful end to the Space Race between the United States and the Soviet Union.
+
+Q: what is python programming
+A: Python is a high-level programming language. It's known for its readability and simplicity, making it great for beginners and experienced programmers alike. Python supports various data structures (like lists, dictionaries, and sets) and functions, which are used to perform operations and calculations in programs. It can be used for a wide range of applications, from web development and machine learning to automating tasks and creating games.
+
+Q: recommend a movie
+A: Of course! If you're in the mood for something set in the Nepal or Himalayan region, I would recommend "Himalaya" or "The White Mask". Both are beautiful and poignant films that showcase the unique culture and landscape of this incredible region. Enjoy your movie night at home! 🎥✨
+

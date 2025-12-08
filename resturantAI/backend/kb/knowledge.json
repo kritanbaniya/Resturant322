@@ -1,7 +1,187 @@
 {
-    "hours": "We are open from 10 AM to 10 PM.",
-    "location": "We are located at 123 Main Street, NYC.",
-    "delivery_time": "Typical delivery time is 25-40 minutes.",
-    "special_dishes": "Our chef specialties include Spicy Ramen Bowl and Dragon Sushi Roll."
+  "restaurant": {
+    "name": "The Himalayan House",
+    "short_name": "the himalayan house",
+    "address": "123 mountain view ave, brooklyn, new york, ny 11201",
+    "street": "123 mountain view ave",
+    "city": "brooklyn",
+    "borough": "brooklyn",
+    "state": "ny",
+    "zip": "11201",
+    "description": "a small, cozy nepali and himalayan inspired restaurant focused on simple, warming comfort food like dal bhat, momos, and noodle soups.",
+    "founded_year": 2018,
+    "seating_capacity": 50,
+    "seating_summary": "we have indoor seating for about 50 guests, with a mix of tables for two, four, and a few larger tables for groups.",
+    "fun_fact": "the himalayan house is inspired by small family kitchens in kathmandu and foothill villages, focusing on simple, warming dishes like dal bhat and thukpa.",
+    "chefs": [
+      {
+        "name": "suman gurung",
+        "role": "head chef",
+        "bio": "chef suman grew up in eastern nepal and has worked in nepali and indian kitchens in new york for several years.",
+        "specialties": ["momos", "dal bhat", "himalayan curry"]
+      },
+      {
+        "name": "asha lama",
+        "role": "sous chef",
+        "bio": "chef asha focuses on soups, stir fries, and snacks, bringing homestyle flavors to the menu.",
+        "specialties": ["thukpa", "chow mein", "fried rice", "snacks"]
+      }
+    ],
+    "chefs_summary": "our dishes are prepared by a small team of nepali and himalayan chefs, led by head chef suman gurung and sous chef asha lama. they focus on comforting, balanced flavors inspired by home cooking.",
+    "owner_info": "the restaurant is independently owned and operated by a local family. if you need the owner’s name for something specific, please ask a staff member directly.",
+    "hours": {
+      "summary": "we are open sunday through thursday from 11:00 am to 10:00 pm, and friday and saturday from 11:00 am to 11:00 pm.",
+      "sunday_thursday": "11:00 am – 10:00 pm",
+      "friday_saturday": "11:00 am – 11:00 pm"
+    },
+    "policies": {
+      "reservations": "we accept reservations for parties of four or more. smaller groups are welcome as walk-ins, subject to table availability.",
+      "refunds": "since we are a small restaurant, all food sales are final once served. if there is an issue with your order, please speak to a staff member during your visit.",
+      "delivery": "we currently offer takeout and pickup for all main dishes, but we do not provide third-party delivery.",
+      "catering": "we offer catering for events of roughly 10 to 150 guests. please call or email us for menu options and pricing.",
+      "cancellation": "for reservations of eight or more, we ask that you contact us at least 24 hours in advance if you need to cancel or change the time."
+    },
+    "dietary": {
+      "halal_status": "we are not a halal-certified restaurant. some guests who eat halal may still find suitable options, but we cannot guarantee halal preparation.",
+      "vegan_note": "some dishes can be made vegan, such as veg momos, fried rice with vegetables, dal bhat without ghee, and thukpa with vegetables. please let the staff know your preferences.",
+      "gluten_note": "our kitchen uses wheat products and we cannot guarantee a completely gluten free meal. some rice-based dishes avoid wheat ingredients, but cross contact is possible.",
+      "dairy_note": "several dishes contain dairy such as yogurt or ghee. some items can be prepared with less or no dairy on request, but we do not have a fully dairy free kitchen.",
+      "nut_note": "some items may come into contact with nuts in the kitchen, so we cannot guarantee that any dish is completely nut free."
+    },
+    "contact": {
+      "phone": "[phone number]",
+      "email": "[email address]"
+    }
+  },
+  "menu_items": {
+    "momos": {
+      "name": "momos",
+      "aliases": ["momo", "momoz", "dumpling", "dumplings"],
+      "category": "appetizer",
+      "description": "traditional nepali dumplings, served steamed or lightly pan fried, with tomato and sesame achar on the side.",
+      "ingredients": ["wheat flour wrapper", "garlic", "ginger", "scallions", "cilantro"],
+      "fillings": ["chicken", "beef", "mixed vegetables"],
+      "base_price": 12,
+      "vegetarian": true,
+      "vegan": true,
+      "contains_gluten": true,
+      "contains_dairy": false,
+      "contains_nuts": false,
+      "spice_level": "mild"
+    },
+    "chow_mein": {
+      "name": "chow mein",
+      "aliases": ["chowmein"],
+      "category": "main",
+      "description": "nepali style stir fried wheat noodles with cabbage, bell peppers, onion, and scallions.",
+      "ingredients": ["wheat noodles", "cabbage", "bell peppers", "onion", "scallions", "soy sauce", "garlic", "ginger"],
+      "base_price": 14,
+      "vegetarian": true,
+      "vegan": true,
+      "contains_gluten": true,
+      "contains_dairy": false,
+      "contains_nuts": false,
+      "spice_level": "mild"
+    },
+    "fried_rice": {
+      "name": "fried rice",
+      "aliases": ["frd rice", "friedrice"],
+      "category": "main",
+      "description": "wok fried rice with peas, carrots, scallions, garlic, and ginger. can be served plain, with egg, or with added chicken or beef.",
+      "ingredients": ["rice", "peas", "carrots", "scallions", "soy sauce", "garlic", "ginger"],
+      "base_price": 13,
+      "vegetarian": true,
+      "vegan": true,
+      "contains_gluten": false,
+      "contains_dairy": false,
+      "contains_nuts": false,
+      "spice_level": "mild"
+    },
+    "dal_bhat": {
+      "name": "dal bhat",
+      "aliases": ["dal bhaat", "dhal bhat"],
+      "category": "main",
+      "description": "classic nepali plate with lentil soup, steamed rice, seasonal vegetables, pickles, and a small side of greens.",
+      "ingredients": ["lentils", "rice", "turmeric", "garlic", "ginger", "seasonal vegetables"],
+      "base_price": 16,
+      "vegetarian": true,
+      "vegan": true,
+      "contains_gluten": false,
+      "contains_dairy": false,
+      "contains_nuts": false,
+      "spice_level": "mild"
+    },
+    "himalayan_curry": {
+      "name": "himalayan curry",
+      "aliases": ["curry"],
+      "category": "main",
+      "description": "slow simmered curry made with onion, tomato, ginger, garlic, coriander, turmeric, cumin, and mild chili. available with vegetables or meat and served with rice.",
+      "ingredients": ["onion", "tomato", "ginger", "garlic", "coriander", "turmeric", "cumin", "mild chili"],
+      "base_price": 18,
+      "vegetarian": true,
+      "vegan": true,
+      "contains_gluten": false,
+      "contains_dairy": false,
+      "contains_nuts": false,
+      "spice_level": "medium"
+    },
+    "thukpa": {
+      "name": "thukpa",
+      "aliases": ["noodle soup", "nepali noodle soup"],
+      "category": "main",
+      "description": "nepali noodle soup with broth, wheat noodles, vegetables, and optional meat.",
+      "ingredients": ["broth", "wheat noodles", "cabbage", "carrot", "scallions", "garlic", "ginger"],
+      "base_price": 15,
+      "vegetarian": true,
+      "vegan": false,
+      "contains_gluten": true,
+      "contains_dairy": false,
+      "contains_nuts": false,
+      "spice_level": "mild"
+    },
+    "veg_samosa": {
+      "name": "vegetable samosas",
+      "aliases": ["samosa", "samosas"],
+      "category": "snack",
+      "description": "crispy pastry filled with spiced potatoes and peas, served with chutney.",
+      "ingredients": ["wheat flour", "potatoes", "peas", "spices", "oil"],
+      "base_price": 9,
+      "vegetarian": true,
+      "vegan": true,
+      "contains_gluten": true,
+      "contains_dairy": false,
+      "contains_nuts": false,
+      "spice_level": "mild"
+    },
+    "masala_fries": {
+      "name": "masala fries",
+      "aliases": ["fries"],
+      "category": "snack",
+      "description": "crisp fries tossed with house masala spice blend.",
+      "ingredients": ["potatoes", "oil", "spice blend"],
+      "base_price": 8,
+      "vegetarian": true,
+      "vegan": true,
+      "contains_gluten": false,
+      "contains_dairy": false,
+      "contains_nuts": false,
+      "spice_level": "mild"
+    }
+  },
+  "faq": {
+    "menu_overview": "we serve nepali and himalayan inspired comfort food, including different types of momos, chow mein, fried rice, dal bhat, himalayan curry, thukpa (noodle soup), snacks like vegetable samosas and masala fries, and traditional drinks.",
+    "popular_items": "our most popular dishes are chicken momos, veg chow mein, dal bhat, and himalayan curry. guests also love thukpa noodle soup on colder days.",
+    "desserts": "we offer a small rotating selection of nepali inspired desserts such as kheer (rice pudding) and sweet sel roti on some days. availability may vary.",
+    "vegan_options": "some dishes can be made vegan, such as veg momos, fried rice with vegetables, dal bhat without ghee, thukpa with vegetables, and masala fries. please let the staff know your preferences.",
+    "vegetarian_options": "we have several vegetarian friendly dishes such as veg momos, chow mein without meat, fried rice with vegetables, dal bhat, thukpa with vegetables, vegetable samosas, and masala fries.",
+    "gluten_info": "our kitchen uses wheat products and we cannot guarantee a completely gluten free meal. some rice-based dishes like dal bhat and himalayan curry with rice avoid wheat ingredients, but cross contact is possible.",
+    "dairy_info": "several dishes contain dairy such as yogurt or ghee. some items can be prepared with less or no dairy on request, but we do not have a fully dairy free kitchen.",
+    "nut_allergy_info": "some items may come into contact with nuts in the kitchen, so we cannot guarantee that any dish is completely nut free.",
+    "drinks_overview": "we serve masala chai, himalayan spiced tea, lassi, soft drinks, and still or sparkling water.",
+    "story_note": "the himalayan house aims to bring a bit of nepali and himalayan home cooking to a casual, cozy space in brooklyn."
+  },
+  "price_info": {
+    "drinks_price_range": "most non-alcoholic drinks are between $3 and $6.",
+    "note": "among main dishes, masala fries and vegetable samosas are usually the least expensive items, while himalayan curry is among the higher priced mains."
   }
-  
+}
