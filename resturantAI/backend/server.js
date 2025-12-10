@@ -1,4 +1,4 @@
-// LOAD ENVIRONMENT FIRST (must be line 1)
+// load environment first (must be line 1)
 import 'dotenv/config';
 
 import express from 'express';

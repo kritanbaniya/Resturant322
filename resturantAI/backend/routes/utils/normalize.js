@@ -15,10 +15,10 @@ export function normalizeMessage(text) {
     let fixed = lower;
   
     // ============================================
-    // PHRASE PATTERNS FIRST (before individual word replacements)
+    // phrase patterns first (before individual word replacements)
     // ============================================
-    // Handle full phrase patterns BEFORE replacing individual words like "u" → "you"
-    // This ensures "wut food u hav" is caught before "u" becomes "you"
+    // handle full phrase patterns before replacing individual words like "u" → "you"
+    // this ensures "wut food u hav" is caught before "u" becomes "you"
     
     // specific restaurant question patterns with typos - MUST be before individual word replacements
     // use flexible spacing patterns to catch variations
@@ -49,7 +49,7 @@ export function normalizeMessage(text) {
     fixed = fixed.replace(/\bwhere r u located\b/g, 'where are you located');
   
     // ============================================
-    // RESTAURANT-SPECIFIC TYPOS (individual words)
+    // restaurant-specific typos (individual words)
     // ============================================
     
     // restaurant variations
@@ -197,7 +197,7 @@ export function normalizeMessage(text) {
     fixed = fixed.replace(/\brefunded\b/g, 'refunded');
     
     // ============================================
-    // COMMON CHAT TYPOS AND SLANG
+    // common chat typos and slang
     // ============================================
     
     // question words
@@ -265,7 +265,7 @@ export function normalizeMessage(text) {
     fixed = fixed.replace(/\bhow much\b/g, 'how much');
     
     // ============================================
-    // RESTAURANT-SPECIFIC PHRASES
+    // restaurant-specific phrases
     // ============================================
     
     // common restaurant question patterns
@@ -293,7 +293,7 @@ export function normalizeMessage(text) {
     // also handle without spaces (though less common)
     fixed = fixed.replace(/wutfood\s*(u|you)\s*hav/g, 'what food do you have');
     fixed = fixed.replace(/watfood\s*(u|you)\s*hav/g, 'what food do you have');
-    
+  
     return fixed;
   }
   
