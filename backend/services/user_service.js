@@ -68,13 +68,21 @@ async function loginUser(email, password) {
     return [{ error: "Invalid email or password." }, 401];
   }
   
-  if (["Rejected", "Blacklisted"].includes(user.status)) {
-    return [{ error: "Account is not allowed to login." }, 403];
-  }
-  
+  // check password first (before revealing account status)
   const isValid = await bcrypt.compare(password, user.password_hash);
   if (!isValid) {
     return [{ error: "Invalid email or password." }, 401];
+  }
+  
+  // check if account is approved (only Active status can login)
+  if (user.status !== "Active") {
+    if (user.status === "PendingApproval") {
+      return [{ error: "Your account is pending manager approval. Please wait for approval before logging in." }, 403];
+    } else if (["Rejected", "Blacklisted"].includes(user.status)) {
+      return [{ error: "Account is not allowed to login." }, 403];
+    } else {
+      return [{ error: "Your account is not active. Please contact support." }, 403];
+    }
   }
   
   const token = generateToken(user);

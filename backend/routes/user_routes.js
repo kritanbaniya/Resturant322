@@ -5,6 +5,15 @@ const { depositMoney, updateVipStatus } = require('../services/user_service');
 const { tokenRequired } = require('../utils/auth');
 
 router.get("/:user_id", tokenRequired, async (req, res) => {
+  // validate user_id is a valid ObjectId
+  if (!req.params.user_id || req.params.user_id === 'null' || req.params.user_id === 'undefined') {
+    return res.status(400).json({ error: "Invalid user ID." });
+  }
+  
+  if (!require('mongoose').Types.ObjectId.isValid(req.params.user_id)) {
+    return res.status(400).json({ error: "Invalid user ID format." });
+  }
+  
   // verify user_id matches authenticated user (or user is manager)
   if (req.current_user.id !== req.params.user_id && req.current_user.role !== "Manager") {
     return res.status(403).json({ error: "Unauthorized. You can only access your own profile." });
@@ -49,6 +58,15 @@ router.put("/update-vip/:user_id", tokenRequired, async (req, res) => {
   // only managers can manually update vip status
   if (req.current_user.role !== "Manager") {
     return res.status(403).json({ error: "Unauthorized. Only managers can update VIP status." });
+  }
+  
+  // validate user_id is a valid ObjectId
+  if (!req.params.user_id || req.params.user_id === 'null' || req.params.user_id === 'undefined') {
+    return res.status(400).json({ error: "Invalid user ID." });
+  }
+  
+  if (!require('mongoose').Types.ObjectId.isValid(req.params.user_id)) {
+    return res.status(400).json({ error: "Invalid user ID format." });
   }
   
   const user = await User.findById(req.params.user_id);
