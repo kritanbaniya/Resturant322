@@ -53,7 +53,9 @@
   </footer>
 
   <script>
-    function register(event) {
+    const API_URL = "http://127.0.0.1:5000";
+
+    async function register(event) {
       event.preventDefault();
       
       const user = document.getElementById("regUser").value;
@@ -75,25 +77,43 @@
         return;
       }
 
-      // Check if user already exists
-      const existingUser = localStorage.getItem("username");
-      if (existingUser === user) {
-        messageEl.textContent = "Username already exists. Please choose another.";
+      try {
+        const response = await fetch(`${API_URL}/api/auth/register`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: user,
+            email: email,
+            password: pass
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          messageEl.textContent = data.message || "Account created successfully! Redirecting to login...";
+          messageEl.className = "message success";
+
+          // Save user data for potential auto-login
+          if (data.user_id) {
+            localStorage.setItem("userId", data.user_id);
+          }
+          localStorage.setItem("registeredEmail", email);
+
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 2000);
+        } else {
+          messageEl.textContent = data.error || "Registration failed. Please try again.";
+          messageEl.className = "message error";
+        }
+      } catch (error) {
+        messageEl.textContent = "Error connecting to server. Make sure backend is running.";
         messageEl.className = "message error";
-        return;
+        console.error("Registration error:", error);
       }
-
-      // Save user data
-      localStorage.setItem("username", user);
-      localStorage.setItem("email", email);
-      localStorage.setItem("password", pass);
-
-      messageEl.textContent = "Account created successfully! Redirecting to login...";
-      messageEl.className = "message success";
-
-      setTimeout(() => {
-        window.location.href = "login.html";
-      }, 2000);
     }
 
     function updateCartCount() {

@@ -32,7 +32,7 @@
       <p>Sign in to your AI Eats account</p>
       
       <form class="auth-form" onsubmit="login(event)">
-        <input type="text" id="loginUser" placeholder="Username" required>
+        <input type="email" id="loginUser" placeholder="Email Address" required>
         <input type="password" id="loginPass" placeholder="Password" required>
         <button type="submit" class="auth-btn">Login</button>
       </form>
@@ -51,34 +51,54 @@
   </footer>
 
   <script>
-    function login(event) {
+    const API_URL = "http://127.0.0.1:5000";
+
+    async function login(event) {
       event.preventDefault();
       
-      const loginUser = document.getElementById("loginUser").value;
+      const loginEmail = document.getElementById("loginUser").value;
       const loginPass = document.getElementById("loginPass").value;
       const messageEl = document.getElementById("loginMessage");
 
-      const savedUser = localStorage.getItem("username");
-      const savedPass = localStorage.getItem("password");
+      try {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: loginEmail,
+            password: loginPass
+          })
+        });
 
-      if (!savedUser) {
-        messageEl.textContent = "No account found. Please create an account first.";
-        messageEl.className = "message error";
-        return;
-      }
+        const data = await response.json();
 
-      if (loginUser === savedUser && loginPass === savedPass) {
-        messageEl.textContent = "Login successful! Redirecting...";
-        messageEl.className = "message success";
-        
-        localStorage.setItem("isLoggedIn", "true");
-        
-        setTimeout(() => {
-          window.location.href = "index.html";
-        }, 1500);
-      } else {
-        messageEl.textContent = "Invalid username or password.";
+        if (response.ok) {
+          messageEl.textContent = "Login successful! Redirecting...";
+          messageEl.className = "message success";
+          
+          if (data.token) {
+            localStorage.setItem("token", data.token);
+          }
+          if (data.user_id) {
+            localStorage.setItem("userId", data.user_id);
+          }
+          localStorage.setItem("username", loginEmail);
+          localStorage.setItem("email", loginEmail);
+          localStorage.setItem("isLoggedIn", "true");
+          
+          setTimeout(() => {
+            window.location.href = "index.html";
+          }, 1500);
+        } else {
+          messageEl.textContent = data.error || "Invalid email or password.";
+          messageEl.className = "message error";
+        }
+      } catch (error) {
+        messageEl.textContent = "Error connecting to server. Make sure backend is running.";
         messageEl.className = "message error";
+        console.error("Login error:", error);
       }
     }
 

@@ -342,14 +342,66 @@ footer a:hover {
   padding-bottom: 40px;
 }
 
+.chat-container {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  max-width: 600px;
+  width: 90%;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+}
+
 .chat-box {
   background: white;
   padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  max-width: 500px;
-  width: 90%;
-  margin-top: 20px;
+  border-radius: 10px 10px 0 0;
+  flex: 1;
+  overflow-y: auto;
+  border-bottom: 1px solid #ddd;
+}
+
+.chat-box p {
+  margin: 10px 0;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+.chat-input-area {
+  display: flex;
+  gap: 10px;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 0 0 10px 10px;
+}
+
+#chat-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+#send-btn {
+  padding: 10px 20px;
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#send-btn:hover {
+  background: #ff5252;
+}
+
+#send-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 /* --- Cart Page Styles --- */

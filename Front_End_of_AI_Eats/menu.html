@@ -32,22 +32,9 @@
   <!-- MENU SECTION -->
   <section class="menu">
     <h2>Our Menu</h2>
-    <div class="menu-grid">
-
-      <div class="menu-card">
-        <img src="images/burger.jpeg" alt="Cheese Burger">
-        <h3>Cheese Burger</h3>
-        <p>Juicy beef burger with cheese and fresh lettuce.</p>
-        <div class="dish-rating">
-          <span class="stars">⭐⭐⭐⭐⭐</span>
-          <span class="rating-text">4.8 (324 reviews)</span>
-        </div>
-        <span class="price">$9.99</span>
-        <button class="add-to-cart" onclick="addToCart('Cheese Burger')">Add to Cart</button>
-      </div>
-
-      <div class="menu-card">
-        <img src="images/sushi.jpeg" alt="Salmon Sushi">
+    <div class="menu-grid" id="menu-grid">
+      <!-- Menu items will be loaded from backend -->
+    </div>
         <h3>Salmon Sushi</h3>
         <p>Fresh salmon with perfectly seasoned rice.</p>
         <div class="dish-rating">
@@ -206,92 +193,59 @@
 
   <!-- ADD TO CART SCRIPT -->
   <script>
-    const menuItems = {
-      'Cheese Burger': {
-        name: 'Cheese Burger',
-        price: 9.99,
-        description: 'Juicy beef burger with cheese and fresh lettuce.',
-        image: 'images/burger.jpeg',
-        vipOnly: false
-      },
-      'Salmon Sushi': {
-        name: 'Salmon Sushi',
-        price: 14.99,
-        description: 'Fresh salmon with perfectly seasoned rice.',
-        image: 'images/sushi.jpeg',
-        vipOnly: false
-      },
-      'Fettuccine Alfredo': {
-        name: 'Fettuccine Alfredo',
-        price: 12.99,
-        description: 'Creamy pasta with parmesan cheese and herbs.',
-        image: 'images/pasta.jpeg',
-        vipOnly: false
-      },
-      'Spaghetti Bolognese': {
-        name: 'Spaghetti Bolognese',
-        price: 12.99,
-        description: 'Classic Italian pasta with meat sauce.',
-        image: 'images/spaghetti_bolognese.jpeg',
-        vipOnly: false
-      },
-      'Grilled Chicken Salad': {
-        name: 'Grilled Chicken Salad',
-        price: 10.99,
-        description: 'Fresh greens with chicken and dressing.',
-        image: 'images/salad.jpeg',
-        vipOnly: false
-      },
-      'Margherita Pizza': {
-        name: 'Margherita Pizza',
-        price: 14.99,
-        description: 'Tomatoes, mozzarella, and fresh basil.',
-        image: 'images/margherita_pizza.jpeg',
-        vipOnly: false
-      },
-      'Chicken Parmesan': {
-        name: 'Chicken Parmesan',
-        price: 15.99,
-        description: 'Breaded chicken topped with marinara and cheese.',
-        image: 'images/chicken_parmesan.jpeg',
-        vipOnly: false
-      },
-      'Penne alla Vodka': {
-        name: 'Penne alla Vodka',
-        price: 13.99,
-        description: 'Pasta in a creamy tomato-vodka sauce.',
-        image: 'images/penne_alla_vodka.jpeg',
-        vipOnly: false
-      },
-      'Chicken Wings': {
-        name: 'Chicken Wings',
-        price: 11.99,
-        description: 'Spicy and crispy chicken wings with dipping sauce.',
-        image: 'images/chicken_wings.jpeg',
-        vipOnly: false
-      },
-      'Grilled Lobster': {
-        name: 'Grilled Lobster',
-        price: 35.99,
-        description: 'Succulent lobster grilled to perfection.',
-        image: 'images/lobster.jpeg',
-        vipOnly: true
-      },
-      'Ribeye Steak': {
-        name: 'Ribeye Steak',
-        price: 29.99,
-        description: 'Juicy ribeye steak, perfectly seared.',
-        image: 'images/ribeye.jpeg',
-        vipOnly: true
-      },
-      'Tomahawk Steak': {
-        name: 'Tomahawk Steak',
-        price: 49.99,
-        description: 'Premium tomahawk cut with rich marbling.',
-        image: 'images/tomahawk.jpeg',
-        vipOnly: true
+    const API_URL = "http://127.0.0.1:5000";
+    let menuItems = {};
+
+    // Load menu from backend
+    async function loadMenu() {
+      try {
+        const response = await fetch(`${API_URL}/api/menu/`);
+        const dishes = await response.json();
+        
+        const menuGrid = document.getElementById("menu-grid");
+        menuGrid.innerHTML = "";
+        
+        dishes.forEach(dish => {
+          menuItems[dish.name] = {
+            id: dish.id,
+            name: dish.name,
+            price: dish.price,
+            description: dish.description,
+            image: dish.image_url || 'images/default.jpeg',
+            vipOnly: false,
+            rating: dish.average_rating,
+            ratingCount: dish.rating_count
+          };
+          
+          const stars = generateStars(dish.average_rating);
+          const menuCard = document.createElement("div");
+          menuCard.className = "menu-card";
+          menuCard.innerHTML = `
+            <img src="${dish.image_url || 'images/default.jpeg'}" alt="${dish.name}">
+            <h3>${dish.name}</h3>
+            <p>${dish.description}</p>
+            <div class="dish-rating">
+              <span class="stars">${stars}</span>
+              <span class="rating-text">${dish.average_rating.toFixed(1)} (${dish.rating_count} reviews)</span>
+            </div>
+            <span class="price">$${dish.price.toFixed(2)}</span>
+            <button class="add-to-cart" onclick="addToCart('${dish.name}')">Add to Cart</button>
+          `;
+          menuGrid.appendChild(menuCard);
+        });
+      } catch (error) {
+        console.error("Error loading menu:", error);
+        document.getElementById("menu-grid").innerHTML = "<p>Error loading menu. Please try again later.</p>";
       }
-    };
+    }
+
+    function generateStars(rating) {
+      const fullStars = Math.floor(rating);
+      const hasHalfStar = rating % 1 >= 0.5;
+      let stars = "⭐".repeat(fullStars);
+      if (hasHalfStar && fullStars < 5) stars += "☆";
+      return stars;
+    }
 
     function addToCart(itemName) {
       const item = menuItems[itemName];
@@ -371,6 +325,7 @@
     updateCartCount();
     updateAuthStatus();
     checkVIPMenuAccess();
+    loadMenu();
   </script>
 
 </body>

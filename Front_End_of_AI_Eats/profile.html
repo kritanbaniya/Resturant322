@@ -84,9 +84,12 @@
   </footer>
 
   <script>
-    function loadProfile() {
+    const API_URL = "http://127.0.0.1:5000";
+
+    async function loadProfile() {
       const username = localStorage.getItem("username");
       const email = localStorage.getItem("email");
+      const userId = localStorage.getItem("userId");
       const isLoggedIn = localStorage.getItem("isLoggedIn");
 
       // Redirect if not logged in
@@ -106,6 +109,22 @@
       localStorage.setItem("memberSince", memberSince);
       document.getElementById("member-since").textContent = memberSince;
 
+      // Fetch user data from backend if userId is available
+      if (userId) {
+        try {
+          const response = await fetch(`${API_URL}/api/users/${userId}`);
+          if (response.ok) {
+            const userData = await response.json();
+            // Update profile with backend data
+            localStorage.setItem("userBalance", userData.balance);
+            localStorage.setItem("totalSpent", userData.totalSpent);
+            localStorage.setItem("orderCount", userData.orderCount);
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+
       loadOrderHistory();
       updateVIPStatus();
       updateCartCount();
@@ -122,6 +141,7 @@
         localStorage.removeItem("username");
         localStorage.removeItem("email");
         localStorage.removeItem("password");
+        localStorage.removeItem("userId");
         window.location.href = "index.html";
       }
     }
@@ -132,11 +152,41 @@
       document.getElementById("cart-count").textContent = totalItems;
     }
 
-    function loadOrderHistory() {
+    async function loadOrderHistory() {
+      const userId = localStorage.getItem("userId");
       const currentUsername = localStorage.getItem("username");
+      const orderHistoryContainer = document.getElementById("order-history");
+      
+      try {
+        // Try to fetch from backend first
+        if (userId) {
+          const response = await fetch(`${API_URL}/api/orders/history/${userId}`);
+          if (response.ok) {
+            const orders = await response.json();
+            if (orders.length > 0) {
+              orderHistoryContainer.innerHTML = orders.map(order => `
+                <div class="order-item">
+                  <div class="order-header">
+                    <span class="order-id">Order #${order.id || order.order_id}</span>
+                    <span class="order-date">${new Date(order.order_date).toLocaleDateString()}</span>
+                  </div>
+                  <div class="order-details">
+                    <div class="order-status">Status: ${order.status}</div>
+                    <div class="order-total">Total: ${order.total}</div>
+                  </div>
+                </div>
+              `).join('');
+              return;
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching order history:", error);
+      }
+      
+      // Fallback to localStorage
       const allOrders = JSON.parse(localStorage.getItem("orders")) || [];
       const userOrders = allOrders.filter(order => order.username === currentUsername);
-      const orderHistoryContainer = document.getElementById("order-history");
       
       if (userOrders.length === 0) {
         orderHistoryContainer.innerHTML = '<p class="no-orders">No orders yet. <a href="menu.html">Start ordering!</a></p>';
