@@ -1,0 +1,399 @@
+{
+  "restaurant": {
+    "name": "Tony's Di Napoli",
+    "tagline": "Classic New York Italian, served family-style",
+    "established": 1959,
+    "description": "Tony's Di Napoli is a New York City institution known for serving Southern Italian, family-style dishes meant for sharing. The restaurant specializes in generous portions, classic recipes, and an energetic, warm dining atmosphere.",
+    "highlights": [
+      "Known for huge family-style platters serving 2–3 people",
+      "A favorite for celebrations, birthdays, and group dining",
+      "Located in the heart of Times Square, popular with locals and tourists alike",
+      "Famous for generous portions, fast service, and classic Italian-American dishes"
+    ],
+    "best_for": [
+      "Family gatherings",
+      "Birthday dinners",
+      "Tourists visiting Times Square",
+      "Large groups",
+      "Classic Italian comfort food"
+    ]
+  },
+
+  "locations": [
+    {
+      "name": "Midtown",
+      "address": "147 W 43rd St, New York, NY 10036",
+      "neighborhood": "Times Square",
+      "phone": "(212) 221-0100",
+      "hours": {
+        "monday_thursday": "11:30 AM – 10:00 PM",
+        "friday": "11:30 AM – 10:30 PM",
+        "saturday": "11:30 AM – 10:30 PM",
+        "sunday": "11:30 AM – 10:00 PM"
+      },
+      "location_notes": [
+        "Extremely busy before and after Broadway shows",
+        "Ideal for pre-theater and post-theater dining",
+        "Reservations recommended, especially on weekends"
+      ]
+    }
+  ],
+
+  "dining_policies": {
+    "style": "Family-style dining, dishes are large and meant to be shared.",
+    "dress_code": "Casual or smart casual",
+    "reservations": "Reservations accepted and recommended, especially for groups.",
+    "popular_times": [
+      "Pre-theater (5–7 PM)",
+      "Weekend dinners",
+      "Holiday periods in Times Square"
+    ],
+    "takeout": true,
+    "delivery": true,
+    "large_parties": {
+      "group_accommodations": "Can host large groups, celebrations, and events",
+      "recommended_notice": "Groups of 8+ should reserve in advance",
+      "best_group_dishes": [
+        "Chicken Parmigiana",
+        "Penne Alla Vodka",
+        "Caesar Salad",
+        "Spaghetti & Meatballs",
+        "Shrimp Scampi"
+      ]
+    }
+  },
+
+  "cuisine": {
+    "type": "Southern Italian",
+    "special_features": [
+      "Large family-style platters",
+      "Traditional Italian-American dishes",
+      "Fresh seafood",
+      "House-made sauces",
+      "Classic desserts",
+      "Rich pastas and hearty entrées"
+    ],
+    "best_known_for": [
+      "Penne Alla Vodka",
+      "Chicken Parmigiana",
+      "Spaghetti & Meatballs",
+      "Huge portions designed for sharing"
+    ]
+  },
+
+  "menu": {
+    "notes": "All dishes are served family-style and are large enough to share.",
+    "price_range": "$$ – $$$",
+    "best_sellers": [
+      "Chicken Parmigiana",
+      "Penne Alla Vodka",
+      "Spaghetti & Meatballs",
+      "Caesar Salad"
+    ],
+    "most_famous_items": [
+      "Penne Alla Vodka",
+      "Chicken Parmigiana",
+      "Shrimp Scampi"
+    ],
+    "kid_friendly_options": [
+      "Spaghetti & Meatballs",
+      "Fettuccine Alfredo",
+      "Chicken Parmigiana",
+      "Mozzarella in Carrozza"
+    ],
+    "good_for_sharing": [
+      "All pasta dishes",
+      "Chicken Parmigiana",
+      "Veal Parmigiana",
+      "Shrimp Scampi",
+      "House Salad",
+      "Caesar Salad"
+    ],
+    "recommended_for_first_timers": [
+      "Penne Alla Vodka",
+      "Chicken Parmigiana",
+      "Fried Calamari",
+      "Tiramisu"
+    ],
+    "popular_drinks": [
+      "House red wine",
+      "Italian white wines",
+      "Classic cocktails (Negroni, Aperol Spritz)",
+      "Beer & soft drinks"
+    ],
+
+    "categories": {
+      "appetizers": [
+        {
+          "name": "Fried Calamari",
+          "description": "Crispy fried squid served with marinara sauce",
+          "approx_price": "$28–$32",
+          "popularity": "Very popular starter, great for groups"
+        },
+        {
+          "name": "Baked Clams",
+          "description": "Little neck clams baked with seasoned breadcrumbs",
+          "approx_price": "$22–$26"
+        },
+        {
+          "name": "Mozzarella in Carrozza",
+          "description": "Breaded fried mozzarella with tomato sauce",
+          "approx_price": "$20–$24",
+          "kid_friendly": true
+        }
+      ],
+
+      "salads": [
+        {
+          "name": "Tony's Famous House Salad",
+          "description": "Mixed greens, tomato, cucumber, olives, house dressing",
+          "approx_price": "$20–$25",
+          "popularity": "One of the most ordered salads"
+        },
+        {
+          "name": "Caesar Salad",
+          "description": "Crisp romaine, parmesan, creamy Caesar dressing",
+          "approx_price": "$20–$25",
+          "best_for": "Groups and first-time visitors"
+        }
+      ],
+
+      "pasta": [
+        {
+          "name": "Penne Alla Vodka",
+          "description": "Creamy vodka-tomato sauce, fresh basil",
+          "approx_price": "$28–$34",
+          "popularity": "Best-selling pasta dish"
+        },
+        {
+          "name": "Spaghetti & Meatballs",
+          "description": "Classic marinara with homemade meatballs",
+          "approx_price": "$30–$36",
+          "kid_friendly": true
+        },
+        {
+          "name": "Fettuccine Alfredo",
+          "description": "Creamy butter-parmesan sauce",
+          "approx_price": "$28–$34"
+        },
+        {
+          "name": "Lobster Fra Diavolo",
+          "description": "Spicy marinara with lobster over linguine",
+          "approx_price": "$55–$75",
+          "spicy": true
+        }
+      ],
+
+      "chicken": [
+        {
+          "name": "Chicken Parmigiana",
+          "description": "Breaded chicken cutlet topped with marinara & mozzarella",
+          "approx_price": "$34–$42",
+          "best_seller": true
+        },
+        {
+          "name": "Chicken Marsala",
+          "description": "Sautéed chicken with mushrooms in marsala wine sauce",
+          "approx_price": "$34–$42"
+        },
+        {
+          "name": "Chicken Scarpariello",
+          "description": "Sautéed chicken with sausage, peppers & garlic",
+          "approx_price": "$36–$44",
+          "spicy": true
+        }
+      ],
+
+      "veal": [
+        {
+          "name": "Veal Parmigiana",
+          "description": "Breaded veal cutlet baked with marinara & mozzarella",
+          "approx_price": "$40–$48"
+        },
+        {
+          "name": "Veal Marsala",
+          "description": "Tender veal scallopini with mushroom marsala sauce",
+          "approx_price": "$40–$48"
+        }
+      ],
+
+      "seafood": [
+        {
+          "name": "Shrimp Scampi",
+          "description": "Shrimp sautéed with garlic, lemon & butter",
+          "approx_price": "$38–$48",
+          "best_seller": true
+        },
+        {
+          "name": "Salmon Oreganata",
+          "description": "Broiled salmon with seasoned breadcrumbs",
+          "approx_price": "$38–$48"
+        }
+      ],
+
+      "eggplant": [
+        {
+          "name": "Eggplant Parmigiana",
+          "description": "Layered breaded eggplant with marinara & cheese",
+          "approx_price": "$30–$38",
+          "vegetarian": true
+        },
+        {
+          "name": "Eggplant Rollatini",
+          "description": "Ricotta-filled eggplant with tomato sauce",
+          "approx_price": "$30–$38",
+          "vegetarian": true
+        }
+      ],
+
+      "sides": [
+        "Sautéed Spinach",
+        "Broccoli",
+        "Roasted Potatoes",
+        "Pasta with Marinara"
+      ],
+
+      "desserts": [
+        {
+          "name": "Tiramisu",
+          "approx_price": "$12–$14",
+          "best_seller": true
+        },
+        {
+          "name": "New York Cheesecake",
+          "approx_price": "$12–$14"
+        },
+        {
+          "name": "Cannoli",
+          "approx_price": "$10–$12",
+          "kid_friendly": true
+        }
+      ]
+    },
+
+    "signature_dishes": [
+      "Chicken Parmigiana",
+      "Penne Alla Vodka",
+      "Shrimp Scampi",
+      "Eggplant Parmigiana",
+      "Homemade Meatballs",
+      "Lobster Fra Diavolo"
+    ]
+  },
+
+  "recommendations": {
+    "best_for_first_time_visitors": [
+      "Penne Alla Vodka",
+      "Chicken Parmigiana",
+      "Fried Calamari",
+      "Tiramisu"
+    ],
+    "best_for_kids": [
+      "Spaghetti & Meatballs",
+      "Fettuccine Alfredo",
+      "Mozzarella in Carrozza",
+      "Cannoli"
+    ],
+    "best_for_large_groups": [
+      "Chicken Parmigiana",
+      "Penne Alla Vodka",
+      "Caesar Salad",
+      "Shrimp Scampi"
+    ],
+    "good_for_romantic_dinner": [
+      "Veal Marsala",
+      "Salmon Oreganata",
+      "Tiramisu and wine pairing"
+    ],
+    "spicy_options": [
+      "Lobster Fra Diavolo",
+      "Chicken Scarpariello"
+    ],
+    "mild_options": [
+      "Fettuccine Alfredo",
+      "Chicken Marsala",
+      "Eggplant Rollatini"
+    ],
+    "budget_friendly_choices": [
+      "House Salad",
+      "Mozzarella in Carrozza",
+      "Penne Alla Vodka"
+    ],
+    "vegetarian_highlights": [
+      "Eggplant Parmigiana",
+      "Eggplant Rollatini",
+      "Caesar Salad",
+      "Pasta with Marinara"
+    ]
+  },
+
+  "allergy_info": {
+    "common_allergens": [
+      "Dairy",
+      "Gluten",
+      "Shellfish",
+      "Tree nuts (some desserts)",
+      "Egg"
+    ],
+    "notes": [
+      "Many dishes contain dairy or gluten due to cheese and pasta.",
+      "Seafood dishes may contain shellfish or cross-contamination.",
+      "Guests with allergies should notify the server; accommodations may be possible."
+    ]
+  },
+
+  "reservations": {
+    "accepted": true,
+    "recommended": true,
+    "methods": [
+      "Phone",
+      "Online reservation platforms"
+    ],
+    "large_groups": {
+      "supports_private_events": true,
+      "event_types": [
+        "Corporate dinners",
+        "Birthdays",
+        "Rehearsal dinners",
+        "Family gatherings"
+      ]
+    }
+  },
+
+  "ordering": {
+    "takeout": true,
+    "delivery": true,
+    "platforms": [
+      "Direct phone orders",
+      "Online delivery partners (varies by location)"
+    ]
+  },
+
+  "faq": [
+    {
+      "question": "Do you offer vegetarian options?",
+      "answer": "Yes, several dishes are vegetarian, including Eggplant Parmigiana, Eggplant Rollatini, salads, pasta dishes, and various sides."
+    },
+    {
+      "question": "Are portions large?",
+      "answer": "Yes, Tony's is family-style. Most dishes serve 2–3 people, sometimes more."
+    },
+    {
+      "question": "Can I make a reservation for a large group?",
+      "answer": "Yes, Tony’s is well known for hosting large parties. Reservations are strongly recommended for groups."
+    },
+    {
+      "question": "Is there a kids menu?",
+      "answer": "There is no separate kids menu, but portions can be shared and many dishes are kid-friendly."
+    }
+  ],
+
+  "synonyms": {
+    "menu": ["food list", "what do you serve", "dishes", "what's on the menu", "food options", "meal choices"],
+    "hours": ["when open", "opening time", "closing time", "today hours", "when are you open"],
+    "location": ["address", "where are you", "directions", "how to get there"],
+    "reservation": ["booking", "table", "reserve", "make a reservation", "book a table"],
+    "takeout": ["pickup", "to-go", "carryout", "take away"],
+    "delivery": ["order to home", "order online", "deliver", "home delivery"]
+  }
+}

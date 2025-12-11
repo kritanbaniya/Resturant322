@@ -1,0 +1,8 @@
+/projectContext
+.env
+node_modules
+.DS_Store
+resturantAI/backend/routes/.DS_Store
+resturantAI/backend/.DS_Store
+resturantAI/.DS_Store
+.DS_Store
