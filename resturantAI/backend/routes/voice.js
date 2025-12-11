@@ -16,9 +16,104 @@ import express from 'express';
 import fs from 'fs';
 import fetch from 'node-fetch';
 import { normalizeMessage } from './utils/normalize.js';
-import { isRestaurantQuestion } from './utils/questionClassifier.js';
 import { getKbAnswer } from './utils/knowledgeBase.js';
 import { callLLM } from './utils/llmService.js';
+import { searchKb } from './utils/semanticSearch.js';
+
+/**
+ * check if message should skip kb lookup (personal/memory questions)
+ * @param {string} text - normalized message text
+ * @returns {boolean} - true if should skip kb lookup
+ */
+function shouldSkipKbLookup(text) {
+  const lower = text.toLowerCase();
+  
+  // personal/identity questions
+  const personalPatterns = [
+    /^(my name is|i'm|i am|call me|name is) /i,
+    /^what'?s? my name$/i,
+    /^what is my name$/i,
+    /^who am i$/i,
+    /^what am i$/i
+  ];
+  
+  // memory questions
+  const memoryPatterns = [
+    /what (did|do|does) (i|you|we) (ask|asked|say|said|tell|told|mention|mentioned|discuss|discussed)/i,
+    /what (was|were) (i|you|we) (talking|discussing|saying|asking) (about|earlier|before)/i,
+    /(earlier|before|previously|just now|a moment ago)/i,
+    /what (did|do) (i|you) (ask|say|tell|mention) (about|earlier|before)/i,
+    /(remind|remember|recall|recap) (me|us) (what|about)/i,
+    /what (was|were) (that|this|it) (i|you|we) (asked|said|talked|discussed)/i
+  ];
+  
+  return personalPatterns.some(p => p.test(text)) || 
+         memoryPatterns.some(p => p.test(text));
+}
+
+/**
+ * detect if llm response contains restaurant information from kb
+ * @param {string} response - llm response text
+ * @param {object} kb - knowledge base object
+ * @returns {boolean} - true if kb content detected
+ */
+function detectKbHitInResponse(response, kb) {
+  if (!response || !kb) return false;
+  
+  const lowerResponse = response.toLowerCase();
+  
+  // check if response mentions specific menu items
+  if (kb.menu && kb.menu.categories) {
+    const allMenuItems = [];
+    Object.values(kb.menu.categories).forEach(category => {
+      if (Array.isArray(category)) {
+        category.forEach(item => {
+          if (item && typeof item === 'object' && item.name) {
+            allMenuItems.push(item.name.toLowerCase());
+          } else if (typeof item === 'string') {
+            allMenuItems.push(item.toLowerCase());
+          }
+        });
+      }
+    });
+    
+    // check if any menu item is mentioned
+    if (allMenuItems.some(item => lowerResponse.includes(item))) {
+      return true;
+    }
+  }
+  
+  // check if response mentions restaurant name
+  if (kb.restaurant && kb.restaurant.name) {
+    const restaurantName = kb.restaurant.name.toLowerCase();
+    if (lowerResponse.includes(restaurantName)) {
+      return true;
+    }
+  }
+  
+  // check if response mentions location/address
+  if (kb.locations && Array.isArray(kb.locations)) {
+    for (const loc of kb.locations) {
+      if (loc.address && lowerResponse.includes(loc.address.toLowerCase())) {
+        return true;
+      }
+      if (loc.neighborhood && lowerResponse.includes(loc.neighborhood.toLowerCase())) {
+        return true;
+      }
+    }
+  }
+  
+  // check if response mentions signature dishes
+  if (kb.menu && kb.menu.signature_dishes && Array.isArray(kb.menu.signature_dishes)) {
+    for (const dish of kb.menu.signature_dishes) {
+      if (lowerResponse.includes(dish.toLowerCase())) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
 
 const router = express.Router();
 
@@ -28,8 +123,8 @@ const kb = JSON.parse(fs.readFileSync('./kb/knowledge.json', 'utf-8'));
 // load system prompt
 const systemPrompt = fs.readFileSync('./ai/systemPrompt.txt', 'utf-8');
 
-// model name for ollama
-const modelName = process.env.OLLAMA_MODEL || 'mistral:instruct';
+// model name for ollama cloud
+const modelName = process.env.OLLAMA_MODEL || 'llama3.2:3b';
 
 // eleven labs api key
 const elevenLabsApiKey = process.env.ELEVEN_LABS_API_KEY;
@@ -94,11 +189,21 @@ router.post('/', async (req, res) => {
     // extract lastContext from history (last menu item mentioned)
     let lastContext = null;
     for (let i = history.length - 1; i >= 0; i--) {
-      if (history[i].source === 'kb' && history[i].kbItem && history[i].kbItem.startsWith('menu_items.')) {
-        const parts = history[i].kbItem.split('.');
-        if (parts.length >= 2) {
-          lastContext = parts[1];
-          break;
+      if (history[i].source === 'kb' && history[i].kbItem) {
+        // check for menu item paths in new structure: menu.categories.*
+        if (history[i].kbItem.includes('menu.categories')) {
+          // extract menu item name from answer or metadata
+          if (history[i].metadata && history[i].metadata.item && history[i].metadata.item.name) {
+            lastContext = history[i].metadata.item.name;
+            break;
+          }
+          // fallback: try to extract from answer
+          const answer = history[i].content || '';
+          const nameMatch = answer.match(/^([^:]+):/);
+          if (nameMatch) {
+            lastContext = nameMatch[1].trim();
+            break;
+          }
         }
       }
     }
@@ -126,18 +231,27 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // step 3: check if restaurant-related and try kb lookup
-    const isRestaurant = isRestaurantQuestion(normalized);
-    const kbResult = getKbAnswer(searchMessage, kb);
+    // step 3: check if should skip kb lookup (personal/memory questions)
+    const skipKb = shouldSkipKbLookup(normalized);
+    
+    // step 4: try kb lookup first (skip for personal/memory questions)
+    let kbResult = null;
+    if (!skipKb) {
+      kbResult = getKbAnswer(searchMessage, kb);
+    } else {
+      console.log(`[voice] skipping kb lookup (personal/memory question)`);
+    }
     
     let answer = '';
     let source = '';
     let llmResponseTime = null;
+    let kbHit = false;
     
-    // step 4: kb hit handling
-    if (isRestaurant && kbResult) {
+    // step 5: kb hit handling
+    if (kbResult) {
       answer = kbResult.answer;
       source = 'kb';
+      kbHit = true;
 
       // add to history
       history.push({ role: 'user', content: normalized });
@@ -145,7 +259,9 @@ router.post('/', async (req, res) => {
         role: 'assistant', 
         content: answer,
         source: 'kb',
-        kbItem: kbResult.kbItem
+        kbItem: kbResult.kbItem,
+        kbHit: true,
+        metadata: kbResult.metadata || null
       });
 
       // keep history concise (last 10 messages)
@@ -153,31 +269,11 @@ router.post('/', async (req, res) => {
         history = history.slice(-10);
       }
 
-      console.log(`[voice] kb hit: ${kbResult.kbItem}`);
+      console.log(`[voice] kb hit: ${kbResult.kbItem} (score: ${kbResult.score?.toFixed(3) || 'N/A'})`);
       console.log(`[voice] response: ${answer}`);
       console.log(`[voice] updated history (localStorage): ${history.length} messages`);
     }
-    // step 5: restaurant question but no kb hit
-    else if (isRestaurant && !kbResult) {
-      answer = "i'm not sure about that specific restaurant detail. please check the official menu or ask the staff directly.";
-      source = 'kb-fallback';
-      
-      history.push({ role: 'user', content: normalized });
-      history.push({ 
-        role: 'assistant', 
-        content: answer,
-        source: 'kb-fallback'
-      });
-
-      if (history.length > 10) {
-        history = history.slice(-10);
-      }
-
-      console.log(`[voice] kb miss: no match found`);
-      console.log(`[voice] response: ${answer}`);
-      console.log(`[voice] updated history (localStorage): ${history.length} messages`);
-    }
-    // step 6: general/conversational question (llm)
+    // step 6: no kb hit - fallback to llm (for all questions)
     else {
       // add user message to history for llm context
       history.push({ role: 'user', content: normalized });
@@ -186,24 +282,46 @@ router.post('/', async (req, res) => {
       const historyForLLM = history.slice(0, -1); 
       const safeHistory = historyForLLM.slice(-10);
 
+      // check if there was a recent kb hit in history to inform llm
+      const recentKbHit = safeHistory
+        .slice()
+        .reverse()
+        .find(msg => msg.kbHit === true);
+
       console.log(`[voice] history from localStorage: ${history.length} messages`);
       console.log(`[voice] history for llm (excluding current): ${historyForLLM.length} messages`);
       console.log(`[voice] safe history (last 10 for llm): ${safeHistory.length} messages`);
+      if (recentKbHit) {
+        console.log(`[voice] recent kb hit detected in history: ${recentKbHit.kbItem}`);
+      }
       if (safeHistory.length > 0) {
         console.log(`[voice] history being passed to llm:`, JSON.stringify(safeHistory, null, 2));
       }
 
-      const llmResult = await callLLM(normalized, safeHistory, systemPrompt, modelName);
+      console.log(`[voice] calling llm with model: ${modelName}`);
+      let llmResult;
+      try {
+        llmResult = await callLLM(normalized, safeHistory, systemPrompt, modelName, recentKbHit);
+        console.log(`[voice] llm call successful`);
+      } catch (llmError) {
+        console.error(`[voice] llm call failed:`, llmError.message);
+        console.error(`[voice] llm error stack:`, llmError.stack);
+        throw llmError;
+      }
       
       answer = llmResult.answer;
       source = 'llm';
       llmResponseTime = llmResult.responseTime;
       
+      // detect if llm response mentions restaurant info (potential kb hit)
+      kbHit = detectKbHitInResponse(answer, kb);
+      
       // add llm response to history
       history.push({ 
         role: 'assistant', 
         content: answer,
-        source: 'llm'
+        source: 'llm',
+        kbHit: kbHit
       });
 
       // final history cleanup
@@ -212,6 +330,7 @@ router.post('/', async (req, res) => {
       }
 
       console.log(`[voice] kb miss: using llm`);
+      console.log(`[voice] kb hit detected in response: ${kbHit}`);
       console.log(`[voice] response: ${answer}`);
       console.log(`[voice] llm response time: ${llmResponseTime}ms`);
       console.log(`[voice] updated history (localStorage): ${history.length} messages`);
@@ -233,9 +352,14 @@ router.post('/', async (req, res) => {
     const response = {
       source: source,
       answer: answer,
+      kbHit: kbHit,
       history: history, // return updated history
       responseTime: Date.now() - totalStart
     };
+    
+    if (llmResponseTime !== null) {
+      response.llmResponseTime = llmResponseTime;
+    }
 
     // if audio was generated, send it as base64 or return it directly
     if (audioBuffer) {

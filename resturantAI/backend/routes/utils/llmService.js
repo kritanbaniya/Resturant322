@@ -1,10 +1,9 @@
 /**
  * llm service
- * handles communication with the ollama llm
+ * handles communication with ollama cloud llm
  */
 
-import fetch from 'node-fetch';
-import { formatConversationHistory } from './memoryManager.js';
+import { Ollama } from 'ollama';
 import { removeEmojis } from './textUtils.js';
 
 /**
@@ -196,62 +195,144 @@ function validateMemoryResponse(answer, prompt, history) {
 }
 
 /**
- * call local ollama mistral:instruct for general (non-restaurant) questions
+ * call ollama cloud llama3.2:3b for general (non-restaurant) questions
  * @param {string} prompt - user prompt/question
  * @param {array} history - conversation history array of { role: 'user'|'assistant', content: string }
  * @param {string} systemPrompt - system prompt text
- * @param {string} modelName - ollama model name (default: 'mistral:instruct')
+ * @param {string} modelName - ollama model name (default: 'llama3.2:3b')
+ * @param {object} recentKbHit - recent kb hit from history (optional) { kbItem, answer }
  * @returns {promise<object>} - { answer: string, responseTime: number }
  */
-export async function callLLM(prompt, history = [], systemPrompt, modelName = 'mistral:instruct') {
-  // format conversation history for context
-  const historyContext = formatConversationHistory(history);
-  
-  // build prompt with proper spacing
-  // ensure newlines between system prompt, history, and user message
-  let fullPrompt = systemPrompt.trim();
-  
-  // add history if it exists (historyContext already includes newlines)
-  if (historyContext && historyContext.trim()) {
-    fullPrompt += historyContext; // historyContext already has leading/trailing newlines
-  } else {
-    // if no history, add a newline before user message
-    fullPrompt += '\n';
-  }
-  
-  // add user message with proper formatting
-  fullPrompt += `user: ${prompt}\nassistant:`;
-
-  // log the complete prompt being sent to llm
-  console.log('====== complete llm prompt ======');
-  console.log(fullPrompt);
-  console.log('================================');
-  console.log('history array length:', history.length);
-  console.log('history array:', JSON.stringify(history, null, 2));
-
+export async function callLLM(prompt, history = [], systemPrompt, modelName = 'llama3.2:3b', recentKbHit = null) {
   const start = Date.now();
 
-  const response = await fetch('http://localhost:11434/api/generate', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      model: modelName,
-      prompt: fullPrompt,
-      stream: false,
-      num_predict: 200
-    })
+  // get api key from environment variable
+  const apiKey = process.env.OLLAMA_API_KEY;
+  if (!apiKey) {
+    console.error('[llm] error: OLLAMA_API_KEY environment variable is required for Ollama Cloud');
+    throw new Error('OLLAMA_API_KEY environment variable is required for Ollama Cloud');
+  }
+
+  // validate and fix model name - common issue: old local model names don't work on cloud
+  let actualModelName = modelName;
+  if (modelName === 'mistral:instruct') {
+    console.warn('[llm] warning: model name "mistral:instruct" is not available on Ollama Cloud');
+    console.warn('[llm] auto-fixing to "mistral" (remove ":instruct" suffix)');
+    actualModelName = 'mistral';
+  }
+
+  // build messages array for ollama cloud chat api
+  // format: [{ role: 'system'|'user'|'assistant', content: string }]
+  const messages = [];
+  
+  // add system prompt with kb context if available
+  let enhancedSystemPrompt = systemPrompt ? systemPrompt.trim() : '';
+  
+  // if there was a recent kb hit, inform the llm about it
+  if (recentKbHit && recentKbHit.kbItem) {
+    enhancedSystemPrompt += `\n\nNOTE: The previous response used information from the knowledge base (${recentKbHit.kbItem}). If the user is asking a follow-up question, you may reference this information, but do not make up additional restaurant details.`;
+  }
+  
+  if (enhancedSystemPrompt) {
+    messages.push({
+      role: 'system',
+      content: enhancedSystemPrompt
+    });
+  }
+  
+  // add conversation history (already in correct format)
+  // limit to last 10 messages to prevent context overflow
+  const recentHistory = history.slice(-10);
+  recentHistory.forEach(msg => {
+    if (msg.role === 'user' || msg.role === 'assistant') {
+      messages.push({
+        role: msg.role,
+        content: msg.content
+      });
+    }
+  });
+  
+  // add current user message
+  messages.push({
+    role: 'user',
+    content: prompt
   });
 
-  const data = await response.json();
+  // log the messages being sent to llm
+  console.log('[llm] ====== ollama cloud chat api request ======');
+  console.log('[llm] endpoint: https://ollama.com/api/chat');
+  console.log('[llm] requested model:', modelName);
+  console.log('[llm] actual model:', actualModelName);
+  console.log('[llm] api key present:', apiKey ? 'yes (hidden)' : 'no');
+  console.log('[llm] messages count:', messages.length);
+  console.log('[llm] history array length:', history.length);
+  console.log('[llm] messages:', JSON.stringify(messages, null, 2));
+  console.log('[llm] ===========================================');
+
+  // initialize ollama client for cloud api
+  const ollama = new Ollama({
+    host: 'https://ollama.com',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`
+    }
+  });
+
+  let response;
+  try {
+    response = await ollama.chat({
+      model: actualModelName,
+      messages: messages,
+      stream: false
+    });
+
+    console.log('[llm] ====== ollama cloud api response ======');
+    console.log('[llm] response keys:', response ? Object.keys(response) : 'null');
+    console.log('[llm] response:', JSON.stringify(response, null, 2));
+    console.log('[llm] =======================================');
+
+  } catch (ollamaError) {
+    console.error('[llm] ollama api error:', ollamaError.message);
+    console.error('[llm] ollama error stack:', ollamaError.stack);
+    if (ollamaError.response) {
+      console.error('[llm] error response:', ollamaError.response);
+    }
+    
+    // provide helpful error message for model not found
+    if (ollamaError.message && ollamaError.message.includes('not found')) {
+      console.error('[llm] ====== model not found error ======');
+      console.error('[llm] attempted model:', modelName);
+      console.error('[llm] suggestion: check available models with: curl https://ollama.com/api/tags -H "Authorization: Bearer $OLLAMA_API_KEY"');
+      console.error('[llm] common cloud models: llama3.2:3b, mistral, llama3:8b, gpt-oss:120b-cloud');
+      console.error('[llm] note: local model names (like "mistral:instruct") may not work on cloud');
+      console.error('[llm] ===================================');
+    }
+    
+    throw ollamaError;
+  }
+
   const end = Date.now();
   const responseTime = end - start;
 
-  if (!data || !data.response) {
+  console.log('[llm] ====== response validation ======');
+  console.log('[llm] response exists:', !!response);
+  console.log('[llm] response.message exists:', !!(response && response.message));
+  console.log('[llm] response.message.content exists:', !!(response && response.message && response.message.content));
+  console.log('[llm] response.message.content type:', response && response.message && response.message.content ? typeof response.message.content : 'n/a');
+  console.log('[llm] response.message.content value:', response && response.message && response.message.content ? response.message.content.substring(0, 200) : 'n/a');
+  if (response && (!response.message || !response.message.content)) {
+    console.error('[llm] full response object:', JSON.stringify(response, null, 2));
+  }
+  console.log('[llm] =================================');
+
+  // ollama cloud chat api returns { message: { content: string, role: string }, ... }
+  if (!response || !response.message || !response.message.content) {
+    console.error('[llm] error: invalid response from ollama cloud');
+    console.error('[llm] response data:', JSON.stringify(response, null, 2));
     return { answer: "sorry, i couldn't generate a response.", responseTime };
   }
 
   // remove emojis from response as a safety measure
-  let cleanedAnswer = removeEmojis(data.response.trim());
+  let cleanedAnswer = removeEmojis(response.message.content.trim());
   
   // validate memory response to catch hallucinations
   cleanedAnswer = validateMemoryResponse(cleanedAnswer, prompt, history);

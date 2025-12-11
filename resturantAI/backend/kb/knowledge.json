@@ -1,187 +1,399 @@
 {
   "restaurant": {
-    "name": "The Himalayan House",
-    "short_name": "the himalayan house",
-    "address": "123 mountain view ave, brooklyn, new york, ny 11201",
-    "street": "123 mountain view ave",
-    "city": "brooklyn",
-    "borough": "brooklyn",
-    "state": "ny",
-    "zip": "11201",
-    "description": "a small, cozy nepali and himalayan inspired restaurant focused on simple, warming comfort food like dal bhat, momos, and noodle soups.",
-    "founded_year": 2018,
-    "seating_capacity": 50,
-    "seating_summary": "we have indoor seating for about 50 guests, with a mix of tables for two, four, and a few larger tables for groups.",
-    "fun_fact": "the himalayan house is inspired by small family kitchens in kathmandu and foothill villages, focusing on simple, warming dishes like dal bhat and thukpa.",
-    "chefs": [
-      {
-        "name": "suman gurung",
-        "role": "head chef",
-        "bio": "chef suman grew up in eastern nepal and has worked in nepali and indian kitchens in new york for several years.",
-        "specialties": ["momos", "dal bhat", "himalayan curry"]
-      },
-      {
-        "name": "asha lama",
-        "role": "sous chef",
-        "bio": "chef asha focuses on soups, stir fries, and snacks, bringing homestyle flavors to the menu.",
-        "specialties": ["thukpa", "chow mein", "fried rice", "snacks"]
-      }
+    "name": "Tony's Di Napoli",
+    "tagline": "Classic New York Italian, served family-style",
+    "established": 1959,
+    "description": "Tony's Di Napoli is a New York City institution known for serving Southern Italian, family-style dishes meant for sharing. The restaurant specializes in generous portions, classic recipes, and an energetic, warm dining atmosphere.",
+    "highlights": [
+      "Known for huge family-style platters serving 2–3 people",
+      "A favorite for celebrations, birthdays, and group dining",
+      "Located in the heart of Times Square, popular with locals and tourists alike",
+      "Famous for generous portions, fast service, and classic Italian-American dishes"
     ],
-    "chefs_summary": "our dishes are prepared by a small team of nepali and himalayan chefs, led by head chef suman gurung and sous chef asha lama. they focus on comforting, balanced flavors inspired by home cooking.",
-    "owner_info": "the restaurant is independently owned and operated by a local family. if you need the owner’s name for something specific, please ask a staff member directly.",
-    "hours": {
-      "summary": "we are open sunday through thursday from 11:00 am to 10:00 pm, and friday and saturday from 11:00 am to 11:00 pm.",
-      "sunday_thursday": "11:00 am – 10:00 pm",
-      "friday_saturday": "11:00 am – 11:00 pm"
-    },
-    "policies": {
-      "reservations": "we accept reservations for parties of four or more. smaller groups are welcome as walk-ins, subject to table availability.",
-      "refunds": "since we are a small restaurant, all food sales are final once served. if there is an issue with your order, please speak to a staff member during your visit.",
-      "delivery": "we currently offer takeout and pickup for all main dishes, but we do not provide third-party delivery.",
-      "catering": "we offer catering for events of roughly 10 to 150 guests. please call or email us for menu options and pricing.",
-      "cancellation": "for reservations of eight or more, we ask that you contact us at least 24 hours in advance if you need to cancel or change the time."
-    },
-    "dietary": {
-      "halal_status": "we are not a halal-certified restaurant. some guests who eat halal may still find suitable options, but we cannot guarantee halal preparation.",
-      "vegan_note": "some dishes can be made vegan, such as veg momos, fried rice with vegetables, dal bhat without ghee, and thukpa with vegetables. please let the staff know your preferences.",
-      "gluten_note": "our kitchen uses wheat products and we cannot guarantee a completely gluten free meal. some rice-based dishes avoid wheat ingredients, but cross contact is possible.",
-      "dairy_note": "several dishes contain dairy such as yogurt or ghee. some items can be prepared with less or no dairy on request, but we do not have a fully dairy free kitchen.",
-      "nut_note": "some items may come into contact with nuts in the kitchen, so we cannot guarantee that any dish is completely nut free."
-    },
-    "contact": {
-      "phone": "[phone number]",
-      "email": "[email address]"
+    "best_for": [
+      "Family gatherings",
+      "Birthday dinners",
+      "Tourists visiting Times Square",
+      "Large groups",
+      "Classic Italian comfort food"
+    ]
+  },
+
+  "locations": [
+    {
+      "name": "Midtown",
+      "address": "147 W 43rd St, New York, NY 10036",
+      "neighborhood": "Times Square",
+      "phone": "(212) 221-0100",
+      "hours": {
+        "monday_thursday": "11:30 AM – 10:00 PM",
+        "friday": "11:30 AM – 10:30 PM",
+        "saturday": "11:30 AM – 10:30 PM",
+        "sunday": "11:30 AM – 10:00 PM"
+      },
+      "location_notes": [
+        "Extremely busy before and after Broadway shows",
+        "Ideal for pre-theater and post-theater dining",
+        "Reservations recommended, especially on weekends"
+      ]
+    }
+  ],
+
+  "dining_policies": {
+    "style": "Family-style dining, dishes are large and meant to be shared.",
+    "dress_code": "Casual or smart casual",
+    "reservations": "Reservations accepted and recommended, especially for groups.",
+    "popular_times": [
+      "Pre-theater (5–7 PM)",
+      "Weekend dinners",
+      "Holiday periods in Times Square"
+    ],
+    "takeout": true,
+    "delivery": true,
+    "large_parties": {
+      "group_accommodations": "Can host large groups, celebrations, and events",
+      "recommended_notice": "Groups of 8+ should reserve in advance",
+      "best_group_dishes": [
+        "Chicken Parmigiana",
+        "Penne Alla Vodka",
+        "Caesar Salad",
+        "Spaghetti & Meatballs",
+        "Shrimp Scampi"
+      ]
     }
   },
-  "menu_items": {
-    "momos": {
-      "name": "momos",
-      "aliases": ["momo", "momoz", "dumpling", "dumplings"],
-      "category": "appetizer",
-      "description": "traditional nepali dumplings, served steamed or lightly pan fried, with tomato and sesame achar on the side.",
-      "ingredients": ["wheat flour wrapper", "garlic", "ginger", "scallions", "cilantro"],
-      "fillings": ["chicken", "beef", "mixed vegetables"],
-      "base_price": 12,
-      "vegetarian": true,
-      "vegan": true,
-      "contains_gluten": true,
-      "contains_dairy": false,
-      "contains_nuts": false,
-      "spice_level": "mild"
+
+  "cuisine": {
+    "type": "Southern Italian",
+    "special_features": [
+      "Large family-style platters",
+      "Traditional Italian-American dishes",
+      "Fresh seafood",
+      "House-made sauces",
+      "Classic desserts",
+      "Rich pastas and hearty entrées"
+    ],
+    "best_known_for": [
+      "Penne Alla Vodka",
+      "Chicken Parmigiana",
+      "Spaghetti & Meatballs",
+      "Huge portions designed for sharing"
+    ]
+  },
+
+  "menu": {
+    "notes": "All dishes are served family-style and are large enough to share.",
+    "price_range": "$$ – $$$",
+    "best_sellers": [
+      "Chicken Parmigiana",
+      "Penne Alla Vodka",
+      "Spaghetti & Meatballs",
+      "Caesar Salad"
+    ],
+    "most_famous_items": [
+      "Penne Alla Vodka",
+      "Chicken Parmigiana",
+      "Shrimp Scampi"
+    ],
+    "kid_friendly_options": [
+      "Spaghetti & Meatballs",
+      "Fettuccine Alfredo",
+      "Chicken Parmigiana",
+      "Mozzarella in Carrozza"
+    ],
+    "good_for_sharing": [
+      "All pasta dishes",
+      "Chicken Parmigiana",
+      "Veal Parmigiana",
+      "Shrimp Scampi",
+      "House Salad",
+      "Caesar Salad"
+    ],
+    "recommended_for_first_timers": [
+      "Penne Alla Vodka",
+      "Chicken Parmigiana",
+      "Fried Calamari",
+      "Tiramisu"
+    ],
+    "popular_drinks": [
+      "House red wine",
+      "Italian white wines",
+      "Classic cocktails (Negroni, Aperol Spritz)",
+      "Beer & soft drinks"
+    ],
+
+    "categories": {
+      "appetizers": [
+        {
+          "name": "Fried Calamari",
+          "description": "Crispy fried squid served with marinara sauce",
+          "approx_price": "$28–$32",
+          "popularity": "Very popular starter, great for groups"
+        },
+        {
+          "name": "Baked Clams",
+          "description": "Little neck clams baked with seasoned breadcrumbs",
+          "approx_price": "$22–$26"
+        },
+        {
+          "name": "Mozzarella in Carrozza",
+          "description": "Breaded fried mozzarella with tomato sauce",
+          "approx_price": "$20–$24",
+          "kid_friendly": true
+        }
+      ],
+
+      "salads": [
+        {
+          "name": "Tony's Famous House Salad",
+          "description": "Mixed greens, tomato, cucumber, olives, house dressing",
+          "approx_price": "$20–$25",
+          "popularity": "One of the most ordered salads"
+        },
+        {
+          "name": "Caesar Salad",
+          "description": "Crisp romaine, parmesan, creamy Caesar dressing",
+          "approx_price": "$20–$25",
+          "best_for": "Groups and first-time visitors"
+        }
+      ],
+
+      "pasta": [
+        {
+          "name": "Penne Alla Vodka",
+          "description": "Creamy vodka-tomato sauce, fresh basil",
+          "approx_price": "$28–$34",
+          "popularity": "Best-selling pasta dish"
+        },
+        {
+          "name": "Spaghetti & Meatballs",
+          "description": "Classic marinara with homemade meatballs",
+          "approx_price": "$30–$36",
+          "kid_friendly": true
+        },
+        {
+          "name": "Fettuccine Alfredo",
+          "description": "Creamy butter-parmesan sauce",
+          "approx_price": "$28–$34"
+        },
+        {
+          "name": "Lobster Fra Diavolo",
+          "description": "Spicy marinara with lobster over linguine",
+          "approx_price": "$55–$75",
+          "spicy": true
+        }
+      ],
+
+      "chicken": [
+        {
+          "name": "Chicken Parmigiana",
+          "description": "Breaded chicken cutlet topped with marinara & mozzarella",
+          "approx_price": "$34–$42",
+          "best_seller": true
+        },
+        {
+          "name": "Chicken Marsala",
+          "description": "Sautéed chicken with mushrooms in marsala wine sauce",
+          "approx_price": "$34–$42"
+        },
+        {
+          "name": "Chicken Scarpariello",
+          "description": "Sautéed chicken with sausage, peppers & garlic",
+          "approx_price": "$36–$44",
+          "spicy": true
+        }
+      ],
+
+      "veal": [
+        {
+          "name": "Veal Parmigiana",
+          "description": "Breaded veal cutlet baked with marinara & mozzarella",
+          "approx_price": "$40–$48"
+        },
+        {
+          "name": "Veal Marsala",
+          "description": "Tender veal scallopini with mushroom marsala sauce",
+          "approx_price": "$40–$48"
+        }
+      ],
+
+      "seafood": [
+        {
+          "name": "Shrimp Scampi",
+          "description": "Shrimp sautéed with garlic, lemon & butter",
+          "approx_price": "$38–$48",
+          "best_seller": true
+        },
+        {
+          "name": "Salmon Oreganata",
+          "description": "Broiled salmon with seasoned breadcrumbs",
+          "approx_price": "$38–$48"
+        }
+      ],
+
+      "eggplant": [
+        {
+          "name": "Eggplant Parmigiana",
+          "description": "Layered breaded eggplant with marinara & cheese",
+          "approx_price": "$30–$38",
+          "vegetarian": true
+        },
+        {
+          "name": "Eggplant Rollatini",
+          "description": "Ricotta-filled eggplant with tomato sauce",
+          "approx_price": "$30–$38",
+          "vegetarian": true
+        }
+      ],
+
+      "sides": [
+        "Sautéed Spinach",
+        "Broccoli",
+        "Roasted Potatoes",
+        "Pasta with Marinara"
+      ],
+
+      "desserts": [
+        {
+          "name": "Tiramisu",
+          "approx_price": "$12–$14",
+          "best_seller": true
+        },
+        {
+          "name": "New York Cheesecake",
+          "approx_price": "$12–$14"
+        },
+        {
+          "name": "Cannoli",
+          "approx_price": "$10–$12",
+          "kid_friendly": true
+        }
+      ]
     },
-    "chow_mein": {
-      "name": "chow mein",
-      "aliases": ["chowmein"],
-      "category": "main",
-      "description": "nepali style stir fried wheat noodles with cabbage, bell peppers, onion, and scallions.",
-      "ingredients": ["wheat noodles", "cabbage", "bell peppers", "onion", "scallions", "soy sauce", "garlic", "ginger"],
-      "base_price": 14,
-      "vegetarian": true,
-      "vegan": true,
-      "contains_gluten": true,
-      "contains_dairy": false,
-      "contains_nuts": false,
-      "spice_level": "mild"
-    },
-    "fried_rice": {
-      "name": "fried rice",
-      "aliases": ["frd rice", "friedrice"],
-      "category": "main",
-      "description": "wok fried rice with peas, carrots, scallions, garlic, and ginger. can be served plain, with egg, or with added chicken or beef.",
-      "ingredients": ["rice", "peas", "carrots", "scallions", "soy sauce", "garlic", "ginger"],
-      "base_price": 13,
-      "vegetarian": true,
-      "vegan": true,
-      "contains_gluten": false,
-      "contains_dairy": false,
-      "contains_nuts": false,
-      "spice_level": "mild"
-    },
-    "dal_bhat": {
-      "name": "dal bhat",
-      "aliases": ["dal bhaat", "dhal bhat"],
-      "category": "main",
-      "description": "classic nepali plate with lentil soup, steamed rice, seasonal vegetables, pickles, and a small side of greens.",
-      "ingredients": ["lentils", "rice", "turmeric", "garlic", "ginger", "seasonal vegetables"],
-      "base_price": 16,
-      "vegetarian": true,
-      "vegan": true,
-      "contains_gluten": false,
-      "contains_dairy": false,
-      "contains_nuts": false,
-      "spice_level": "mild"
-    },
-    "himalayan_curry": {
-      "name": "himalayan curry",
-      "aliases": ["curry"],
-      "category": "main",
-      "description": "slow simmered curry made with onion, tomato, ginger, garlic, coriander, turmeric, cumin, and mild chili. available with vegetables or meat and served with rice.",
-      "ingredients": ["onion", "tomato", "ginger", "garlic", "coriander", "turmeric", "cumin", "mild chili"],
-      "base_price": 18,
-      "vegetarian": true,
-      "vegan": true,
-      "contains_gluten": false,
-      "contains_dairy": false,
-      "contains_nuts": false,
-      "spice_level": "medium"
-    },
-    "thukpa": {
-      "name": "thukpa",
-      "aliases": ["noodle soup", "nepali noodle soup"],
-      "category": "main",
-      "description": "nepali noodle soup with broth, wheat noodles, vegetables, and optional meat.",
-      "ingredients": ["broth", "wheat noodles", "cabbage", "carrot", "scallions", "garlic", "ginger"],
-      "base_price": 15,
-      "vegetarian": true,
-      "vegan": false,
-      "contains_gluten": true,
-      "contains_dairy": false,
-      "contains_nuts": false,
-      "spice_level": "mild"
-    },
-    "veg_samosa": {
-      "name": "vegetable samosas",
-      "aliases": ["samosa", "samosas"],
-      "category": "snack",
-      "description": "crispy pastry filled with spiced potatoes and peas, served with chutney.",
-      "ingredients": ["wheat flour", "potatoes", "peas", "spices", "oil"],
-      "base_price": 9,
-      "vegetarian": true,
-      "vegan": true,
-      "contains_gluten": true,
-      "contains_dairy": false,
-      "contains_nuts": false,
-      "spice_level": "mild"
-    },
-    "masala_fries": {
-      "name": "masala fries",
-      "aliases": ["fries"],
-      "category": "snack",
-      "description": "crisp fries tossed with house masala spice blend.",
-      "ingredients": ["potatoes", "oil", "spice blend"],
-      "base_price": 8,
-      "vegetarian": true,
-      "vegan": true,
-      "contains_gluten": false,
-      "contains_dairy": false,
-      "contains_nuts": false,
-      "spice_level": "mild"
+
+    "signature_dishes": [
+      "Chicken Parmigiana",
+      "Penne Alla Vodka",
+      "Shrimp Scampi",
+      "Eggplant Parmigiana",
+      "Homemade Meatballs",
+      "Lobster Fra Diavolo"
+    ]
+  },
+
+  "recommendations": {
+    "best_for_first_time_visitors": [
+      "Penne Alla Vodka",
+      "Chicken Parmigiana",
+      "Fried Calamari",
+      "Tiramisu"
+    ],
+    "best_for_kids": [
+      "Spaghetti & Meatballs",
+      "Fettuccine Alfredo",
+      "Mozzarella in Carrozza",
+      "Cannoli"
+    ],
+    "best_for_large_groups": [
+      "Chicken Parmigiana",
+      "Penne Alla Vodka",
+      "Caesar Salad",
+      "Shrimp Scampi"
+    ],
+    "good_for_romantic_dinner": [
+      "Veal Marsala",
+      "Salmon Oreganata",
+      "Tiramisu and wine pairing"
+    ],
+    "spicy_options": [
+      "Lobster Fra Diavolo",
+      "Chicken Scarpariello"
+    ],
+    "mild_options": [
+      "Fettuccine Alfredo",
+      "Chicken Marsala",
+      "Eggplant Rollatini"
+    ],
+    "budget_friendly_choices": [
+      "House Salad",
+      "Mozzarella in Carrozza",
+      "Penne Alla Vodka"
+    ],
+    "vegetarian_highlights": [
+      "Eggplant Parmigiana",
+      "Eggplant Rollatini",
+      "Caesar Salad",
+      "Pasta with Marinara"
+    ]
+  },
+
+  "allergy_info": {
+    "common_allergens": [
+      "Dairy",
+      "Gluten",
+      "Shellfish",
+      "Tree nuts (some desserts)",
+      "Egg"
+    ],
+    "notes": [
+      "Many dishes contain dairy or gluten due to cheese and pasta.",
+      "Seafood dishes may contain shellfish or cross-contamination.",
+      "Guests with allergies should notify the server; accommodations may be possible."
+    ]
+  },
+
+  "reservations": {
+    "accepted": true,
+    "recommended": true,
+    "methods": [
+      "Phone",
+      "Online reservation platforms"
+    ],
+    "large_groups": {
+      "supports_private_events": true,
+      "event_types": [
+        "Corporate dinners",
+        "Birthdays",
+        "Rehearsal dinners",
+        "Family gatherings"
+      ]
     }
   },
-  "faq": {
-    "menu_overview": "we serve nepali and himalayan inspired comfort food, including different types of momos, chow mein, fried rice, dal bhat, himalayan curry, thukpa (noodle soup), snacks like vegetable samosas and masala fries, and traditional drinks.",
-    "popular_items": "our most popular dishes are chicken momos, veg chow mein, dal bhat, and himalayan curry. guests also love thukpa noodle soup on colder days.",
-    "desserts": "we offer a small rotating selection of nepali inspired desserts such as kheer (rice pudding) and sweet sel roti on some days. availability may vary.",
-    "vegan_options": "some dishes can be made vegan, such as veg momos, fried rice with vegetables, dal bhat without ghee, thukpa with vegetables, and masala fries. please let the staff know your preferences.",
-    "vegetarian_options": "we have several vegetarian friendly dishes such as veg momos, chow mein without meat, fried rice with vegetables, dal bhat, thukpa with vegetables, vegetable samosas, and masala fries.",
-    "gluten_info": "our kitchen uses wheat products and we cannot guarantee a completely gluten free meal. some rice-based dishes like dal bhat and himalayan curry with rice avoid wheat ingredients, but cross contact is possible.",
-    "dairy_info": "several dishes contain dairy such as yogurt or ghee. some items can be prepared with less or no dairy on request, but we do not have a fully dairy free kitchen.",
-    "nut_allergy_info": "some items may come into contact with nuts in the kitchen, so we cannot guarantee that any dish is completely nut free.",
-    "drinks_overview": "we serve masala chai, himalayan spiced tea, lassi, soft drinks, and still or sparkling water.",
-    "story_note": "the himalayan house aims to bring a bit of nepali and himalayan home cooking to a casual, cozy space in brooklyn."
+
+  "ordering": {
+    "takeout": true,
+    "delivery": true,
+    "platforms": [
+      "Direct phone orders",
+      "Online delivery partners (varies by location)"
+    ]
   },
-  "price_info": {
-    "drinks_price_range": "most non-alcoholic drinks are between $3 and $6.",
-    "note": "among main dishes, masala fries and vegetable samosas are usually the least expensive items, while himalayan curry is among the higher priced mains."
+
+  "faq": [
+    {
+      "question": "Do you offer vegetarian options?",
+      "answer": "Yes, several dishes are vegetarian, including Eggplant Parmigiana, Eggplant Rollatini, salads, pasta dishes, and various sides."
+    },
+    {
+      "question": "Are portions large?",
+      "answer": "Yes, Tony's is family-style. Most dishes serve 2–3 people, sometimes more."
+    },
+    {
+      "question": "Can I make a reservation for a large group?",
+      "answer": "Yes, Tony’s is well known for hosting large parties. Reservations are strongly recommended for groups."
+    },
+    {
+      "question": "Is there a kids menu?",
+      "answer": "There is no separate kids menu, but portions can be shared and many dishes are kid-friendly."
+    }
+  ],
+
+  "synonyms": {
+    "menu": ["food list", "what do you serve", "dishes", "what's on the menu", "food options", "meal choices"],
+    "hours": ["when open", "opening time", "closing time", "today hours", "when are you open"],
+    "location": ["address", "where are you", "directions", "how to get there"],
+    "reservation": ["booking", "table", "reserve", "make a reservation", "book a table"],
+    "takeout": ["pickup", "to-go", "carryout", "take away"],
+    "delivery": ["order to home", "order online", "deliver", "home delivery"]
   }
 }
