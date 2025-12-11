@@ -51,101 +51,6 @@
 
     <div class="menu-grid" id="menu-grid">
     </div>
-        <h3>Salmon Sushi</h3>
-        <p>Fresh salmon with perfectly seasoned rice.</p>
-        <div class="dish-rating">
-          <span class="stars">[*][*][*][*][*]</span>
-          <span class="rating-text">4.9 (189 reviews)</span>
-        </div>
-        <span class="price">$14.99</span>
-        <button class="add-to-cart" onclick="addToCart('Salmon Sushi')">Add to Cart</button>
-      </div>
-
-      <div class="menu-card">
-        <img src="images/pasta.jpeg" alt="Fettuccine Alfredo">
-        <h3>Fettuccine Alfredo</h3>
-        <p>Creamy pasta with parmesan cheese and herbs.</p>
-        <div class="dish-rating">
-          <span class="stars">[*][*][*][*][o]</span>
-          <span class="rating-text">4.7 (156 reviews)</span>
-        </div>
-        <span class="price">$12.99</span>
-        <button class="add-to-cart" onclick="addToCart('Fettuccine Alfredo')">Add to Cart</button>
-      </div>
-
-      <div class="menu-card">
-        <img src="images/spaghetti_bolognese.jpeg" alt="Spaghetti Bolognese">
-        <h3>Spaghetti Bolognese</h3>
-        <p>Classic Italian pasta with meat sauce.</p>
-        <div class="dish-rating">
-          <span class="stars">[*][*][*][*][o]</span>
-          <span class="rating-text">4.6 (203 reviews)</span>
-        </div>
-        <span class="price">$12.99</span>
-        <button class="add-to-cart" onclick="addToCart('Spaghetti Bolognese')">Add to Cart</button>
-      </div>
-
-      <div class="menu-card">
-        <img src="images/salad.jpeg" alt="Grilled Chicken Salad">
-        <h3>Grilled Chicken Salad</h3>
-        <p>Fresh greens with chicken and dressing.</p>
-        <div class="dish-rating">
-          <span class="stars">[*][*][*][*][*]</span>
-          <span class="rating-text">4.7 (145 reviews)</span>
-        </div>
-        <span class="price">$10.99</span>
-        <button class="add-to-cart" onclick="addToCart('Grilled Chicken Salad')">Add to Cart</button>
-      </div>
-
-      <div class="menu-card">
-        <img src="images/margherita_pizza.jpeg" alt="Margherita Pizza">
-        <h3>Margherita Pizza</h3>
-        <p>Tomatoes, mozzarella, and fresh basil.</p>
-        <div class="dish-rating">
-          <span class="stars">[*][*][*][*][*]</span>
-          <span class="rating-text">4.8 (267 reviews)</span>
-        </div>
-        <span class="price">$14.99</span>
-        <button class="add-to-cart" onclick="addToCart('Margherita Pizza')">Add to Cart</button>
-      </div>
-
-      <div class="menu-card">
-        <img src="images/chicken_parmesan.jpeg" alt="Chicken Parmesan">
-        <h3>Chicken Parmesan</h3>
-        <p>Breaded chicken topped with marinara and cheese.</p>
-        <div class="dish-rating">
-          <span class="stars">[*][*][*][*][*]</span>
-          <span class="rating-text">4.9 (178 reviews)</span>
-        </div>
-        <span class="price">$15.99</span>
-        <button class="add-to-cart" onclick="addToCart('Chicken Parmesan')">Add to Cart</button>
-      </div>
-
-      <div class="menu-card">
-        <img src="images/penne_alla_vodka.jpeg" alt="Penne alla Vodka">
-        <h3>Penne alla Vodka</h3>
-        <p>Pasta in a creamy tomato-vodka sauce.</p>
-        <div class="dish-rating">
-          <span class="stars">[*][*][*][*][o]</span>
-          <span class="rating-text">4.5 (134 reviews)</span>
-        </div>
-        <span class="price">$13.99</span>
-        <button class="add-to-cart" onclick="addToCart('Penne alla Vodka')">Add to Cart</button>
-      </div>
-
-      <div class="menu-card">
-        <img src="images/chicken_wings.jpeg" alt="Chicken Wings">
-        <h3>Chicken Wings</h3>
-        <p>Spicy and crispy chicken wings with dipping sauce.</p>
-        <div class="dish-rating">
-          <span class="stars">[*][*][*][*][*]</span>
-          <span class="rating-text">4.7 (298 reviews)</span>
-        </div>
-        <span class="price">$11.99</span>
-        <button class="add-to-cart" onclick="addToCart('Chicken Wings')">Add to Cart</button>
-      </div>
-
-    </div>
   </section>
 
   <!-- VIP MENU SECTION -->
@@ -212,7 +117,7 @@
     let menuLoaded = false;
 
     const staticItems = [
-      { name: "Salmon Sushi", price: 14.99, description: "Fresh salmon with perfectly seasoned rice.", image: "images/salmon.jpeg", vipOnly: false },
+      { name: "Salmon Sushi", price: 14.99, description: "Fresh salmon with perfectly seasoned rice.", image: "images/sushi.jpeg", vipOnly: false },
       { name: "Fettuccine Alfredo", price: 12.99, description: "Creamy pasta with parmesan cheese and herbs.", image: "images/pasta.jpeg", vipOnly: false },
       { name: "Spaghetti Bolognese", price: 12.99, description: "Classic Italian pasta with meat sauce.", image: "images/spaghetti_bolognese.jpeg", vipOnly: false },
       { name: "Grilled Chicken Salad", price: 10.99, description: "Fresh greens with chicken and dressing.", image: "images/salad.jpeg", vipOnly: false },
@@ -301,32 +206,42 @@
         const menuGrid = document.getElementById("menu-grid");
         menuGrid.innerHTML = "";
         
-        allDishes = dishes; // Store for filtering
+        // If API returns empty or error, use static items
+        let dishesToDisplay = dishes;
+        if (!Array.isArray(dishes) || dishes.length === 0) {
+          console.log("Using static menu items as fallback");
+          seedStaticMenu();
+          dishesToDisplay = staticItems;
+        }
         
-        dishes.forEach(dish => {
-          console.log("Processing dish:", dish.name, "with id:", dish.id);
+        allDishes = dishesToDisplay; // Store for filtering
+        
+        dishesToDisplay.forEach(dish => {
+          const imageUrl = dish.image_url || dish.image || 'images/default.jpeg';
+          console.log("Processing dish:", dish.name, "with image:", imageUrl);
           menuItems[dish.name] = {
             id: dish.id,
             name: dish.name,
             price: dish.price,
             description: dish.description,
-            image: dish.image_url || 'images/default.jpeg',
-            vipOnly: false,
-            rating: dish.average_rating,
-            ratingCount: dish.rating_count,
+            image: imageUrl,
+            vipOnly: dish.vipOnly || false,
+            rating: dish.average_rating || 5,
+            ratingCount: dish.rating_count || 0,
             category: dish.category || 'Other'
           };
           
-          const stars = generateStars(dish.average_rating);
+          const rating = dish.average_rating || 5;
+          const stars = generateStars(rating);
           const menuCard = document.createElement("div");
           menuCard.className = "menu-card";
           menuCard.innerHTML = `
-            <img src="${dish.image_url || 'images/default.jpeg'}" alt="${dish.name}">
+            <img src="${imageUrl}" alt="${dish.name}" onerror="this.src='images/default.jpeg'">
             <h3>${dish.name}</h3>
             <p>${dish.description}</p>
             <div class="dish-rating">
               <span class="stars">${stars}</span>
-              <span class="rating-text">${dish.average_rating.toFixed(1)} (${dish.rating_count} reviews)</span>
+              <span class="rating-text">${rating.toFixed(1)} (${dish.rating_count || 0} reviews)</span>
             </div>
             <span class="price">$${dish.price.toFixed(2)}</span>
             <button class="add-to-cart" onclick="addToCart('${dish.name}')">Add to Cart</button>
@@ -334,11 +249,33 @@
           menuGrid.appendChild(menuCard);
         });
         
-        console.log("Menu loaded with", dishes.length, "dishes");
+        console.log("Menu loaded with", dishesToDisplay.length, "dishes");
         menuLoaded = true;
       } catch (error) {
         console.error("Error loading menu:", error);
-        document.getElementById("menu-grid").innerHTML = "<p>Error loading menu. Please try again later.</p>";
+        // Fallback to static items on error
+        seedStaticMenu();
+        allDishes = staticItems;
+        const menuGrid = document.getElementById("menu-grid");
+        menuGrid.innerHTML = "";
+        
+        staticItems.forEach(dish => {
+          const menuCard = document.createElement("div");
+          menuCard.className = "menu-card";
+          menuCard.innerHTML = `
+            <img src="${dish.image}" alt="${dish.name}" onerror="this.src='images/default.jpeg'">
+            <h3>${dish.name}</h3>
+            <p>${dish.description}</p>
+            <div class="dish-rating">
+              <span class="stars">[*][*][*][*][*]</span>
+              <span class="rating-text">5.0 (0 reviews)</span>
+            </div>
+            <span class="price">$${dish.price.toFixed(2)}</span>
+            <button class="add-to-cart" onclick="addToCart('${dish.name}')">Add to Cart</button>
+          `;
+          menuGrid.appendChild(menuCard);
+        });
+        menuLoaded = true;
       }
     }
 
@@ -353,21 +290,12 @@
     function addToCart(itemName) {
       const item = menuItems[itemName];
       
-      if (!menuLoaded) {
-        alert("Menu is still loading. Please wait a moment and try again.");
-        return;
-      }
-      
       if (!item) {
         alert("Item not found. Please refresh the page.");
         return;
       }
       
-      if (!item.id) {
-        alert("Item ID not found. Please refresh the page.");
-        return;
-      }
-      
+      // Don't require item.id - static items won't have it
       const isVIP = localStorage.getItem("isVIP") === "true";
       
       if (item.vipOnly && !isVIP) {

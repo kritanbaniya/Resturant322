@@ -20,29 +20,50 @@
 
      <div class="nav-center">
        <a href="index.html">Home</a>
-       <a href="menu.html">Menu</a>
-       <a href="chat.html">AI Chat</a>
-       <a href="complaints.html">Ratings</a>
+       <a href="#" id="menu-link">Menu</a>
+       <a href="#" id="chat-link">AI Chat</a>
+       <a href="complaints.html" id="ratings-link">Ratings</a>
      </div>
 
      <div class="nav-right">
-       <a href="cart.html"> Cart (<span id="cart-count">0</span>)</a>
+       <a href="cart.html" id="cart-link"> Cart (<span id="cart-count">0</span>)</a>
      </div>
    </nav>
  </header>
 
- <!-- ORDER TRACKING SECTION -->
+ <!-- UC-05: VISITOR MENU BROWSING SECTION -->
+ <section class="home-section" id="visitor-menu-section" style="display: none;">
+  <h2>Browse Our Menu</h2>
+  <div class="menu-filter">
+    <input type="text" id="search-box" placeholder="Search dishes...">
+    <select id="category-filter">
+      <option value="">All Categories</option>
+      <option value="pizza">Pizza</option>
+      <option value="burgers">Burgers</option>
+      <option value="asian">Asian</option>
+      <option value="healthy">Healthy</option>
+      <option value="desserts">Desserts</option>
+      <option value="drinks">Drinks</option>
+    </select>
+  </div>
+  <div class="menu-grid" id="visitor-menu-grid"></div>
+  <div id="no-menu" class="empty-state" style="display: none;">
+    <p>No dishes found. Please try a different search.</p>
+  </div>
+ </section>
+
+ <!-- ORDER TRACKING SECTION (for logged-in users) -->
  <section class="home-section" id="orders-section" style="display: none;">
   <h2>Your Orders</h2>
   <div id="vip-banner" style="display: none; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #f57f17, #fbc02d); border-radius: 8px; color: white; text-align: center;">
-    <h3>[CONGRATS] Congratulations!</h3>
+    <h3>Congratulations!</h3>
     <p>You've earned VIP status! Enjoy <strong>10% discounts</strong>, <strong>free delivery</strong>, and <strong>exclusive dishes</strong>!</p>
-    <a href="vip-dashboard.html" style="color: white; text-decoration: underline; font-weight: bold;">View VIP Benefits →</a>
+    <a href="vip-dashboard.html" style="color: white; text-decoration: underline; font-weight: bold;">View VIP Benefits</a>
   </div>
   <div class="orders-container">
     <div id="orders-list"></div>
     <div id="no-orders" class="empty-state" style="display: none;">
-      <p>No orders yet. <a href="menu.html">Start ordering now!</a></p>
+      <p>No orders yet. <a href="#" onclick="loadVisitorMenu(); return false;">Start ordering now!</a></p>
     </div>
   </div>
  </section>
@@ -463,6 +484,117 @@
   checkVIPAccess();
   loadOrderHistory();
   loadFeaturedDishes();
+
+  /* UC-05: Visitor Menu Browsing */
+  async function loadVisitorMenu() {
+    try {
+      const response = await fetch(`${API_URL}/api/visitor/menu`);
+      if (!response.ok) {
+        console.error("Error loading visitor menu:", response.statusText);
+        return;
+      }
+      
+      const data = await response.json();
+      const dishes = data.menu || [];
+      
+      const menuGrid = document.getElementById("visitor-menu-grid");
+      const noMenu = document.getElementById("no-menu");
+      const visitorSection = document.getElementById("visitor-menu-section");
+      
+      if (dishes.length === 0) {
+        menuGrid.innerHTML = "";
+        noMenu.style.display = "block";
+        return;
+      }
+      
+      noMenu.style.display = "none";
+      menuGrid.innerHTML = dishes.map(dish => `
+        <div class="menu-card">
+          <img src="${dish.image_url || 'images/default-dish.jpeg'}" alt="${dish.name}">
+          <h3>${dish.name}</h3>
+          <p>${dish.description}</p>
+          <div class="dish-info">
+            <span class="time">${dish.preparation_time}</span>
+            <span class="available">${dish.available ? 'Available' : 'Out of Stock'}</span>
+          </div>
+          <span class="price">$${dish.price.toFixed(2)}</span>
+          <div class="card-actions">
+            <button onclick="viewDishDetails('${dish.id}')" class="btn-secondary">View Details</button>
+          </div>
+        </div>
+      `).join("");
+      
+      visitorSection.style.display = "block";
+    } catch (error) {
+      console.error("Error loading visitor menu:", error);
+    }
+  }
+
+  function viewDishDetails(dishId) {
+    // Open a modal or navigate to dish details page
+    // Placeholder for now
+    alert(`Viewing details for dish: ${dishId}`);
+  }
+
+  // UC-05 A1: Handle registration attempt
+  function showRegistrationPrompt() {
+    const message = "Register now to place orders, track deliveries, and enjoy VIP benefits!";
+    const response = confirm(message + "\n\nClick OK to go to registration.");
+    if (response) {
+      window.location.href = "register.html";
+    }
+  }
+
+  // UC-05: Search and filter menu
+  function filterMenu() {
+    const searchBox = document.getElementById("search-box").value.toLowerCase();
+    const categoryFilter = document.getElementById("category-filter").value;
+    const cards = document.querySelectorAll(".menu-card");
+    
+    cards.forEach(card => {
+      const name = card.querySelector("h3").textContent.toLowerCase();
+      const desc = card.querySelector("p").textContent.toLowerCase();
+      
+      const matchesSearch = name.includes(searchBox) || desc.includes(searchBox);
+      const matchesCategory = !categoryFilter || 
+        (card.dataset.category && card.dataset.category === categoryFilter);
+      
+      card.style.display = (matchesSearch && matchesCategory) ? "block" : "none";
+    });
+  }
+
+  // UC-05: Initialize menu links
+  document.getElementById("menu-link").onclick = function(e) {
+    e.preventDefault();
+    loadVisitorMenu();
+    document.getElementById("visitor-menu-section").scrollIntoView({ behavior: 'smooth' });
+  };
+
+  document.getElementById("chat-link").onclick = function(e) {
+    e.preventDefault();
+    window.location.href = "chat.html";
+  };
+
+  // Update cart link visibility based on login status
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const cartLink = document.getElementById("cart-link");
+  if (!isLoggedIn) {
+    cartLink.onclick = function(e) {
+      e.preventDefault();
+      showRegistrationPrompt();
+    };
+  }
+
+  // Add event listeners for search and filter
+  const searchBox = document.getElementById("search-box");
+  const categoryFilter = document.getElementById("category-filter");
+  if (searchBox) searchBox.addEventListener("input", filterMenu);
+  if (categoryFilter) categoryFilter.addEventListener("change", filterMenu);
+
+  // Show visitor menu on page load for non-logged-in users
+  if (!isLoggedIn) {
+    loadVisitorMenu();
+  }
 </script>
 
 </body>

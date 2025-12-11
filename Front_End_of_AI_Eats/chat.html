@@ -18,26 +18,32 @@
 
       <div class="nav-center">
         <a href="index.html">Home</a>
-        <a href="menu.html">Menu</a>
+        <a href="index.html" onclick="document.getElementById('menu-link').click(); return false;">Menu</a>
         <a href="chat.html">AI Chat</a>
-        <a href="complaints.html">Ratings</a>
+        <a href="complaints.html" id="ratings-link">Ratings</a>
       </div>
 
       <div class="nav-right">
-        <a href="cart.html"> Cart (<span id="cart-count">0</span>)</a>
+        <a href="cart.html" id="cart-link"> Cart (<span id="cart-count">0</span>)</a>
       </div>
     </nav>
   </header>
 
   <section class="chat-section">
     <h2>AI Chat Assistant</h2>
+    <div id="not-logged-in-banner" style="display: none; padding: 15px; background-color: #e3f2fd; border-left: 4px solid #2196F3; margin-bottom: 20px; border-radius: 4px;">
+      <p><strong>Visitor Mode:</strong> You can ask questions as a visitor. <a href="register.html">Register</a> to save your chat history and place orders.</p>
+    </div>
     <div class="chat-container">
       <div class="chat-box" id="chat-box">
-        <p><strong>AI:</strong> Hello! How can I help you today?</p>
+        <p><strong>AI:</strong> Hello! I'm here to help. Ask me anything about our menu, delivery, or restaurant. How can I assist you today?</p>
       </div>
       <div class="chat-input-area">
         <input type="text" id="chat-input" placeholder="Ask me anything about our menu or delivery..." />
         <button id="send-btn" onclick="sendMessage()">Send</button>
+      </div>
+      <div id="unavailable-notice" style="display: none; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107; margin-top: 10px; border-radius: 4px;">
+        <p><strong>AI Chat Unavailable:</strong> The AI assistance is currently offline. Please try again later or contact our support team.</p>
       </div>
     </div>
   </section>
@@ -47,18 +53,35 @@
   </footer>
   <script>
     const API_URL = "http://127.0.0.1:5000";
+    let currentAnswerId = null;
 
     function updateAuthStatus() {
       const isLoggedIn = localStorage.getItem("isLoggedIn");
       const username = localStorage.getItem("username");
       const authLink = document.getElementById("auth-link");
+      const notLoggedInBanner = document.getElementById("not-logged-in-banner");
+      const ratingsLink = document.getElementById("ratings-link");
+      const cartLink = document.getElementById("cart-link");
       
       if (isLoggedIn === "true" && username) {
         authLink.textContent = `[USER] ${username}`;
         authLink.href = "profile.html";
+        notLoggedInBanner.style.display = "none";
+        ratingsLink.style.display = "block";
       } else {
         authLink.textContent = "Login/Register";
         authLink.href = "login.html";
+        notLoggedInBanner.style.display = "block";
+        ratingsLink.style.display = "none";
+        
+        // UC-05 A1: Allow visitors to register
+        if (cartLink) {
+          cartLink.onclick = function(e) {
+            e.preventDefault();
+            const response = confirm("Register now to place orders, track deliveries, and enjoy VIP benefits!\n\nGo to registration?");
+            if (response) window.location.href = "register.html";
+          };
+        }
       }
 
       updateCartCount();
@@ -70,23 +93,19 @@
       document.getElementById("cart-count").textContent = totalItems;
     }
 
+    /* UC-05 Step 3: Send message to AI (works for visitors and logged-in users) */
     async function sendMessage() {
       const input = document.getElementById("chat-input");
       const message = input.value.trim();
       const chatBox = document.getElementById("chat-box");
       const sendBtn = document.getElementById("send-btn");
+      const unavailableNotice = document.getElementById("unavailable-notice");
       
       if (!message) return;
 
-      const isLoggedIn = localStorage.getItem("isLoggedIn");
-      const userId = localStorage.getItem("userId");
+      const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+      const userId = isLoggedIn ? localStorage.getItem("userId") : null;
       
-      if (isLoggedIn !== "true" || !userId) {
-        alert("Please login to use the chat feature.");
-        window.location.href = "login.html";
-        return;
-      }
-
       const userMessage = document.createElement("p");
       userMessage.innerHTML = `<strong>You:</strong> ${escapeHtml(message)}`;
       chatBox.appendChild(userMessage);
@@ -96,22 +115,45 @@
       sendBtn.textContent = "Sending...";
 
       try {
-        const response = await fetch(`${API_URL}/api/chat/ask`, {
+        /* UC-05: Call visitor chat endpoint (works for both visitors and users) */
+        const response = await fetch(`${API_URL}/api/visitor/chat`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            user_id: userId,
             question: message
           })
         });
 
         const data = await response.json();
+        unavailableNotice.style.display = "none";
 
         if (response.ok) {
+          currentAnswerId = data.answer_id;
           const aiMessage = document.createElement("p");
           aiMessage.innerHTML = `<strong>AI:</strong> ${escapeHtml(data.answer || data.response || "I couldn't process that request.")}`;
+          aiMessage.id = `answer-${currentAnswerId}`;
+          chatBox.appendChild(aiMessage);
+          
+          // UC-05 Postcondition: Add rating buttons
+          const ratingDiv = document.createElement("div");
+          ratingDiv.style.marginLeft = "30px";
+          ratingDiv.style.marginTop = "5px";
+          ratingDiv.style.fontSize = "12px";
+          ratingDiv.innerHTML = `
+            <span>Was this helpful?</span>
+            <button onclick="rateAnswer('${currentAnswerId}', 5)" style="margin-left: 10px; padding: 3px 8px; background: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">Excellent</button>
+            <button onclick="rateAnswer('${currentAnswerId}', 3)" style="margin-left: 5px; padding: 3px 8px; background: #FFC107; color: white; border: none; border-radius: 3px; cursor: pointer;">Okay</button>
+            <button onclick="rateAnswer('${currentAnswerId}', 1)" style="margin-left: 5px; padding: 3px 8px; background: #f44336; color: white; border: none; border-radius: 3px; cursor: pointer;">Poor</button>
+            <button onclick="flagAnswer('${currentAnswerId}')" style="margin-left: 10px; padding: 3px 8px; background: #FF9800; color: white; border: none; border-radius: 3px; cursor: pointer;">Flag</button>
+          `;
+          chatBox.appendChild(ratingDiv);
+        } else if (response.status === 503) {
+          /* UC-05 A2: AI Unavailable */
+          unavailableNotice.style.display = "block";
+          const aiMessage = document.createElement("p");
+          aiMessage.innerHTML = `<strong>AI:</strong> ${escapeHtml(data.message || "AI assistance is temporarily unavailable. Please try again later.")}`;
           chatBox.appendChild(aiMessage);
         } else {
           const aiMessage = document.createElement("p");
@@ -128,6 +170,66 @@
         sendBtn.textContent = "Send";
         chatBox.scrollTop = chatBox.scrollHeight;
       }
+    }
+
+    /* UC-05 Postcondition: Rate AI response */
+    async function rateAnswer(answerId, rating) {
+      try {
+        const response = await fetch(`${API_URL}/api/visitor/chat/${answerId}/rate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ rating })
+        });
+
+        if (response.ok) {
+          const ratingText = rating === 5 ? "Excellent" : rating === 3 ? "Okay" : "Poor";
+          alert(`Thank you! You rated this response as: ${ratingText}`);
+          // Log visitor action
+          logVisitorAction("chat_rating", { answer_id: answerId, rating });
+        }
+      } catch (error) {
+        console.error("Error rating answer:", error);
+      }
+    }
+
+    /* UC-05 Postcondition: Flag AI response */
+    async function flagAnswer(answerId) {
+      const reason = prompt("Please tell us what's wrong with this response:");
+      if (!reason) return;
+
+      try {
+        const response = await fetch(`${API_URL}/api/visitor/chat/${answerId}/flag`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ reason })
+        });
+
+        if (response.ok) {
+          alert("Thank you for your feedback. Our management team will review this response.");
+          // Log visitor action
+          logVisitorAction("chat_flag", { answer_id: answerId, reason });
+        }
+      } catch (error) {
+        console.error("Error flagging answer:", error);
+      }
+    }
+
+    /* UC-05 Postcondition: Log visitor actions */
+    function logVisitorAction(actionType, details) {
+      fetch(`${API_URL}/api/visitor/action`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          action_type: actionType,
+          details
+        })
+      }).catch(err => console.error("Error logging action:", err));
     }
 
     document.getElementById("chat-input").addEventListener("keypress", function(event) {
