@@ -6,3 +6,9 @@ resturantAI/backend/routes/.DS_Store
 resturantAI/backend/.DS_Store
 resturantAI/.DS_Store
 .DS_Store
+backend/config.py
+backend/__pycache__/
+__pycache__/
+*.pyc
+.venv/
+venv/
