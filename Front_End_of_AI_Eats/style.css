@@ -74,6 +74,13 @@ nav a:hover {
 .hero h2 {
   font-size: 2rem;
   text-align: center;
+  margin-bottom: 12px;
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  margin-bottom: 24px;
+  opacity: 0.9;
 }
 
 .hero .btn {
@@ -1258,6 +1265,295 @@ footer a:hover {
 
 .vip-upgrade-btn:hover {
   transform: translateY(-2px);
+}
+
+/* --- Delivery Info Section --- */
+.delivery-info {
+  background: white;
+  padding: 40px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.info-card {
+  text-align: center;
+  padding: 20px;
+}
+
+.info-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.info-card h4 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.info-card p {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+/* --- Categories Section --- */
+.categories-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+.categories-section h2 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 32px;
+  color: #333;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 20px;
+}
+
+.category-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+}
+
+.category-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.category-card h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+/* --- Promotions Section --- */
+.promotions-section {
+  background: #f8f9fa;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+.promotions-section h2 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 32px;
+  color: #333;
+}
+
+.promotions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.promo-card {
+  background: white;
+  border-radius: 12px;
+  padding: 32px 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  position: relative;
+  text-align: left;
+}
+
+.vip-promo {
+  background: linear-gradient(135deg, #ff6b6b, #ffa500);
+  color: white;
+}
+
+.promo-badge {
+  position: absolute;
+  top: -12px;
+  left: 24px;
+  background: #ff6b6b;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.vip-promo .promo-badge {
+  background: #ffe66d;
+  color: #333;
+}
+
+.promo-card h4 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 16px 0 12px 0;
+  color: #333;
+}
+
+.vip-promo h4 {
+  color: white;
+}
+
+.promo-card p {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.vip-promo p {
+  color: rgba(255,255,255,0.9);
+}
+
+.promo-code {
+  background: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ff6b6b;
+}
+
+.promo-btn {
+  background: white;
+  color: #ff6b6b;
+  padding: 12px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.promo-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* --- Stats Section --- */
+.stats-section {
+  background: #333;
+  color: white;
+  padding: 60px 24px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.stat-card {
+  text-align: center;
+}
+
+.stat-card h3 {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: #ff6b6b;
+}
+
+.stat-card p {
+  font-size: 16px;
+  margin: 0;
+  opacity: 0.9;
+}
+
+/* --- App Section --- */
+.app-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 80px 24px;
+}
+
+.app-content {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 40px;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.app-text h2 {
+  font-size: 32px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.app-text p {
+  font-size: 18px;
+  margin: 0 0 24px 0;
+  opacity: 0.9;
+}
+
+.app-buttons {
+  display: flex;
+  gap: 16px;
+}
+
+.app-btn {
+  background: rgba(255,255,255,0.2);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.app-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.app-image {
+  font-size: 80px;
+}
+
+.review-stars {
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+@media screen and (max-width: 768px) {
+  .app-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  
+  .app-buttons {
+    flex-direction: column;
+  }
+  
+  .categories-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .info-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* --- VIP Membership Styles --- */
