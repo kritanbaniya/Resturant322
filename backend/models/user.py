@@ -33,6 +33,10 @@ class User(Document):
     warningCount = IntField(default=0)
     netComplaints = IntField(default=0)
     demotionsCount = IntField(default=0)
+    
+    # Manager-related fields (UC-04)
+    rejectionReason = StringField()  # Reason for rejection (A1)
+    terminationReason = StringField()  # Reason for termination
 
     created_at = DateTimeField(default=datetime.datetime.utcnow)
     updated_at = DateTimeField(default=datetime.datetime.utcnow)

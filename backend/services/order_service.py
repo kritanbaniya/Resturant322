@@ -95,7 +95,7 @@ def confirm_order(order_id):
         order.set_status("Rejected_Insufficient_Funds")
         
         # A1: Apply warning for being "reckless" (A3: Warnings rule)
-        apply_warning(str(customer.id), "Reckless order attempt with insufficient funds")
+        apply_warning(str(customer.id), "Order attempt with insufficient funds")
         
         return {
             "error": "Insufficient funds. Order rejected. Warning applied.",

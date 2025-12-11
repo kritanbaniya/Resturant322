@@ -49,11 +49,12 @@ def process_registration_approval(manager_id, user_id, decision, reason=None):
         user.status = "Active"
     elif decision == "REJECT":
         user.status = "Rejected"
+        user.rejectionReason = reason
     else:
         return {"error": "Invalid decision. Use 'APPROVE' or 'REJECT'."}, 400
     
     user.save()
-    return {"message": f"User {decision.lower()}ed."}
+    return {"message": f"User {decision.lower()}ed."}, 200
     
 def login_user(email, password):
     user = User.objects(email=email).first()
@@ -162,5 +163,5 @@ def blacklist_user(manager_id, user_id):
     
     user.status = "Blacklisted"
     user.save()
-    return {"message": "User has been blacklisted."}
+    return {"message": "User has been blacklisted."}, 200
             

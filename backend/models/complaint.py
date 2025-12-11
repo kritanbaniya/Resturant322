@@ -19,11 +19,12 @@ class Complaint(Document):
     weight = IntField(default=1)  # vip: 2, regular: 1
 
     status = StringField(
-        choices=["PendingReview", "Valid", "Invalid"],
+        choices=["PendingReview", "Valid", "Invalid", "Escalated"],
         default="PendingReview"
     )
 
     order = ReferenceField(Order)
+    escalationNote = StringField()  # Note for escalation (UC-04 Step 5)
     created_at = DateTimeField(default=datetime.datetime.utcnow)
     resolved_at = DateTimeField()
 
