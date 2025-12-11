@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connection Test</title>
+</head>
+<body>
+    <h1>Testing Backend Connection</h1>
+    <button onclick="testConnection()">Test API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testConnection() {
+            try {
+                const response = await fetch('http://localhost:5001/');
+                const data = await response.json();
+                document.getElementById('result').innerHTML = 
+                    `<p style="color: green;">✅ Connected! ${data.message}</p>`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    `<p style="color: red;">❌ Connection failed: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

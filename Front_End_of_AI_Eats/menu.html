@@ -41,7 +41,7 @@
         <span>$12.99</span>
         <span class="vip-badge">VIP</span>
         <button class="like-btn">♡ Like</button>
-        <button class="add-to-cart" onclick="addToCart('Spaghetti Bolognese', 12.99)">Add to Cart</button>
+        <button class="add-to-cart" onclick="addToCart('Spaghetti Bolognese')">Add to Cart</button>
       </div>
 
       <div class="menu-card">
@@ -50,7 +50,7 @@
         <p>Fresh greens with chicken and dressing.</p>
         <span>$10.99</span>
         <button class="like-btn">♡ Like</button>
-        <button class="add-to-cart" onclick="addToCart('Grilled Chicken Salad', 10.99)">Add to Cart</button>
+        <button class="add-to-cart" onclick="addToCart('Grilled Chicken Salad')">Add to Cart</button>
       </div>
 
       <div class="menu-card">
@@ -60,7 +60,7 @@
         <span>$14.99</span>
         <span class="vip-badge">VIP</span>
         <button class="like-btn">♡ Like</button>
-        <button class="add-to-cart" onclick="addToCart('Margherita Pizza', 14.99)">Add to Cart</button>
+        <button class="add-to-cart" onclick="addToCart('Margherita Pizza')">Add to Cart</button>
       </div>
 
       <div class="menu-card">
@@ -69,7 +69,7 @@
         <p>Breaded chicken topped with marinara and cheese.</p>
         <span>$15.99</span>
         <button class="like-btn">♡ Like</button>
-        <button class="add-to-cart" onclick="addToCart('Chicken Parmesan', 15.99)">Add to Cart</button>
+        <button class="add-to-cart" onclick="addToCart('Chicken Parmesan')">Add to Cart</button>
       </div>
 
       <div class="menu-card">
@@ -78,7 +78,7 @@
         <p>Pasta in a creamy tomato-vodka sauce.</p>
         <span>$13.99</span>
         <button class="like-btn">♡ Like</button>
-        <button class="add-to-cart" onclick="addToCart('Penne alla Vodka', 13.99)">Add to Cart</button>
+        <button class="add-to-cart" onclick="addToCart('Penne alla Vodka')">Add to Cart</button>
       </div>
 
       <div class="menu-card">
@@ -87,7 +87,7 @@
         <p>Spicy and crispy chicken wings with dipping sauce.</p>
         <span>$11.99</span>
         <button class="like-btn">♡ Like</button>
-        <button class="add-to-cart" onclick="addToCart('Chicken Wings', 11.99)">Add to Cart</button>
+        <button class="add-to-cart" onclick="addToCart('Chicken Wings')">Add to Cart</button>
       </div>
 
     </div>
@@ -100,17 +100,80 @@
 
   <!-- ADD TO CART SCRIPT -->
   <script>
-    function addToCart(name, price) {
+    const menuItems = {
+      'Spaghetti Bolognese': {
+        name: 'Spaghetti Bolognese',
+        price: 12.99,
+        description: 'Classic Italian pasta with meat sauce.',
+        image: 'images/spaghetti_bolognese.jpeg'
+      },
+      'Grilled Chicken Salad': {
+        name: 'Grilled Chicken Salad',
+        price: 10.99,
+        description: 'Fresh greens with chicken and dressing.',
+        image: 'images/salad.jpeg'
+      },
+      'Margherita Pizza': {
+        name: 'Margherita Pizza',
+        price: 14.99,
+        description: 'Tomatoes, mozzarella, and fresh basil.',
+        image: 'images/margherita_pizza.jpeg'
+      },
+      'Chicken Parmesan': {
+        name: 'Chicken Parmesan',
+        price: 15.99,
+        description: 'Breaded chicken topped with marinara and cheese.',
+        image: 'images/chicken_parmesan.jpeg'
+      },
+      'Penne alla Vodka': {
+        name: 'Penne alla Vodka',
+        price: 13.99,
+        description: 'Pasta in a creamy tomato-vodka sauce.',
+        image: 'images/penne_alla_vodka.jpeg'
+      },
+      'Chicken Wings': {
+        name: 'Chicken Wings',
+        price: 11.99,
+        description: 'Spicy and crispy chicken wings with dipping sauce.',
+        image: 'images/chicken_wings.jpeg'
+      }
+    };
+
+    function addToCart(itemName) {
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
-      cart.push({ name, price });
+      const item = menuItems[itemName];
+      
+      // Check if item already exists in cart
+      const existingItem = cart.find(cartItem => cartItem.name === itemName);
+      
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        cart.push({
+          ...item,
+          quantity: 1
+        });
+      }
+      
       localStorage.setItem("cart", JSON.stringify(cart));
       updateCartCount();
-      alert(name + " added to cart!");
+      
+      // Show success message
+      const btn = event.target;
+      const originalText = btn.textContent;
+      btn.textContent = 'Added!';
+      btn.style.backgroundColor = '#4CAF50';
+      
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.backgroundColor = '';
+      }, 1000);
     }
 
     function updateCartCount() {
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
-      document.getElementById("cart-count").textContent = cart.length;
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById("cart-count").textContent = totalItems;
     }
 
     updateCartCount();

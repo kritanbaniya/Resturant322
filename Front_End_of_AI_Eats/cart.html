@@ -1,53 +1,168 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Your Cart</title>
-    <style>
-        body { font-family: Arial; padding: 20px; }
-        .cart-item { padding: 10px; border-bottom: 1px solid #ccc; }
-        .total { font-size: 20px; margin-top: 20px; font-weight: bold; }
-        button { margin-top: 10px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Eats - Cart</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Your Cart</h1>
-    <div id="cart-items"></div>
-    <p class="total">Total: $<span id="total">0.00</span></p>
+  <!-- HEADER -->
+  <header>
+    <h1>AI Eats</h1>
+    <nav>
+      <div class="nav-left">
+        <a href="login.html">Login/Register</a>
+      </div>
+      <div class="nav-center">
+        <a href="index.html">Home</a>
+        <a href="menu.html">Menu</a>
+        <a href="chat.html">AI Chat</a>
+      </div>
+      <div class="nav-right">
+        <a href="cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+      </div>
+    </nav>
+  </header>
 
-    <button onclick="checkout()">Checkout</button>
-    <button onclick="clearCart()">Clear Cart</button>
+  <!-- CART SECTION -->
+  <section class="cart-section">
+    <div class="cart-container">
+      <div class="cart-header">
+        <h2>🛒 Your Cart</h2>
+        <button class="clear-cart-btn" onclick="clearCart()">Clear All</button>
+      </div>
 
-<script>
-function loadCart() {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    let container = document.getElementById("cart-items");
-    let total = 0;
+      <div id="cart-content">
+        <div id="cart-items"></div>
+        
+        <div id="empty-cart" class="empty-cart" style="display: none;">
+          <h3>Your cart is empty</h3>
+          <p>Add some delicious items from our menu!</p>
+          <a href="menu.html" class="btn">Browse Menu</a>
+        </div>
+      </div>
 
-    container.innerHTML = "";
+      <div id="cart-summary" class="cart-summary" style="display: none;">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span id="subtotal">$0.00</span>
+        </div>
+        <div class="summary-row">
+          <span>Delivery Fee</span>
+          <span>$2.99</span>
+        </div>
+        <div class="summary-row">
+          <span>Tax</span>
+          <span id="tax">$0.00</span>
+        </div>
+        <div class="summary-row total-row">
+          <span>Total</span>
+          <span id="total">$0.00</span>
+        </div>
+        
+        <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
+      </div>
+    </div>
+  </section>
 
-    cart.forEach(item => {
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2025 AI Eats. All rights reserved.</p>
+  </footer>
+
+  <script>
+    function loadCart() {
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      let container = document.getElementById("cart-items");
+      let emptyCart = document.getElementById("empty-cart");
+      let cartSummary = document.getElementById("cart-summary");
+      
+      container.innerHTML = "";
+      
+      if (cart.length === 0) {
+        emptyCart.style.display = "block";
+        cartSummary.style.display = "none";
+        return;
+      }
+      
+      emptyCart.style.display = "none";
+      cartSummary.style.display = "block";
+      
+      let subtotal = 0;
+      
+      cart.forEach((item, index) => {
+        const itemTotal = item.price * item.quantity;
+        subtotal += itemTotal;
+        
         container.innerHTML += `
-            <div class="cart-item">
-                ${item.name} — $${item.price}
+          <div class="cart-item">
+            <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+            <div class="cart-item-details">
+              <h4>${item.name}</h4>
+              <p>${item.description}</p>
+              <span class="item-price">$${item.price.toFixed(2)}</span>
             </div>
+            <div class="cart-item-controls">
+              <div class="quantity-controls">
+                <button onclick="updateQuantity(${index}, -1)">-</button>
+                <span class="quantity">${item.quantity}</span>
+                <button onclick="updateQuantity(${index}, 1)">+</button>
+              </div>
+              <button class="remove-btn" onclick="removeItem(${index})">🗑️</button>
+            </div>
+            <div class="item-total">$${itemTotal.toFixed(2)}</div>
+          </div>
         `;
-        total += item.price;
-    });
-
-    document.getElementById("total").textContent = total.toFixed(2);
-}
-
-function clearCart() {
-    localStorage.removeItem("cart");
+      });
+      
+      const tax = subtotal * 0.08;
+      const total = subtotal + 2.99 + tax;
+      
+      document.getElementById("subtotal").textContent = `$${subtotal.toFixed(2)}`;
+      document.getElementById("tax").textContent = `$${tax.toFixed(2)}`;
+      document.getElementById("total").textContent = `$${total.toFixed(2)}`;
+      
+      updateCartCount();
+    }
+    
+    function updateQuantity(index, change) {
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      cart[index].quantity += change;
+      
+      if (cart[index].quantity <= 0) {
+        cart.splice(index, 1);
+      }
+      
+      localStorage.setItem("cart", JSON.stringify(cart));
+      loadCart();
+    }
+    
+    function removeItem(index) {
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      cart.splice(index, 1);
+      localStorage.setItem("cart", JSON.stringify(cart));
+      loadCart();
+    }
+    
+    function clearCart() {
+      if (confirm("Are you sure you want to clear your cart?")) {
+        localStorage.removeItem("cart");
+        loadCart();
+      }
+    }
+    
+    function checkout() {
+      alert("Redirecting to checkout... (Not implemented yet)");
+    }
+    
+    function updateCartCount() {
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById("cart-count").textContent = totalItems;
+    }
+    
     loadCart();
-}
-
-function checkout() {
-    alert("Checkout not implemented — frontend-only demo!");
-}
-
-loadCart();
-</script>
-
+  </script>
 </body>
 </html>
