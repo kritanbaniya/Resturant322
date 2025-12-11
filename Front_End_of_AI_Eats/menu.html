@@ -38,9 +38,11 @@
         <img src="images/spaghetti_bolognese.jpeg" alt="Spaghetti Bolognese">
         <h3>Spaghetti Bolognese</h3>
         <p>Classic Italian pasta with meat sauce.</p>
-        <span>$12.99</span>
-        <span class="vip-badge">VIP</span>
-        <button class="like-btn">♡ Like</button>
+        <div class="dish-rating">
+          <span class="stars">⭐⭐⭐⭐☆</span>
+          <span class="rating-text">4.6 (203 reviews)</span>
+        </div>
+        <span class="price">$12.99</span>
         <button class="add-to-cart" onclick="addToCart('Spaghetti Bolognese')">Add to Cart</button>
       </div>
 
@@ -48,8 +50,11 @@
         <img src="images/salad.jpeg" alt="Grilled Chicken Salad">
         <h3>Grilled Chicken Salad</h3>
         <p>Fresh greens with chicken and dressing.</p>
-        <span>$10.99</span>
-        <button class="like-btn">♡ Like</button>
+        <div class="dish-rating">
+          <span class="stars">⭐⭐⭐⭐⭐</span>
+          <span class="rating-text">4.7 (145 reviews)</span>
+        </div>
+        <span class="price">$10.99</span>
         <button class="add-to-cart" onclick="addToCart('Grilled Chicken Salad')">Add to Cart</button>
       </div>
 
@@ -57,9 +62,11 @@
         <img src="images/margherita_pizza.jpeg" alt="Margherita Pizza">
         <h3>Margherita Pizza</h3>
         <p>Tomatoes, mozzarella, and fresh basil.</p>
-        <span>$14.99</span>
-        <span class="vip-badge">VIP</span>
-        <button class="like-btn">♡ Like</button>
+        <div class="dish-rating">
+          <span class="stars">⭐⭐⭐⭐⭐</span>
+          <span class="rating-text">4.8 (267 reviews)</span>
+        </div>
+        <span class="price">$14.99</span>
         <button class="add-to-cart" onclick="addToCart('Margherita Pizza')">Add to Cart</button>
       </div>
 
@@ -67,8 +74,11 @@
         <img src="images/chicken_parmesan.jpeg" alt="Chicken Parmesan">
         <h3>Chicken Parmesan</h3>
         <p>Breaded chicken topped with marinara and cheese.</p>
-        <span>$15.99</span>
-        <button class="like-btn">♡ Like</button>
+        <div class="dish-rating">
+          <span class="stars">⭐⭐⭐⭐⭐</span>
+          <span class="rating-text">4.9 (178 reviews)</span>
+        </div>
+        <span class="price">$15.99</span>
         <button class="add-to-cart" onclick="addToCart('Chicken Parmesan')">Add to Cart</button>
       </div>
 
@@ -76,8 +86,11 @@
         <img src="images/penne_alla_vodka.jpeg" alt="Penne alla Vodka">
         <h3>Penne alla Vodka</h3>
         <p>Pasta in a creamy tomato-vodka sauce.</p>
-        <span>$13.99</span>
-        <button class="like-btn">♡ Like</button>
+        <div class="dish-rating">
+          <span class="stars">⭐⭐⭐⭐☆</span>
+          <span class="rating-text">4.5 (134 reviews)</span>
+        </div>
+        <span class="price">$13.99</span>
         <button class="add-to-cart" onclick="addToCart('Penne alla Vodka')">Add to Cart</button>
       </div>
 
@@ -85,8 +98,11 @@
         <img src="images/chicken_wings.jpeg" alt="Chicken Wings">
         <h3>Chicken Wings</h3>
         <p>Spicy and crispy chicken wings with dipping sauce.</p>
-        <span>$11.99</span>
-        <button class="like-btn">♡ Like</button>
+        <div class="dish-rating">
+          <span class="stars">⭐⭐⭐⭐⭐</span>
+          <span class="rating-text">4.7 (298 reviews)</span>
+        </div>
+        <span class="price">$11.99</span>
         <button class="add-to-cart" onclick="addToCart('Chicken Wings')">Add to Cart</button>
       </div>
 
@@ -106,7 +122,7 @@
         price: 12.99,
         description: 'Classic Italian pasta with meat sauce.',
         image: 'images/spaghetti_bolognese.jpeg',
-        vipOnly: true
+        vipOnly: false
       },
       'Grilled Chicken Salad': {
         name: 'Grilled Chicken Salad',
@@ -120,7 +136,7 @@
         price: 14.99,
         description: 'Tomatoes, mozzarella, and fresh basil.',
         image: 'images/margherita_pizza.jpeg',
-        vipOnly: true
+        vipOnly: false
       },
       'Chicken Parmesan': {
         name: 'Chicken Parmesan',
