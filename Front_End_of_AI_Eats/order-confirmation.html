@@ -28,36 +28,41 @@
   <!-- CONFIRMATION SECTION -->
   <section class="confirmation-section">
     <div class="confirmation-container">
-      <div class="success-icon">✅</div>
-      <h2>Order Confirmed!</h2>
-      <p>Thank you for your order. We're preparing your delicious meal!</p>
-      
-      <div class="order-details">
-        <h3>Order Details</h3>
-        <div class="order-info">
-          <div class="info-row">
-            <span>Order ID:</span>
-            <span id="order-id"></span>
-          </div>
-          <div class="info-row">
-            <span>Total:</span>
-            <span id="order-total"></span>
-          </div>
-          <div class="info-row">
-            <span>Estimated Delivery:</span>
-            <span id="delivery-time"></span>
-          </div>
+      <!-- Success Header -->
+      <div class="success-header">
+        <div class="success-icon">🎉</div>
+        <h1>Order confirmed!</h1>
+        <p class="success-message">Your order has been placed successfully</p>
+      </div>
+
+      <!-- Order Summary Card -->
+      <div class="order-summary-card">
+        <div class="order-header">
+          <h3>Order #<span id="order-id"></span></h3>
+          <span class="order-status">Confirmed</span>
         </div>
         
-        <div class="ordered-items">
-          <h4>Items Ordered:</h4>
+        <div class="delivery-info">
+          <div class="delivery-time">
+            <span class="label">Estimated delivery</span>
+            <span class="time" id="delivery-time"></span>
+          </div>
+        </div>
+
+        <div class="order-items">
           <div id="confirmation-items"></div>
+        </div>
+
+        <div class="order-total">
+          <span>Total</span>
+          <span id="order-total"></span>
         </div>
       </div>
 
+      <!-- Action Buttons -->
       <div class="confirmation-actions">
-        <a href="menu.html" class="btn">Order More</a>
-        <a href="index.html" class="btn btn-secondary">Back to Home</a>
+        <a href="menu.html" class="btn-primary">Order again</a>
+        <a href="index.html" class="btn-secondary">Back to home</a>
       </div>
     </div>
   </section>
@@ -88,9 +93,12 @@
       const itemsContainer = document.getElementById("confirmation-items");
       orderData.items.forEach(item => {
         itemsContainer.innerHTML += `
-          <div class="confirmation-item">
-            <span>${item.name} x${item.quantity}</span>
-            <span>$${(item.price * item.quantity).toFixed(2)}</span>
+          <div class="item-row">
+            <div class="item-details">
+              <span class="item-name">${item.name}</span>
+              <span class="item-qty">Qty: ${item.quantity}</span>
+            </div>
+            <span class="item-price">$${(item.price * item.quantity).toFixed(2)}</span>
           </div>
         `;
       });

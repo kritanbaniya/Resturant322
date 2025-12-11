@@ -101,6 +101,7 @@
       localStorage.setItem("memberSince", memberSince);
       document.getElementById("member-since").textContent = memberSince;
 
+      loadOrderHistory();
       updateCartCount();
       updateAuthStatus();
     }
@@ -123,6 +124,34 @@
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
       const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
       document.getElementById("cart-count").textContent = totalItems;
+    }
+
+    function loadOrderHistory() {
+      const currentUsername = localStorage.getItem("username");
+      const allOrders = JSON.parse(localStorage.getItem("orders")) || [];
+      const userOrders = allOrders.filter(order => order.username === currentUsername);
+      const orderHistoryContainer = document.getElementById("order-history");
+      
+      if (userOrders.length === 0) {
+        orderHistoryContainer.innerHTML = '<p class="no-orders">No orders yet. <a href="menu.html">Start ordering!</a></p>';
+        return;
+      }
+      
+      orderHistoryContainer.innerHTML = userOrders.map(order => `
+        <div class="order-item">
+          <div class="order-header">
+            <span class="order-id">Order #${order.orderId}</span>
+            <span class="order-date">${new Date(order.orderDate).toLocaleDateString()}</span>
+          </div>
+          <div class="order-details">
+            <div class="order-items">
+              ${order.items.map(item => `<span>${item.name} x${item.quantity}</span>`).join(', ')}
+            </div>
+            <div class="order-total">${order.total}</div>
+          </div>
+          <div class="order-status">Status: ${order.status}</div>
+        </div>
+      `).join('');
     }
 
     function updateAuthStatus() {

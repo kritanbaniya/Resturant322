@@ -182,9 +182,11 @@
         // Generate order ID
         const orderId = "AI" + Date.now().toString().slice(-6);
         
-        // Save order to localStorage
+        // Save order to localStorage with username
+        const username = localStorage.getItem("username");
         const orderData = {
           orderId: orderId,
+          username: username,
           items: JSON.parse(localStorage.getItem("cart")) || [],
           total: document.getElementById("checkout-total").textContent,
           customerInfo: {
