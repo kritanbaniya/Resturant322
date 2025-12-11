@@ -20,7 +20,7 @@
         <a href="chat.html">AI Chat</a>
       </div>
       <div class="nav-right">
-        <a href="cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+        <a href="cart.html"> Cart (<span id="cart-count">0</span>)</a>
       </div>
     </nav>
   </header>
@@ -30,7 +30,7 @@
     <div class="confirmation-container">
       <!-- Success Header -->
       <div class="success-header">
-        <div class="success-icon">🎉</div>
+        <div class="success-icon">[CONGRATS]</div>
         <h1>Order confirmed!</h1>
         <p class="success-message">Your order has been placed successfully</p>
       </div>
@@ -119,8 +119,8 @@
       const authLink = document.getElementById("auth-link");
       
       if (isLoggedIn === "true" && username) {
-        const vipIcon = isVIP ? "👑 " : "";
-        authLink.textContent = `👤 ${vipIcon}${username}`;
+        const vipIcon = isVIP ? "[VIP] " : "";
+        authLink.textContent = `[USER] ${vipIcon}${username}`;
         authLink.href = "profile.html";
       } else {
         authLink.textContent = "Login/Register";

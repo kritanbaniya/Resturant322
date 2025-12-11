@@ -91,7 +91,7 @@
                 <div class="complaint-card" id="complaint-${c.id}">
                     <div class="complaint-header">
                         <span class="complaint-type ${c.is_complaint ? 'complaint-type-complaint' : 'complaint-type-compliment'}">
-                            ${c.is_complaint ? '⚠️ Complaint' : '👍 Compliment'}
+                            ${c.is_complaint ? '[WARNING] Complaint' : '[LIKE] Compliment'}
                         </span>
                         <span class="complaint-status status-${c.status.toLowerCase()}">${c.status}</span>
                     </div>
@@ -100,7 +100,7 @@
                         <p><strong>From:</strong> ${c.from_name} (ID: ${c.from})</p>
                         <p><strong>To:</strong> ${c.to_name || 'N/A'} (ID: ${c.target_id})</p>
                         <p><strong>Entity:</strong> ${c.entity_type}</p>
-                        <p><strong>Rating:</strong> ${'★'.repeat(c.rating)}${'☆'.repeat(5 - c.rating)} (${c.rating}/5)</p>
+                        <p><strong>Rating:</strong> ${'★'.repeat(c.rating)}${'[o]'.repeat(5 - c.rating)} (${c.rating}/5)</p>
                         <p><strong>Weight:</strong> ${c.weight} ${c.weight === 2 ? '(VIP)' : ''}</p>
                         <p><strong>Message:</strong> ${c.text}</p>
                         <p><strong>Submitted:</strong> ${new Date(c.created_at).toLocaleString()}</p>
@@ -108,10 +108,10 @@
 
                     <div class="complaint-actions">
                         <button class="btn-valid" onclick="resolveComplaint('${c.id}', 'Valid')">
-                            ✅ Mark as Valid
+                            [OK] Mark as Valid
                         </button>
                         <button class="btn-invalid" onclick="resolveComplaint('${c.id}', 'Invalid')">
-                            ❌ Mark as Invalid
+                            [ERROR] Mark as Invalid
                         </button>
                     </div>
                 </div>

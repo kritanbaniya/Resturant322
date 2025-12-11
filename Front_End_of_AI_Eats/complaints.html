@@ -20,7 +20,7 @@
         <a href="chat.html">AI Chat</a>
       </div>
       <div class="nav-right">
-        <a href="cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+        <a href="cart.html"> Cart (<span id="cart-count">0</span>)</a>
       </div>
     </nav>
   </header>
@@ -69,11 +69,11 @@
             <div class="form-group">
               <label for="rating">Rating (Stars)</label>
               <div class="star-rating">
-                <span class="star" data-rating="1">☆</span>
-                <span class="star" data-rating="2">☆</span>
-                <span class="star" data-rating="3">☆</span>
-                <span class="star" data-rating="4">☆</span>
-                <span class="star" data-rating="5">☆</span>
+                <span class="star" data-rating="1">[o]</span>
+                <span class="star" data-rating="2">[o]</span>
+                <span class="star" data-rating="3">[o]</span>
+                <span class="star" data-rating="4">[o]</span>
+                <span class="star" data-rating="5">[o]</span>
               </div>
               <input type="hidden" id="rating" value="0">
               <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
@@ -260,7 +260,7 @@
             s.textContent = '★';
             s.classList.add('active');
           } else {
-            s.textContent = '☆';
+            s.textContent = '[o]';
             s.classList.remove('active');
           }
         });
@@ -349,7 +349,7 @@
           // Reset star rating
           document.getElementById('rating').value = '0';
           document.querySelectorAll('.star').forEach(s => {
-            s.textContent = '☆';
+            s.textContent = '[o]';
             s.classList.remove('active');
           });
           

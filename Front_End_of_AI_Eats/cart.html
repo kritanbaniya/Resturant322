@@ -21,7 +21,7 @@
         <a href="complaints.html">Ratings</a>
       </div>
       <div class="nav-right">
-        <a href="cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+        <a href="cart.html"> Cart (<span id="cart-count">0</span>)</a>
       </div>
     </nav>
   </header>
@@ -30,7 +30,7 @@
   <section class="cart-section">
     <div class="cart-container">
       <div class="cart-header">
-        <h2>🛒 Your Cart</h2>
+        <h2> Your Cart</h2>
         <button class="clear-cart-btn" onclick="clearCart()">Clear All</button>
       </div>
 
@@ -188,8 +188,8 @@
       const authLink = document.getElementById("auth-link");
       
       if (isLoggedIn === "true" && username) {
-        const vipIcon = isVIP ? "👑 " : "";
-        authLink.textContent = `👤 ${vipIcon}${username}`;
+        const vipIcon = isVIP ? "[VIP] " : "";
+        authLink.textContent = `[USER] ${vipIcon}${username}`;
         authLink.href = "profile.html";
       } else {
         authLink.textContent = "Login/Register";

@@ -54,7 +54,7 @@
 
         <!-- UC-02 A3: Rating Requirements -->
         <div class="requirements-card">
-            <h2>⭐ Performance Criteria (UC-02 A3)</h2>
+            <h2>[*] Performance Criteria (UC-02 A3)</h2>
             <div class="criteria-grid">
                 <div class="criteria-item demotion">
                     <h4>Demotion Criteria</h4>
@@ -206,16 +206,16 @@
                 <div class="review-card ${review.status.toLowerCase()}">
                     <div class="review-header">
                         <span class="review-type ${review.is_complaint ? 'complaint' : 'compliment'}">
-                            ${review.is_complaint ? '👎 Complaint' : '👍 Compliment'}
+                            ${review.is_complaint ? '[DISLIKE] Complaint' : '[LIKE] Compliment'}
                         </span>
                         <span class="review-rating">
-                            ${review.rating > 0 ? '⭐'.repeat(review.rating) + '☆'.repeat(5 - review.rating) : 'N/A'}
+                            ${review.rating > 0 ? '[*]'.repeat(review.rating) + '[o]'.repeat(5 - review.rating) : 'N/A'}
                         </span>
                     </div>
                     <div class="review-content">
                         <p><strong>From:</strong> ${review.from_name}</p>
                         <p><strong>Message:</strong> ${review.text || 'No message'}</p>
-                        <p class="review-date">📅 ${new Date(review.created_at).toLocaleString()}</p>
+                        <p class="review-date"> ${new Date(review.created_at).toLocaleString()}</p>
                     </div>
                 </div>
             `).join('');
@@ -230,7 +230,7 @@
             // Check demotion threshold
             if (avgRating !== "N/A" && avgRating < 2.0) {
                 statusMsg.className = "status-card danger";
-                statusTitle.textContent = "⚠️ CRITICAL: Low Ratings";
+                statusTitle.textContent = "[WARNING] CRITICAL: Low Ratings";
                 statusText.textContent = `Your average rating (${avgRating}) is below 2.0 stars. You are at risk of demotion. Improve your performance immediately!`;
                 statusMsg.style.display = "block";
                 return;
@@ -238,7 +238,7 @@
 
             if (netComplaints >= 3) {
                 statusMsg.className = "status-card danger";
-                statusTitle.textContent = "⚠️ CRITICAL: High Complaints";
+                statusTitle.textContent = "[WARNING] CRITICAL: High Complaints";
                 statusText.textContent = `You have ${netComplaints} net complaints. You are at risk of demotion. Resolve complaints and improve service!`;
                 statusMsg.style.display = "block";
                 return;
@@ -247,7 +247,7 @@
             // Check bonus threshold
             if (avgRating !== "N/A" && avgRating > 4.0) {
                 statusMsg.className = "status-card success";
-                statusTitle.textContent = "🎉 Excellent Performance!";
+                statusTitle.textContent = "[CONGRATS] Excellent Performance!";
                 statusText.textContent = `Your average rating (${avgRating}) is excellent! You may be eligible for a performance bonus.`;
                 statusMsg.style.display = "block";
                 return;
@@ -255,7 +255,7 @@
 
             if (compliments >= 3) {
                 statusMsg.className = "status-card success";
-                statusTitle.textContent = "🎉 Excellent Feedback!";
+                statusTitle.textContent = "[CONGRATS] Excellent Feedback!";
                 statusText.textContent = `You have received ${compliments} compliments! You may be eligible for a performance bonus.`;
                 statusMsg.style.display = "block";
                 return;
@@ -264,7 +264,7 @@
             // Good standing
             if (netComplaints <= 1) {
                 statusMsg.className = "status-card info";
-                statusTitle.textContent = "✅ Good Standing";
+                statusTitle.textContent = "[OK] Good Standing";
                 statusText.textContent = "Your performance is satisfactory. Keep maintaining high quality!";
                 statusMsg.style.display = "block";
             }
@@ -296,17 +296,17 @@
         function displayPerformanceResult(result) {
             const container = document.getElementById("performance-result");
 
-            let actionIcon = "📊";
+            let actionIcon = "";
             let actionColor = "#2196F3";
 
             if (result.action === "demoted") {
-                actionIcon = "🛑";
+                actionIcon = "[HOLD]";
                 actionColor = "#F44336";
             } else if (result.action === "terminated") {
-                actionIcon = "❌";
+                actionIcon = "[ERROR]";
                 actionColor = "#C62828";
             } else if (result.action === "bonus") {
-                actionIcon = "🎁";
+                actionIcon = "[BONUS]";
                 actionColor = "#4CAF50";
             }
 

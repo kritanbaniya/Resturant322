@@ -20,7 +20,7 @@
         <a href="chat.html">AI Chat</a>
       </div>
       <div class="nav-right">
-        <a href="cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+        <a href="cart.html"> Cart (<span id="cart-count">0</span>)</a>
       </div>
     </nav>
   </header>
@@ -28,7 +28,7 @@
   <!-- CHECKOUT SECTION -->
   <section class="checkout-section">
     <div class="checkout-container">
-      <h2>🛒 Checkout</h2>
+      <h2> Checkout</h2>
       
       <div class="checkout-content">
         <!-- ORDER SUMMARY -->
@@ -56,7 +56,7 @@
 
           <!-- BALANCE CHECK -->
           <div class="balance-check" id="balance-check">
-            <h4>💰 Account Balance</h4>
+            <h4>[BALANCE] Account Balance</h4>
             <div class="balance-info">
               <div class="balance-row">
                 <span>Available Balance:</span>
@@ -68,7 +68,7 @@
               </div>
               <div id="balance-warning" style="display: none;">
                 <p style="color: #d32f2f; margin: 10px 0 0 0; padding: 10px; background: #ffebee; border-radius: 4px;">
-                  ⚠️ <strong>Insufficient Balance!</strong> Your balance is insufficient for this order. Please deposit more funds in your profile.
+                  [WARNING] <strong>Insufficient Balance!</strong> Your balance is insufficient for this order. Please deposit more funds in your profile.
                 </p>
               </div>
             </div>
@@ -206,14 +206,14 @@
           
           // UC-01 Precondition: Must have positive balance
           if (balance <= 0) {
-            warningEl.innerHTML = '<p style="color: #d32f2f; margin: 10px 0 0 0; padding: 10px; background: #ffebee; border-radius: 4px;">⚠️ <strong>No Balance!</strong> You must deposit funds before ordering. Please visit your profile to deposit money.</p>';
+            warningEl.innerHTML = '<p style="color: #d32f2f; margin: 10px 0 0 0; padding: 10px; background: #ffebee; border-radius: 4px;">[WARNING] <strong>No Balance!</strong> You must deposit funds before ordering. Please visit your profile to deposit money.</p>';
             warningEl.style.display = "block";
             placeOrderBtn.disabled = true;
             placeOrderBtn.style.opacity = "0.5";
             placeOrderBtn.textContent = "Deposit Funds Required";
           } else if (balance < orderTotal) {
             // UC-01 A1: Insufficient funds warning
-            warningEl.innerHTML = '<p style="color: #d32f2f; margin: 10px 0 0 0; padding: 10px; background: #ffebee; border-radius: 4px;">⚠️ <strong>Insufficient Balance!</strong> Your balance is insufficient for this order. <strong>WARNING:</strong> Attempting to place this order will result in a warning on your account.</p>';
+            warningEl.innerHTML = '<p style="color: #d32f2f; margin: 10px 0 0 0; padding: 10px; background: #ffebee; border-radius: 4px;">[WARNING] <strong>Insufficient Balance!</strong> Your balance is insufficient for this order. <strong>WARNING:</strong> Attempting to place this order will result in a warning on your account.</p>';
             warningEl.style.display = "block";
             placeOrderBtn.disabled = true;
             placeOrderBtn.style.opacity = "0.5";
@@ -243,8 +243,8 @@
       const authLink = document.getElementById("auth-link");
       
       if (isLoggedIn === "true" && username) {
-        const vipIcon = isVIP ? "👑 " : "";
-        authLink.textContent = `👤 ${vipIcon}${username}`;
+        const vipIcon = isVIP ? "[VIP] " : "";
+        authLink.textContent = `[USER] ${vipIcon}${username}`;
         authLink.href = "profile.html";
       } else {
         authLink.textContent = "Login/Register";
@@ -306,7 +306,7 @@
             // UC-01 A2: Check for VIP upgrade
             if (confirmData.vip_upgraded) {
               localStorage.setItem("isVIP", "true");
-              alert("🎉 Congratulations! You've been upgraded to VIP status!\n\nEnjoy 10% discounts and free delivery on all future orders!");
+              alert("[CONGRATS] Congratulations! You've been upgraded to VIP status!\n\nEnjoy 10% discounts and free delivery on all future orders!");
             }
             
             // Update balance in localStorage if provided
@@ -346,10 +346,10 @@
             
             // UC-01 A1: Insufficient funds error with warning applied
             if (errorMsg.includes("Insufficient funds") || errorMsg.includes("Insufficient")) {
-              alert("❌ ORDER REJECTED - INSUFFICIENT FUNDS\n\n" +
+              alert("[ERROR] ORDER REJECTED - INSUFFICIENT FUNDS\n\n" +
                     "Required: $" + (confirmData.required || "N/A") + "\n" +
                     "Your Balance: $" + (confirmData.balance || "N/A") + "\n\n" +
-                    "⚠️ WARNING APPLIED: You have received a warning for attempting to place an order without sufficient funds.\n\n" +
+                    "[WARNING] WARNING APPLIED: You have received a warning for attempting to place an order without sufficient funds.\n\n" +
                     "Please deposit more funds in your profile before trying again.\n\n" +
                     "Note: 3 warnings will result in account deregistration (VIPs: 2 warnings = VIP status loss).");
             } else {
@@ -365,13 +365,13 @@
           
           // UC-01 Preconditions: Check for balance/login errors
           if (errorMsg.includes("positive balance")) {
-            alert("❌ NO BALANCE\n\nYou must deposit funds before placing an order.\n\nPlease visit your profile to deposit money.");
+            alert("[ERROR] NO BALANCE\n\nYou must deposit funds before placing an order.\n\nPlease visit your profile to deposit money.");
             submitBtn.textContent = "Deposit Funds Required";
             submitBtn.disabled = true;
           } else if (errorMsg.includes("Customer or VIP")) {
-            alert("❌ UNAUTHORIZED\n\nOnly customers can place orders. Please log in with a customer account.");
+            alert("[ERROR] UNAUTHORIZED\n\nOnly customers can place orders. Please log in with a customer account.");
           } else if (errorMsg.includes("not active")) {
-            alert("❌ ACCOUNT INACTIVE\n\nYour account is not active. Please contact support.");
+            alert("[ERROR] ACCOUNT INACTIVE\n\nYour account is not active. Please contact support.");
           } else {
             alert("Error creating order: " + errorMsg);
           }

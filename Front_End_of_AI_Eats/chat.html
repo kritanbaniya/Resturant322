@@ -24,7 +24,7 @@
       </div>
 
       <div class="nav-right">
-        <a href="cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+        <a href="cart.html"> Cart (<span id="cart-count">0</span>)</a>
       </div>
     </nav>
   </header>
@@ -54,7 +54,7 @@
       const authLink = document.getElementById("auth-link");
       
       if (isLoggedIn === "true" && username) {
-        authLink.textContent = `👤 ${username}`;
+        authLink.textContent = `[USER] ${username}`;
         authLink.href = "profile.html";
       } else {
         authLink.textContent = "Login/Register";

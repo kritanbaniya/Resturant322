@@ -12,7 +12,7 @@
     <h1>AI Eats</h1>
     <nav>
       <div class="nav-left">
-        <a href="profile.html" id="auth-link">👤 Profile</a>
+        <a href="profile.html" id="auth-link">[USER] Profile</a>
       </div>
       <div class="nav-center">
         <a href="index.html">Home</a>
@@ -21,7 +21,7 @@
         <a href="complaints.html">Ratings</a>
       </div>
       <div class="nav-right">
-        <a href="cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+        <a href="cart.html"> Cart (<span id="cart-count">0</span>)</a>
       </div>
     </nav>
   </header>
@@ -30,7 +30,7 @@
   <section class="profile-section">
     <div class="profile-container">
       <div class="profile-header">
-        <div class="profile-avatar">👤</div>
+        <div class="profile-avatar">[USER]</div>
         <h2 id="profile-username">Loading...</h2>
         <p id="profile-email">Loading...</p>
       </div>
@@ -518,19 +518,19 @@
           
           // UC-02: Show Chef/DeliveryPerson status
           if (userData.role === "Chef" || userData.role === "DeliveryPerson") {
-            membershipStatus.innerHTML = `<span class="vip-status">${userData.role === "Chef" ? "🍳" : "🚗"} ${userData.role}</span>`;
+            membershipStatus.innerHTML = `<span class="vip-status">${userData.role === "Chef" ? "[CHEF]" : "[DELIVERY]"} ${userData.role}</span>`;
             if (vipActionBtn) {
               vipActionBtn.textContent = userData.role === "Chef" ? "View Dashboard" : "View Deliveries";
               vipActionBtn.href = userData.role === "Chef" ? "chef-dashboard.html" : "delivery-dashboard.html";
             }
           } else if (userData.role === "Demoted_Chef" || userData.role === "Demoted_DeliveryPerson") {
-            membershipStatus.innerHTML = `<span class="vip-status" style="background: #ff6b6b;">⚠️ ${userData.role}</span>`;
+            membershipStatus.innerHTML = `<span class="vip-status" style="background: #ff6b6b;">[WARNING] ${userData.role}</span>`;
             if (vipActionBtn) {
               vipActionBtn.textContent = userData.role === "Demoted_Chef" ? "Improve Performance" : "View Deliveries";
               vipActionBtn.href = userData.role === "Demoted_Chef" ? "chef-ratings.html" : "delivery-dashboard.html";
             }
           } else if (isVIP) {
-            membershipStatus.innerHTML = '<span class="vip-status">👑 VIP Member</span>';
+            membershipStatus.innerHTML = '<span class="vip-status">[VIP] VIP Member</span>';
             if (vipActionBtn) {
               vipActionBtn.textContent = "Manage VIP";
               vipActionBtn.href = "vip-membership.html";
@@ -544,7 +544,7 @@
             let vipMessage = "Regular Member";
             
             if (warningCount > 0) {
-              vipMessage += " (⚠️ Clear warnings to qualify for VIP)";
+              vipMessage += " ([WARNING] Clear warnings to qualify for VIP)";
             } else {
               const spentProgress = Math.min((totalSpent / 100) * 100, 100);
               const orderProgress = Math.min((orderCount / 3) * 100, 100);
