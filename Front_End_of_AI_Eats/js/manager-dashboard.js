@@ -580,20 +580,33 @@ async function loadFlaggedAI() {
       const container = document.getElementById('flaggedList');
 
       if (data.flagged_responses && data.flagged_responses.length > 0) {
-        container.innerHTML = data.flagged_responses.map(response => `
+        container.innerHTML = data.flagged_responses.map(response => {
+          const isKbEntry = response.type === 'kb_entry';
+          const flagInfo = isKbEntry 
+            ? `KB Entry | Reviews: ${response.reviewCount || 0} | Avg Rating: ${response.averageRating ? response.averageRating.toFixed(1) : 'N/A'}`
+            : `Source: ${response.source}`;
+          
+          return `
           <div class="item">
             <div class="item-header">Question: ${response.question}</div>
             <div class="item-meta">
-              Source: ${response.source} | Flagged: ${new Date(response.created_at).toLocaleDateString()}
+              ${flagInfo} | Flagged: ${new Date(response.created_at).toLocaleDateString()}<br>
+              <span style="color: #ff6b6b; font-size: 11px;">Reason: ${response.flag_reason}</span>
             </div>
             <div style="margin: 8px 0; color: #555; font-size: 13px;">
               <strong>Current Answer:</strong> ${response.answer}
             </div>
             <div class="item-actions">
-              <button class="btn-small btn-correct" onclick="showCorrectionModal('${response.chat_id}')">Correct & Update KB</button>
+              ${isKbEntry ? `
+                <button class="btn-small btn-reject" onclick="deleteKbEntry('${response.kbEntryId}')">Delete KB Entry</button>
+                <button class="btn-small btn-approve" onclick="unflagKbEntry('${response.kbEntryId}')">Unflag</button>
+              ` : `
+                <button class="btn-small btn-correct" onclick="showCorrectionModal('${response.chat_id}')">Correct & Update KB</button>
+              `}
             </div>
           </div>
-        `).join('');
+        `;
+        }).join('');
       } else {
         container.innerHTML = '<p>No flagged AI responses</p>';
       }
@@ -631,6 +644,52 @@ async function correctAIResponse(chatId, correctedAnswer) {
     showMessage('Error correcting response', false);
   }
 }
+
+// delete flagged KB entry
+async function deleteKbEntry(entryId) {
+  if (!confirm('Are you sure you want to delete this KB entry? This action cannot be undone.')) return;
+  
+  try {
+    const response = await fetch(`${API_URL}/api/manager/kb/${entryId}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    const data = await response.json();
+    showMessage(data.message, response.ok);
+    if (response.ok) loadFlaggedAI();
+  } catch (error) {
+    console.error('Error deleting KB entry:', error);
+    showMessage('Error deleting KB entry', false);
+  }
+}
+
+// unflag KB entry
+async function unflagKbEntry(entryId) {
+  if (!confirm('Unflag this KB entry? It will no longer appear in the flagged list.')) return;
+  
+  try {
+    const response = await fetch(`${API_URL}/api/manager/kb/${entryId}/unflag`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    const data = await response.json();
+    showMessage(data.message, response.ok);
+    if (response.ok) loadFlaggedAI();
+  } catch (error) {
+    console.error('Error unflagging KB entry:', error);
+    showMessage('Error unflagging KB entry', false);
+  }
+}
+
+// make functions globally accessible
+window.deleteKbEntry = deleteKbEntry;
+window.unflagKbEntry = unflagKbEntry;
 
 function showMessage(message, isSuccess) {
   const el = document.getElementById('message');

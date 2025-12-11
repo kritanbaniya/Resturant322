@@ -1,37 +1,30 @@
 const { ChatQuestion, ChatAnswer } = require('../models/Chat');
 const KnowledgeBaseEntry = require('../models/KnowledgeBase');
 const { callLLM } = require('../resturantAI/utils/llmService');
-const { searchKb, formatKbAnswer } = require('../resturantAI/utils/vectorSearch');
+const { searchKb, formatKbAnswer, initializeKb } = require('../resturantAI/utils/vectorSearch');
 const fs = require('fs');
 const path = require('path');
 
 // track ai service availability
 let aiServiceAvailable = true;
 
-// load knowledge base and system prompt for ai chat
-let kb = null;
+// load system prompt for ai chat
 let systemPrompt = null;
 let kbInitialized = false;
 
-// initialize kb on startup
+// initialize kb from mongodb on startup
 (async () => {
   try {
-    const kbPath = path.join(__dirname, '../resturantAI/kb/knowledge.json');
     const promptPath = path.join(__dirname, '../resturantAI/ai/systemPrompt.txt');
     
-    if (fs.existsSync(kbPath)) {
-      kb = JSON.parse(fs.readFileSync(kbPath, 'utf-8'));
-    }
     if (fs.existsSync(promptPath)) {
       systemPrompt = fs.readFileSync(promptPath, 'utf-8');
     }
     
-    if (kb) {
-      const { initializeKb } = require('../resturantAI/utils/vectorSearch');
-      await initializeKb(kb);
-      kbInitialized = true;
-      console.log('[chat_service] kb initialized and ready');
-    }
+    // initialize kb from mongodb
+    await initializeKb();
+    kbInitialized = true;
+    console.log('[chat_service] kb initialized from mongodb and ready');
   } catch (err) {
     console.error('[chat_service] kb initialization failed:', err.message);
   }
@@ -50,11 +43,11 @@ async function generativeAiResponse(prompt, history = []) {
   try {
     // search kb for relevant facts
     let kbFacts = [];
-    if (kbInitialized && kb) {
+    if (kbInitialized) {
       try {
         const kbResults = await searchKb(prompt.toLowerCase().trim(), 3, 0.3);
         if (kbResults.length > 0) {
-          kbFacts = kbResults.map(result => formatKbAnswer(result, kb));
+          kbFacts = kbResults.map(result => formatKbAnswer(result));
         }
       } catch (searchError) {
         console.error('[chat_service] vector search error:', searchError.message);
@@ -106,26 +99,86 @@ async function askAi(userId, questionText) {
   
   await chatQuestion.save();
   
-  // try kb first
-  const kbAnswer = await searchKnowledgeBase(questionText);
-  if (kbAnswer) {
+  // try vector search kb first
+  let kbResult = null;
+  if (kbInitialized) {
+    try {
+      const kbResults = await searchKb(questionText.toLowerCase().trim(), 1, 0.3);
+      console.log(`[chat_service] prompt: "${questionText}"`);
+      if (kbResults.length > 0) {
+        console.log(`[chat_service] kb search results: ${kbResults.length} matches found`);
+        kbResults.forEach((result, idx) => {
+          console.log(`[chat_service]   match ${idx + 1}: score=${result.score.toFixed(4)}, entryId=${result.kbEntryId}`);
+        });
+        if (kbResults[0].score > 0.3) {
+          kbResult = kbResults[0];
+          console.log(`[chat_service] using kb result with score ${kbResult.score.toFixed(4)}`);
+        } else {
+          console.log(`[chat_service] kb score ${kbResults[0].score.toFixed(4)} below threshold 0.3, falling back to llm`);
+        }
+      } else {
+        console.log(`[chat_service] no kb matches found, falling back to llm`);
+      }
+    } catch (searchError) {
+      console.error('[chat_service] vector search error:', searchError.message);
+    }
+  } else {
+    console.log(`[chat_service] prompt: "${questionText}" - kb not initialized, using llm`);
+  }
+  
+  // fallback to keyword search if vector search didn't find anything
+  if (!kbResult) {
+    const kbAnswer = await searchKnowledgeBase(questionText);
+    if (kbAnswer) {
+      console.log(`[chat_service] using keyword-based kb match`);
+      const chatAnswer = new ChatAnswer({
+        questionId: chatQuestion._id,
+        userId: userId || null,
+        queryText: questionText,
+        answerText: kbAnswer,
+        source: "knowledge_base"
+      });
+      
+      await chatAnswer.save();
+      return {
+        answer: kbAnswer,
+        source: "knowledge_base",
+        answer_id: chatAnswer._id.toString()
+      }, 200;
+    }
+  } else {
+    // use vector search result
+    const answerText = formatKbAnswer(kbResult);
     const chatAnswer = new ChatAnswer({
       questionId: chatQuestion._id,
       userId: userId || null,
       queryText: questionText,
-      answerText: kbAnswer,
-      source: "knowledge_base"
+      answerText: answerText,
+      source: "knowledge_base",
+      kbEntryId: kbResult.kbEntryId,
+      kbScore: kbResult.score
     });
     
     await chatAnswer.save();
-    return {
-      answer: kbAnswer,
+    
+    // if score > 0.3, offer review option
+    const response = {
+      answer: answerText,
       source: "knowledge_base",
-      answer_id: chatAnswer._id.toString()
-    }, 200;
+      answer_id: chatAnswer._id.toString(),
+      kbEntryId: kbResult.kbEntryId,
+      kbScore: kbResult.score
+    };
+    
+    if (kbResult.score > 0.3) {
+      response.reviewable = true;
+    }
+    
+    return response, 200;
   }
   
   // fall back to llm
+  console.log(`[chat_service] generating llm response for prompt: "${questionText}"`);
   const aiResponse = await generativeAiResponse(questionText, []);
   if (!aiResponse) {
     return {
@@ -133,6 +186,7 @@ async function askAi(userId, questionText) {
       message: "The LLM service is currently offline. Please try again later."
     }, 503;
   }
+  console.log(`[chat_service] llm response generated`);
   
   const chatAnswer = new ChatAnswer({
     questionId: chatQuestion._id,
@@ -155,29 +209,43 @@ async function askAi(userId, questionText) {
 async function rateAnswer(answerId, rating) {
   const answer = await ChatAnswer.findById(answerId);
   if (!answer) {
-    return { error: "Chat answer not found." }, 404;
+    return [{ error: "Chat answer not found." }, 404];
   }
   
-  if (rating < 0 || rating > 5) {
-    return { error: "Rating must be between 0 and 5." }, 400;
+  if (rating < 1 || rating > 5) {
+    return [{ error: "Rating must be between 1 and 5." }, 400];
   }
   
   await answer.set_rating(rating);
-  return { message: "Rating submitted successfully." }, 200;
+  
+  // if this is a kb-based answer and rating is 1, flag the kb entry
+  if (answer.source === "knowledge_base" && answer.kbEntryId && rating === 1) {
+    try {
+      const kbEntry = await KnowledgeBaseEntry.findById(answer.kbEntryId);
+      if (kbEntry) {
+        await kbEntry.add_review(rating);
+        console.log(`[chat_service] flagged kb entry ${answer.kbEntryId} due to 1-star rating`);
+      }
+    } catch (error) {
+      console.error('[chat_service] failed to flag kb entry:', error.message);
+    }
+  }
+  
+  return [{ message: "Rating submitted successfully." }, 200];
 }
 
 // flag a chat answer for review
 async function flagAnswer(answerId, reason = null) {
   const answer = await ChatAnswer.findById(answerId);
   if (!answer) {
-    return { error: "Chat answer not found." }, 404;
+    return [{ error: "Chat answer not found." }, 404];
   }
   
   await answer.flag(reason);
-  return {
+  return [{
     message: "Answer flagged for review.",
     note: "Thank you for your feedback. Our management team will review this response."
-  }, 200;
+  }, 200];
 }
 
 // retrieve chat history for a user
@@ -222,9 +290,56 @@ function getAiStatus() {
   };
 }
 
+// review a kb-based answer (specific endpoint for kb reviews)
+async function reviewKbAnswer(answerId, rating) {
+  const answer = await ChatAnswer.findById(answerId);
+  if (!answer) {
+    return [{ error: "Chat answer not found." }, 404];
+  }
+  
+  if (answer.source !== "knowledge_base") {
+    return [{ error: "This answer is not from the knowledge base and cannot be reviewed." }, 400];
+  }
+  
+  if (!answer.kbEntryId) {
+    return [{ error: "Knowledge base entry ID not found for this answer." }, 400];
+  }
+  
+  if (rating < 1 || rating > 5) {
+    return [{ error: "Rating must be between 1 and 5." }, 400];
+  }
+  
+  // update chat answer rating
+  await answer.set_rating(rating);
+  
+  // update kb entry with review
+  try {
+    const kbEntry = await KnowledgeBaseEntry.findById(answer.kbEntryId);
+    if (!kbEntry) {
+      return [{ error: "Knowledge base entry not found." }, 404];
+    }
+    
+    await kbEntry.add_review(rating);
+    
+    // if rating is 1, it's already flagged by add_review
+    if (rating === 1) {
+      return [{
+        message: "Rating submitted successfully. This knowledge base entry has been flagged for manager review.",
+        flagged: true
+      }, 200];
+    }
+    
+    return [{ message: "Rating submitted successfully." }, 200];
+  } catch (error) {
+    console.error('[chat_service] failed to update kb entry:', error.message);
+    return [{ error: "Failed to update knowledge base entry." }, 500];
+  }
+}
+
 module.exports = {
   askAi,
   rateAnswer,
+  reviewKbAnswer,
   flagAnswer,
   getChatHistory,
   setAiAvailability,

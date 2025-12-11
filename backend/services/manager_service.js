@@ -294,18 +294,55 @@ async function assignDeliveryWithJustification(managerId, bidId, justification =
   }
 }
 
-// get flagged ai responses
+// get flagged ai responses (includes both flagged chat answers and flagged kb entries)
 async function getFlaggedAiResponses() {
-  const flagged = await ChatAnswer.find({ flagged: true }).sort({ created_at: -1 });
+  // get all flagged chat responses
+  const flaggedChatAnswers = await ChatAnswer.find({ flagged: true }).sort({ created_at: -1 });
   
-  return flagged.map(c => ({
-    chat_id: c._id.toString(),
-    question: c.queryText,
-    answer: c.answerText,
-    source: c.source || "Unknown",
-    flag_reason: c.flagReason || "Marked as outrageous",
-    created_at: c.created_at
-  }));
+  // get all flagged knowledge base entries
+  const flaggedKbEntries = await KnowledgeBaseEntry.find({ flagged: true })
+    .sort({ updated_at: -1 });
+  
+  console.log(`[manager_service] found ${flaggedChatAnswers.length} flagged chat responses and ${flaggedKbEntries.length} flagged KB entries`);
+  
+  // combine both types of flagged items
+  const results = [];
+  
+  // add flagged chat answers
+  flaggedChatAnswers.forEach(c => {
+    results.push({
+      chat_id: c._id.toString(),
+      question: c.queryText || "No question",
+      answer: c.answerText || "No answer",
+      source: c.source || "Unknown",
+      flag_reason: c.flagReason || "Marked for review",
+      created_at: c.created_at,
+      rating: c.rating || null,
+      kbEntryId: c.kbEntryId ? c.kbEntryId.toString() : null,
+      type: 'chat_answer'
+    });
+  });
+  
+  // add flagged kb entries
+  flaggedKbEntries.forEach(entry => {
+    results.push({
+      chat_id: entry._id.toString(), // use kb entry id as chat_id for consistency
+      question: entry.questionText || "No question",
+      answer: entry.answerText || "No answer",
+      source: "knowledge_base",
+      flag_reason: entry.flagReason || "Flagged for review",
+      created_at: entry.updated_at || entry.created_at, // use updated_at since that's when it was flagged
+      rating: entry.averageRating || null,
+      reviewCount: entry.reviewCount || 0,
+      kbEntryId: entry._id.toString(),
+      type: 'kb_entry'
+    });
+  });
+  
+  // sort by created_at/updated_at descending (most recent first)
+  results.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  
+  return results;
 }
 
 // update knowledge base from flagged response
@@ -411,6 +448,62 @@ async function resolveFlaggedChatResponse(chatId, correctedAnswer) {
   return [{ message: "Flagged chat response resolved and knowledge base updated." }, 200];
 }
 
+// get flagged knowledge base entries
+async function getFlaggedKbEntries() {
+  const flagged = await KnowledgeBaseEntry.find({ flagged: true })
+    .sort({ updated_at: -1 });
+  
+  const entries = flagged.map(entry => ({
+    kb_entry_id: entry._id.toString(),
+    questionText: entry.questionText,
+    answerText: entry.answerText,
+    flagReason: entry.flagReason || 'flagged for review',
+    reviewCount: entry.reviewCount,
+    averageRating: entry.averageRating,
+    created_at: entry.created_at,
+    updated_at: entry.updated_at
+  }));
+  
+  return [entries, 200];
+}
+
+// delete flagged knowledge base entry
+async function deleteKbEntry(managerId, entryId) {
+  const manager = await User.findById(managerId);
+  if (!manager || manager.role !== "Manager") {
+    return [{ error: "Unauthorized. Only managers can delete KB entries." }, 403];
+  }
+  
+  const entry = await KnowledgeBaseEntry.findById(entryId);
+  if (!entry) {
+    return [{ error: "Knowledge base entry not found." }, 404];
+  }
+  
+  await KnowledgeBaseEntry.findByIdAndDelete(entryId);
+  
+  return [{ message: "Knowledge base entry deleted successfully." }, 200];
+}
+
+// unflag knowledge base entry (keep it but remove flag)
+async function unflagKbEntry(managerId, entryId) {
+  const manager = await User.findById(managerId);
+  if (!manager || manager.role !== "Manager") {
+    return [{ error: "Unauthorized. Only managers can unflag KB entries." }, 403];
+  }
+  
+  const entry = await KnowledgeBaseEntry.findById(entryId);
+  if (!entry) {
+    return [{ error: "Knowledge base entry not found." }, 404];
+  }
+  
+  entry.flagged = false;
+  entry.flagReason = null;
+  entry.updated_at = new Date();
+  await entry.save();
+  
+  return [{ message: "Knowledge base entry unflagged successfully." }, 200];
+}
+
 module.exports = {
   getPendingRegistrations,
   approveRegistration,
@@ -429,5 +522,8 @@ module.exports = {
   addKbEntry,
   updateKbEntry,
   getFlaggedChatResponses,
-  resolveFlaggedChatResponse
+  resolveFlaggedChatResponse,
+  getFlaggedKbEntries,
+  deleteKbEntry,
+  unflagKbEntry
 };

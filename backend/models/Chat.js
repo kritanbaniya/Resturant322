@@ -42,6 +42,15 @@ const chatAnswerSchema = new mongoose.Schema({
     required: true,
     enum: ["knowledge_base", "ai_model"]
   },
+  kbEntryId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'KnowledgeBaseEntry',
+    required: false
+  },
+  kbScore: {
+    type: Number,
+    required: false
+  },
   rating: {
     type: Number,
     default: null

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { askAi, rateAnswer, flagAnswer, getChatHistory } = require('../services/chat_service');
+const { askAi, rateAnswer, reviewKbAnswer, flagAnswer, getChatHistory } = require('../services/chat_service');
 
 router.post("/ask", async (req, res) => {
   const { user_id, question } = req.body;
@@ -21,6 +21,17 @@ router.post("/rate", async (req, res) => {
   }
   
   const [response, status] = await rateAnswer(answer_id, parseInt(rating));
+  return res.status(status).json(response);
+});
+
+router.post("/review-kb", async (req, res) => {
+  const { answer_id, rating } = req.body;
+  
+  if (answer_id === undefined || rating === undefined) {
+    return res.status(400).json({ error: "answer_id and rating are required." });
+  }
+  
+  const [response, status] = await reviewKbAnswer(answer_id, parseInt(rating));
   return res.status(status).json(response);
 });
 

@@ -1,14 +1,14 @@
 /**
  * vector search service
  * uses transformer.js for local embeddings (no api calls)
+ * loads knowledge base from mongodb
  */
 
-const fs = require('fs');
-const path = require('path');
 const { embedText } = require('./embeddings.js');
+const KnowledgeBaseEntry = require('../../models/KnowledgeBase');
 
-// cache for kb chunks and embeddings
-let kbChunks = null;
+// cache for kb entries and embeddings
+let kbEntries = null;
 let kbEmbeddings = null;
 
 /**
@@ -233,31 +233,40 @@ function cosineSimilarity(vecA, vecB) {
 }
 
 /**
- * initialize kb chunks and embeddings (call once at startup)
- * @param {object} kb - knowledge base object
+ * initialize kb from mongodb (call once at startup)
+ * loads all knowledge base entries with their embeddings
  */
-async function initializeKb(kb) {
-  console.log('[vectorSearch] creating chunks...');
-  kbChunks = createKbChunks(kb);
-  console.log(`[vectorSearch] created ${kbChunks.length} kb chunks`);
+async function initializeKb() {
+  try {
+    console.log('[vectorSearch] loading knowledge base from mongodb...');
+    kbEntries = await KnowledgeBaseEntry.find({ embedding: { $exists: true, $ne: null } });
+    console.log(`[vectorSearch] loaded ${kbEntries.length} kb entries from mongodb`);
 
-  console.log('[vectorSearch] generating embeddings (transformer.js)...');
-  kbEmbeddings = [];
-
-  for (let i = 0; i < kbChunks.length; i++) {
-    try {
-      const embedding = await embedText(kbChunks[i].text);
-      kbEmbeddings.push(embedding);
-      if ((i + 1) % 10 === 0) {
-        console.log(`[vectorSearch] embedded ${i + 1}/${kbChunks.length} chunks`);
+    kbEmbeddings = [];
+    for (let i = 0; i < kbEntries.length; i++) {
+      const entry = kbEntries[i];
+      if (entry.embedding && Array.isArray(entry.embedding) && entry.embedding.length > 0) {
+        kbEmbeddings.push(entry.embedding);
+      } else {
+        // generate embedding if missing
+        console.log(`[vectorSearch] generating missing embedding for entry ${i}...`);
+        try {
+          const embedding = await embedText(entry.questionText);
+          entry.embedding = embedding;
+          await entry.save();
+          kbEmbeddings.push(embedding);
+        } catch (error) {
+          console.error(`[vectorSearch] failed to generate embedding:`, error.message);
+          kbEmbeddings.push(new Array(384).fill(0));
+        }
       }
-    } catch (error) {
-      console.error(`[vectorSearch] failed to embed chunk ${i}:`, error.message);
-      // use zero vector as fallback (384 dimensions for all-MiniLM-L6-v2)
-      kbEmbeddings.push(new Array(384).fill(0));
     }
+    console.log('[vectorSearch] kb initialization complete');
+  } catch (error) {
+    console.error('[vectorSearch] failed to initialize kb from mongodb:', error.message);
+    kbEntries = [];
+    kbEmbeddings = [];
   }
-  console.log('[vectorSearch] kb initialization complete');
 }
 
 /**
@@ -265,10 +274,10 @@ async function initializeKb(kb) {
  * @param {string} query - user query
  * @param {number} topK - number of top results to return (default: 3)
  * @param {number} minScore - minimum similarity score threshold (default: 0.3)
- * @returns {promise<array>} - array of { text, metadata, score } sorted by score, filtered by threshold
+ * @returns {promise<array>} - array of { text, metadata, score, kbEntryId, answerText } sorted by score, filtered by threshold
  */
 async function searchKb(query, topK = 3, minScore = 0.3) {
-  if (!kbChunks || !kbEmbeddings || kbChunks.length === 0) {
+  if (!kbEntries || !kbEmbeddings || kbEntries.length === 0) {
     console.warn('[vectorSearch] kb not initialized, returning empty results');
     return [];
   }
@@ -279,12 +288,15 @@ async function searchKb(query, topK = 3, minScore = 0.3) {
     
     // calculate similarities
     const results = [];
-    for (let i = 0; i < kbChunks.length; i++) {
+    for (let i = 0; i < kbEntries.length; i++) {
+      const entry = kbEntries[i];
       const similarity = cosineSimilarity(queryEmbedding, kbEmbeddings[i]);
       results.push({
-        text: kbChunks[i].text,
-        metadata: kbChunks[i].metadata,
-        score: similarity
+        text: entry.questionText,
+        answerText: entry.answerText,
+        metadata: entry.metadata || {},
+        score: similarity,
+        kbEntryId: entry._id.toString()
       });
     }
 
@@ -302,62 +314,17 @@ async function searchKb(query, topK = 3, minScore = 0.3) {
 
 /**
  * format kb chunk into answer text
- * @param {object} chunk - chunk from searchKb result
- * @param {object} kb - knowledge base object (for full item details)
+ * @param {object} chunk - chunk from searchKb result (now includes answerText directly)
  * @returns {string} - formatted answer
  */
-function formatKbAnswer(chunk, kb) {
-  const meta = chunk.metadata;
-  
-  if (meta.type === 'menu_item' && meta.item) {
-    const item = meta.item;
-    let answer = item.name;
-    if (item.description) {
-      answer += `: ${item.description}`;
-    }
-    if (item.approx_price) {
-      answer += ` Price: ${item.approx_price}`;
-    }
-    return answer;
+function formatKbAnswer(chunk) {
+  // use answerText directly from mongodb entry
+  if (chunk.answerText) {
+    return chunk.answerText;
   }
   
-  if (meta.type === 'menu' && meta.field === 'overview') {
-    const categories = meta.categories || [];
-    const categoryList = categories.join(', ');
-    let answer = `We serve ${categoryList}.`;
-    if (kb.menu && kb.menu.notes) {
-      answer += ` ${kb.menu.notes}`;
-    }
-    if (kb.menu && kb.menu.signature_dishes) {
-      answer += ` Our signature dishes include ${kb.menu.signature_dishes.join(', ')}.`;
-    }
-    return answer;
-  }
-  
-  if (meta.type === 'menu' && meta.field === 'signature_dishes' && meta.signatureDishes) {
-    return `Our signature dishes include: ${meta.signatureDishes.join(', ')}.`;
-  }
-  
-  if (meta.type === 'location' && meta.location) {
-    const loc = meta.location;
-    if (meta.field === 'address') {
-      return loc.address;
-    }
-    if (meta.field === 'hours') {
-      const hoursText = Object.entries(loc.hours || {}).map(([day, time]) => `${day}: ${time}`).join(', ');
-      return hoursText;
-    }
-    if (meta.field === 'phone') {
-      return loc.phone;
-    }
-  }
-  
-  if (meta.type === 'faq' && meta.faq) {
-    return meta.faq.answer;
-  }
-  
-  // extract text from chunk
-  return chunk.text.replace(/^(restaurant|location|menu|faq|policy|allergy)\s+\w+:\s*/, '');
+  // fallback to text if answerText not available
+  return chunk.text || '';
 }
 
-module.exports = { initializeKb, searchKb, formatKbAnswer };
+module.exports = { initializeKb, searchKb, formatKbAnswer, createKbChunks };

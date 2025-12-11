@@ -164,7 +164,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
 }
 
 // add message to chat box
-function addMessage(text, sender) {
+function addMessage(text, sender, options = {}) {
   const chatBox = document.getElementById("chat-box");
   const messageDiv = document.createElement("div");
   let className = 'message';
@@ -187,8 +187,104 @@ function addMessage(text, sender) {
   messageDiv.className = className;
   messageDiv.innerHTML = `<span class="sender">${senderLabel}:</span> <span class="content">${escapeHtml(text)}</span>`;
   
+  // add review UI only for reviewable KB responses (score > 0.3)
+  if (options.reviewable && options.answerId) {
+    const reviewDiv = document.createElement("div");
+    reviewDiv.className = "review-section";
+    reviewDiv.style.marginTop = "10px";
+    reviewDiv.style.padding = "10px";
+    reviewDiv.style.borderTop = "1px solid #ddd";
+    reviewDiv.innerHTML = `
+      <div style="margin-bottom: 8px; font-size: 0.9em; color: #666;">Was this response helpful?</div>
+      <div class="star-rating" data-answer-id="${options.answerId}" data-kb-entry-id="${options.kbEntryId || ''}">
+        ${[1, 2, 3, 4, 5].map(star => 
+          `<span class="star" data-rating="${star}" style="font-size: 24px; cursor: pointer; color: #ddd; margin-right: 5px;">★</span>`
+        ).join('')}
+      </div>
+      <div class="rating-feedback" style="margin-top: 8px; font-size: 0.85em; color: #666; display: none;"></div>
+    `;
+    messageDiv.appendChild(reviewDiv);
+    
+    // add star rating event listeners
+    const stars = reviewDiv.querySelectorAll('.star');
+    stars.forEach(star => {
+      star.addEventListener('mouseenter', function() {
+        const rating = parseInt(this.dataset.rating);
+        highlightStars(stars, rating);
+      });
+      star.addEventListener('mouseleave', function() {
+        const currentRating = reviewDiv.dataset.currentRating || 0;
+        highlightStars(stars, currentRating);
+      });
+      star.addEventListener('click', function() {
+        const rating = parseInt(this.dataset.rating);
+        submitReview(options.answerId, rating, options.kbEntryId, reviewDiv);
+      });
+    });
+  }
+  
   chatBox.appendChild(messageDiv);
   chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// highlight stars up to rating
+function highlightStars(stars, rating) {
+  stars.forEach((star, index) => {
+    if (index < rating) {
+      star.style.color = '#ffc107';
+    } else {
+      star.style.color = '#ddd';
+    }
+  });
+}
+
+// submit review
+async function submitReview(answerId, rating, kbEntryId, reviewDiv) {
+  if (!answerId) return;
+  
+  const feedbackDiv = reviewDiv.querySelector('.rating-feedback');
+  const stars = reviewDiv.querySelectorAll('.star');
+  
+  // disable stars
+  stars.forEach(star => {
+    star.style.pointerEvents = 'none';
+  });
+  
+  feedbackDiv.style.display = 'block';
+  feedbackDiv.textContent = 'Submitting review...';
+  
+  try {
+    const endpoint = kbEntryId ? '/api/chat/review-kb' : '/api/chat/rate';
+    const res = await fetch(`http://localhost:5000${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        answer_id: answerId,
+        rating: rating
+      })
+    });
+    
+    const data = await res.json();
+    
+    if (res.ok) {
+      reviewDiv.dataset.currentRating = rating;
+      highlightStars(stars, rating);
+      feedbackDiv.textContent = rating === 1 
+        ? 'Thank you for your feedback. This response has been flagged for review.'
+        : `Thank you! You rated this ${rating} star${rating > 1 ? 's' : ''}.`;
+      feedbackDiv.style.color = '#28a745';
+    } else {
+      feedbackDiv.textContent = data.error || 'Failed to submit review.';
+      feedbackDiv.style.color = '#dc3545';
+    }
+  } catch (err) {
+    console.error('error submitting review:', err);
+    feedbackDiv.textContent = 'Error submitting review. Please try again.';
+    feedbackDiv.style.color = '#dc3545';
+  }
 }
 
 // update voice button appearance
@@ -307,7 +403,11 @@ async function sendVoiceMessage(transcript) {
     }
 
     const senderLabel = data.source === 'kb' ? 'kb' : 'ai';
-    addMessage(data.answer, senderLabel);
+    addMessage(data.answer, senderLabel, {
+      reviewable: data.reviewable || false,
+      answerId: data.answer_id || data.chat_id,
+      kbEntryId: data.kbEntryId
+    });
 
     if (data.audioBase64) {
       await playAudio(data.audioBase64, data.audioMimeType || 'audio/mpeg');
@@ -440,7 +540,11 @@ async function sendMessage() {
     }
     
     const senderLabel = data.source === 'kb' ? 'kb' : 'ai';
-    addMessage(data.answer, senderLabel);
+    addMessage(data.answer, senderLabel, {
+      reviewable: data.reviewable || false,
+      answerId: data.answer_id || data.chat_id,
+      kbEntryId: data.kbEntryId
+    });
 
     isProcessing = false;
     updateInputState();

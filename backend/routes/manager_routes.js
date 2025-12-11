@@ -19,7 +19,10 @@ const {
   addKbEntry,
   updateKbEntry,
   getFlaggedChatResponses,
-  resolveFlaggedChatResponse
+  resolveFlaggedChatResponse,
+  getFlaggedKbEntries,
+  deleteKbEntry,
+  unflagKbEntry
 } = require('../services/manager_service');
 const { tokenRequired } = require('../utils/auth');
 
@@ -315,6 +318,41 @@ router.post("/chat/resolve/:chat_id", async (req, res) => {
   }
   
   const [response, status] = await resolveFlaggedChatResponse(req.params.chat_id, corrected_answer);
+  return res.status(status).json(response);
+});
+
+router.get("/kb/flagged", tokenRequired, async (req, res) => {
+  if (req.current_user.role !== "Manager") {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+  
+  const [response, status] = await getFlaggedKbEntries();
+  return res.status(status).json(response);
+});
+
+router.delete("/kb/:entry_id", tokenRequired, async (req, res) => {
+  if (req.current_user.role !== "Manager") {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+  
+  if (!mongoose.Types.ObjectId.isValid(req.params.entry_id)) {
+    return res.status(400).json({ error: "Invalid KB entry ID" });
+  }
+  
+  const [response, status] = await deleteKbEntry(req.current_user.id, req.params.entry_id);
+  return res.status(status).json(response);
+});
+
+router.post("/kb/:entry_id/unflag", tokenRequired, async (req, res) => {
+  if (req.current_user.role !== "Manager") {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+  
+  if (!mongoose.Types.ObjectId.isValid(req.params.entry_id)) {
+    return res.status(400).json({ error: "Invalid KB entry ID" });
+  }
+  
+  const [response, status] = await unflagKbEntry(req.current_user.id, req.params.entry_id);
   return res.status(status).json(response);
 });
 

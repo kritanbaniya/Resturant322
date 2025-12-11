@@ -18,12 +18,10 @@ const fs = require('fs');
 const path = require('path');
 const { searchKb, formatKbAnswer, initializeKb } = require('../utils/vectorSearch');
 const { callLLM } = require('../utils/llmService');
+const { ChatQuestion, ChatAnswer } = require('../../models/Chat');
+const KnowledgeBaseEntry = require('../../models/KnowledgeBase');
 
 const router = express.Router();
-
-// load knowledge base
-const kbPath = path.join(__dirname, '../kb/knowledge.json');
-const kb = JSON.parse(fs.readFileSync(kbPath, 'utf-8'));
 
 // load system prompt
 const promptPath = path.join(__dirname, '../ai/systemPrompt.txt');
@@ -32,11 +30,11 @@ const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
 // model name for ollama cloud
 const modelName = process.env.OLLAMA_MODEL || 'llama3.2:3b';
 
-// initialize kb embeddings on startup
+// initialize kb embeddings from mongodb on startup
 let kbInitialized = false;
-initializeKb(kb).then(() => {
+initializeKb().then(() => {
   kbInitialized = true;
-  console.log('[chat] kb initialized and ready');
+  console.log('[chat] kb initialized from mongodb and ready');
 }).catch(err => {
   console.error('[chat] kb initialization failed:', err.message);
 });
@@ -79,11 +77,12 @@ router.post('/', async (req, res) => {
     let kbFacts = [];
     let kbHitItems = [];
     let kbHit = false;
+    let kbResults = [];
     
     if (kbInitialized) {
       try {
         const minScore = 0.3; // minimum similarity score to consider a hit
-        const kbResults = await searchKb(normalized, 3, minScore);
+        kbResults = await searchKb(normalized, 3, minScore);
         console.log(`[chat] vector search completed, found ${kbResults.length} results above threshold (${minScore})`);
         
         if (kbResults.length > 0) {
@@ -98,7 +97,7 @@ router.post('/', async (req, res) => {
           }));
           
           // format kb chunks into facts
-          kbFacts = kbResults.map(result => formatKbAnswer(result, kb));
+          kbFacts = kbResults.map(result => formatKbAnswer(result));
           
           // log kb hit details
           console.log(`[chat] ====== KB HIT DETECTED ======`);
@@ -163,15 +162,64 @@ router.post('/', async (req, res) => {
     console.log(`[chat] total response time: ${Date.now() - totalStart}ms`);
     console.log(`[chat] =============================`);
 
+    // save chat question and answer to database
+    let chatAnswerId = null;
+    let kbEntryId = null;
+    let kbScore = null;
+    let reviewable = false;
+    
+    try {
+      const userId = req.user?.id || null;
+      
+      // save question
+      const chatQuestion = new ChatQuestion({
+        userId: userId,
+        queryText: message
+      });
+      await chatQuestion.save();
+      
+      // determine if kb hit should be reviewable (only top 1 result, score > 0.3)
+      // only use the highest scoring kb result for review
+      if (kbHit && kbResults.length > 0) {
+        const topKbResult = kbResults[0]; // top result (highest score)
+        if (topKbResult.score > 0.3) {
+          kbEntryId = topKbResult.kbEntryId;
+          kbScore = topKbResult.score;
+          reviewable = true;
+          console.log(`[chat] top kb result selected for review: score=${topKbResult.score.toFixed(4)}, entryId=${kbEntryId}`);
+        }
+      }
+      
+      // save answer
+      const chatAnswer = new ChatAnswer({
+        questionId: chatQuestion._id,
+        userId: userId,
+        queryText: message,
+        answerText: llmResult.answer,
+        source: kbHit ? 'knowledge_base' : 'ai_model',
+        kbEntryId: kbEntryId || undefined,
+        kbScore: kbScore || undefined
+      });
+      await chatAnswer.save();
+      chatAnswerId = chatAnswer._id.toString();
+    } catch (dbError) {
+      console.error('[chat] error saving to database:', dbError.message);
+      // continue even if db save fails
+    }
+
     // chat route is text-only (no audio generation)
     return res.json({
-      source: 'llm',
+      source: kbHit ? 'kb' : 'llm',
       answer: llmResult.answer,
       kbHit: kbHit,
       kbItems: kbHitItems,
       history: history,
       responseTime: Date.now() - totalStart,
-      llmResponseTime: llmResult.responseTime
+      llmResponseTime: llmResult.responseTime,
+      answer_id: chatAnswerId,
+      kbEntryId: kbEntryId,
+      kbScore: kbScore,
+      reviewable: reviewable
     });
 
   } catch (err) {
