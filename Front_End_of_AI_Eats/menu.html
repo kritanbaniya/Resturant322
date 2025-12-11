@@ -35,6 +35,42 @@
     <div class="menu-grid">
 
       <div class="menu-card">
+        <img src="images/burger.jpeg" alt="Cheese Burger">
+        <h3>Cheese Burger</h3>
+        <p>Juicy beef burger with cheese and fresh lettuce.</p>
+        <div class="dish-rating">
+          <span class="stars">⭐⭐⭐⭐⭐</span>
+          <span class="rating-text">4.8 (324 reviews)</span>
+        </div>
+        <span class="price">$9.99</span>
+        <button class="add-to-cart" onclick="addToCart('Cheese Burger')">Add to Cart</button>
+      </div>
+
+      <div class="menu-card">
+        <img src="images/sushi.jpeg" alt="Salmon Sushi">
+        <h3>Salmon Sushi</h3>
+        <p>Fresh salmon with perfectly seasoned rice.</p>
+        <div class="dish-rating">
+          <span class="stars">⭐⭐⭐⭐⭐</span>
+          <span class="rating-text">4.9 (189 reviews)</span>
+        </div>
+        <span class="price">$14.99</span>
+        <button class="add-to-cart" onclick="addToCart('Salmon Sushi')">Add to Cart</button>
+      </div>
+
+      <div class="menu-card">
+        <img src="images/pasta.jpeg" alt="Fettuccine Alfredo">
+        <h3>Fettuccine Alfredo</h3>
+        <p>Creamy pasta with parmesan cheese and herbs.</p>
+        <div class="dish-rating">
+          <span class="stars">⭐⭐⭐⭐☆</span>
+          <span class="rating-text">4.7 (156 reviews)</span>
+        </div>
+        <span class="price">$12.99</span>
+        <button class="add-to-cart" onclick="addToCart('Fettuccine Alfredo')">Add to Cart</button>
+      </div>
+
+      <div class="menu-card">
         <img src="images/spaghetti_bolognese.jpeg" alt="Spaghetti Bolognese">
         <h3>Spaghetti Bolognese</h3>
         <p>Classic Italian pasta with meat sauce.</p>
@@ -109,6 +145,60 @@
     </div>
   </section>
 
+  <!-- VIP MENU SECTION -->
+  <section class="vip-menu-section" id="vip-menu-section">
+    <h2>VIP Exclusive Menu</h2>
+    <div id="vip-menu-content">
+      <div class="menu-grid">
+        <div class="menu-card">
+          <img src="images/lobster.jpeg" alt="Grilled Lobster">
+          <h3>Grilled Lobster</h3>
+          <p>Succulent lobster grilled to perfection.</p>
+          <div class="dish-rating">
+            <span class="stars">⭐⭐⭐⭐⭐</span>
+            <span class="rating-text">4.9 (87 reviews)</span>
+          </div>
+          <span class="vip-badge">VIP</span>
+          <span class="price">$35.99</span>
+          <button class="add-to-cart" onclick="addToCart('Grilled Lobster')">Add to Cart</button>
+        </div>
+
+        <div class="menu-card">
+          <img src="images/ribeye.jpeg" alt="Ribeye Steak">
+          <h3>Ribeye Steak</h3>
+          <p>Juicy ribeye steak, perfectly seared.</p>
+          <div class="dish-rating">
+            <span class="stars">⭐⭐⭐⭐⭐</span>
+            <span class="rating-text">4.8 (112 reviews)</span>
+          </div>
+          <span class="vip-badge">VIP</span>
+          <span class="price">$29.99</span>
+          <button class="add-to-cart" onclick="addToCart('Ribeye Steak')">Add to Cart</button>
+        </div>
+
+        <div class="menu-card">
+          <img src="images/tomahawk.jpeg" alt="Tomahawk Steak">
+          <h3>Tomahawk Steak</h3>
+          <p>Premium tomahawk cut with rich marbling.</p>
+          <div class="dish-rating">
+            <span class="stars">⭐⭐⭐⭐⭐</span>
+            <span class="rating-text">5.0 (43 reviews)</span>
+          </div>
+          <span class="vip-badge">VIP</span>
+          <span class="price">$49.99</span>
+          <button class="add-to-cart" onclick="addToCart('Tomahawk Steak')">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+    
+    <div id="vip-menu-locked" class="vip-locked" style="display: none;">
+      <div class="lock-icon">🔒</div>
+      <h3>VIP Members Only</h3>
+      <p>Unlock exclusive premium dishes with VIP membership</p>
+      <a href="vip-membership.html" class="btn vip-upgrade-btn">Upgrade to VIP - $9.99/month</a>
+    </div>
+  </section>
+
   <!-- FOOTER -->
   <footer>
     &copy; 2025 AI Eats. All rights reserved.
@@ -117,6 +207,27 @@
   <!-- ADD TO CART SCRIPT -->
   <script>
     const menuItems = {
+      'Cheese Burger': {
+        name: 'Cheese Burger',
+        price: 9.99,
+        description: 'Juicy beef burger with cheese and fresh lettuce.',
+        image: 'images/burger.jpeg',
+        vipOnly: false
+      },
+      'Salmon Sushi': {
+        name: 'Salmon Sushi',
+        price: 14.99,
+        description: 'Fresh salmon with perfectly seasoned rice.',
+        image: 'images/sushi.jpeg',
+        vipOnly: false
+      },
+      'Fettuccine Alfredo': {
+        name: 'Fettuccine Alfredo',
+        price: 12.99,
+        description: 'Creamy pasta with parmesan cheese and herbs.',
+        image: 'images/pasta.jpeg',
+        vipOnly: false
+      },
       'Spaghetti Bolognese': {
         name: 'Spaghetti Bolognese',
         price: 12.99,
@@ -158,6 +269,27 @@
         description: 'Spicy and crispy chicken wings with dipping sauce.',
         image: 'images/chicken_wings.jpeg',
         vipOnly: false
+      },
+      'Grilled Lobster': {
+        name: 'Grilled Lobster',
+        price: 35.99,
+        description: 'Succulent lobster grilled to perfection.',
+        image: 'images/lobster.jpeg',
+        vipOnly: true
+      },
+      'Ribeye Steak': {
+        name: 'Ribeye Steak',
+        price: 29.99,
+        description: 'Juicy ribeye steak, perfectly seared.',
+        image: 'images/ribeye.jpeg',
+        vipOnly: true
+      },
+      'Tomahawk Steak': {
+        name: 'Tomahawk Steak',
+        price: 49.99,
+        description: 'Premium tomahawk cut with rich marbling.',
+        image: 'images/tomahawk.jpeg',
+        vipOnly: true
       }
     };
 
@@ -222,8 +354,23 @@
       }
     }
 
+    function checkVIPMenuAccess() {
+      const isVIP = localStorage.getItem("isVIP") === "true";
+      const vipMenuContent = document.getElementById("vip-menu-content");
+      const vipMenuLocked = document.getElementById("vip-menu-locked");
+      
+      if (isVIP) {
+        vipMenuContent.style.display = "block";
+        vipMenuLocked.style.display = "none";
+      } else {
+        vipMenuContent.style.display = "none";
+        vipMenuLocked.style.display = "block";
+      }
+    }
+
     updateCartCount();
     updateAuthStatus();
+    checkVIPMenuAccess();
   </script>
 
 </body>

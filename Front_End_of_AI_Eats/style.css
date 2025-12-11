@@ -197,6 +197,22 @@ nav a:hover {
   background-color: #ff4b4b;
 }
 
+/* --- VIP Menu Section --- */
+.vip-menu-section {
+  background-color: #fff7e6;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+.vip-menu-section h2 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 32px;
+  color: #333;
+}
+
 .vip-badge {
   position: absolute;
   top: 10px;
