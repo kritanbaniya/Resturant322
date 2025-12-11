@@ -3,7 +3,7 @@
  * uses transformer.js for local embeddings (no api calls)
  */
 
-import { pipeline } from '@xenova/transformers';
+const { pipeline } = require('@xenova/transformers');
 
 // lazy-loaded model
 let embedder = null;
@@ -12,7 +12,7 @@ let embedder = null;
  * get or load the embedding model
  * @returns {promise<object>} - embedding pipeline
  */
-export async function getEmbedder() {
+async function getEmbedder() {
   if (!embedder) {
     console.log('[embeddings] loading sentence-transformer model...');
     embedder = await pipeline(
@@ -29,12 +29,16 @@ export async function getEmbedder() {
  * @param {string} text - text to embed
  * @returns {promise<array>} - embedding vector (384 dimensions)
  */
-export async function embedText(text) {
-  const emb = await (await getEmbedder())(text, {
-    pooling: 'mean',
-    normalize: true
-  });
-
-  // emb is a Tensor → convert to JS array
-  return Array.from(emb.data);
+async function embedText(text) {
+  if (!text || !text.trim()) {
+    return new Array(384).fill(0);
+  }
+  
+  const model = await getEmbedder();
+  const output = await model(text, { pooling: 'mean', normalize: true });
+  
+  // convert tensor to array
+  return Array.from(output.data);
 }
+
+module.exports = { getEmbedder, embedText };

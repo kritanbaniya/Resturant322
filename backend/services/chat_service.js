@@ -1,15 +1,74 @@
 const { ChatQuestion, ChatAnswer } = require('../models/Chat');
 const KnowledgeBaseEntry = require('../models/KnowledgeBase');
+const { callLLM } = require('../resturantAI/utils/llmService');
+const { searchKb, formatKbAnswer } = require('../resturantAI/utils/vectorSearch');
+const fs = require('fs');
+const path = require('path');
 
 // track ai service availability
 let aiServiceAvailable = true;
 
-// generate a response using a generative ai model (placeholder function)
-function generativeAiResponse(prompt) {
+// load knowledge base and system prompt for ai chat
+let kb = null;
+let systemPrompt = null;
+let kbInitialized = false;
+
+// initialize kb on startup
+(async () => {
+  try {
+    const kbPath = path.join(__dirname, '../resturantAI/kb/knowledge.json');
+    const promptPath = path.join(__dirname, '../resturantAI/ai/systemPrompt.txt');
+    
+    if (fs.existsSync(kbPath)) {
+      kb = JSON.parse(fs.readFileSync(kbPath, 'utf-8'));
+    }
+    if (fs.existsSync(promptPath)) {
+      systemPrompt = fs.readFileSync(promptPath, 'utf-8');
+    }
+    
+    if (kb) {
+      const { initializeKb } = require('../resturantAI/utils/vectorSearch');
+      await initializeKb(kb);
+      kbInitialized = true;
+      console.log('[chat_service] kb initialized and ready');
+    }
+  } catch (err) {
+    console.error('[chat_service] kb initialization failed:', err.message);
+  }
+})();
+
+// generate a response using a generative ai model
+async function generativeAiResponse(prompt, history = []) {
   if (!aiServiceAvailable) {
     return null;
   }
-  return "This is a generated response to your prompt.";
+  
+  if (!systemPrompt) {
+    return "AI service is not properly configured.";
+  }
+  
+  try {
+    // search kb for relevant facts
+    let kbFacts = [];
+    if (kbInitialized && kb) {
+      try {
+        const kbResults = await searchKb(prompt.toLowerCase().trim(), 3, 0.3);
+        if (kbResults.length > 0) {
+          kbFacts = kbResults.map(result => formatKbAnswer(result, kb));
+        }
+      } catch (searchError) {
+        console.error('[chat_service] vector search error:', searchError.message);
+      }
+    }
+    
+    // call llm
+    const modelName = process.env.OLLAMA_MODEL || 'llama3.2:3b';
+    const llmResult = await callLLM(prompt, history, systemPrompt, modelName, kbFacts);
+    return llmResult.answer;
+  } catch (error) {
+    console.error('[chat_service] llm error:', error.message);
+    return null;
+  }
 }
 
 // search the knowledge base for a relevant answer
@@ -67,7 +126,7 @@ async function askAi(userId, questionText) {
   }
   
   // fall back to llm
-  const aiResponse = generativeAiResponse(questionText);
+  const aiResponse = await generativeAiResponse(questionText, []);
   if (!aiResponse) {
     return {
       error: "AI assistance temporarily unavailable.",

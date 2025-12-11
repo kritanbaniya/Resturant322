@@ -13,18 +13,21 @@
  * 5. return response with updated history
  */
 
-import express from 'express';
-import fs from 'fs';
-import { searchKb, formatKbAnswer, initializeKb } from './utils/vectorSearch.js';
-import { callLLM } from './utils/llmService.js';
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const { searchKb, formatKbAnswer, initializeKb } = require('../utils/vectorSearch');
+const { callLLM } = require('../utils/llmService');
 
 const router = express.Router();
 
 // load knowledge base
-const kb = JSON.parse(fs.readFileSync('./kb/knowledge.json', 'utf-8'));
+const kbPath = path.join(__dirname, '../kb/knowledge.json');
+const kb = JSON.parse(fs.readFileSync(kbPath, 'utf-8'));
 
 // load system prompt
-const systemPrompt = fs.readFileSync('./ai/systemPrompt.txt', 'utf-8');
+const promptPath = path.join(__dirname, '../ai/systemPrompt.txt');
+const systemPrompt = fs.readFileSync(promptPath, 'utf-8');
 
 // model name for ollama cloud
 const modelName = process.env.OLLAMA_MODEL || 'llama3.2:3b';
@@ -160,6 +163,7 @@ router.post('/', async (req, res) => {
     console.log(`[chat] total response time: ${Date.now() - totalStart}ms`);
     console.log(`[chat] =============================`);
 
+    // chat route is text-only (no audio generation)
     return res.json({
       source: 'llm',
       answer: llmResult.answer,
@@ -186,4 +190,4 @@ router.post('/', async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

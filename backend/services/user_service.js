@@ -40,12 +40,12 @@ async function registerCustomer(data) {
 async function processRegistrationApproval(managerId, userId, decision, reason = null) {
   const manager = await User.findById(managerId);
   if (!manager || manager.role !== "Manager") {
-    return { error: "Unauthorized. Only managers can approve registrations." }, 403;
+    return [{ error: "Unauthorized. Only managers can approve registrations." }, 403];
   }
   
   const user = await User.findById(userId);
   if (!user) {
-    return { error: "User not found." }, 404;
+    return [{ error: "User not found." }, 404];
   }
   
   if (decision === "APPROVE") {
@@ -54,45 +54,45 @@ async function processRegistrationApproval(managerId, userId, decision, reason =
     user.status = "Rejected";
     user.rejectionReason = reason;
   } else {
-    return { error: "Invalid decision. Use 'APPROVE' or 'REJECT'." }, 400;
+    return [{ error: "Invalid decision. Use 'APPROVE' or 'REJECT'." }, 400];
   }
   
   await user.save();
-  return { message: `User ${decision.toLowerCase()}ed.` }, 200;
+  return [{ message: `User ${decision.toLowerCase()}ed.` }, 200];
 }
 
 async function loginUser(email, password) {
   const user = await User.findOne({ email });
   if (!user) {
-    return { error: "Invalid email or password." }, 401;
+    return [{ error: "Invalid email or password." }, 401];
   }
   
   if (["Rejected", "Blacklisted"].includes(user.status)) {
-    return { error: "Account is not allowed to login." }, 403;
+    return [{ error: "Account is not allowed to login." }, 403];
   }
   
   const isValid = await bcrypt.compare(password, user.password_hash);
   if (!isValid) {
-    return { error: "Invalid email or password." }, 401;
+    return [{ error: "Invalid email or password." }, 401];
   }
   
   const token = generateToken(user);
-  return { token, role: user.role, user_id: user._id.toString() }, 200;
+  return [{ token, role: user.role, user_id: user._id.toString() }, 200];
 }
 
 async function depositMoney(userId, amount) {
   const user = await User.findById(userId);
   if (!user) {
-    return { error: "User not found." }, 404;
+    return [{ error: "User not found." }, 404];
   }
   
   if (amount <= 0) {
-    return { error: "Deposit amount must be positive." }, 400;
+    return [{ error: "Deposit amount must be positive." }, 400];
   }
   
   user.balance += amount;
   await user.save();
-  return { message: `Deposited $${amount.toFixed(2)}. New balance: $${user.balance.toFixed(2)}.` }, 200;
+  return [{ message: `Deposited $${amount.toFixed(2)}. New balance: $${user.balance.toFixed(2)}.` }, 200];
 }
 
 async function applyWarning(userId, reason = "") {
@@ -166,17 +166,17 @@ async function updateVipStatus(customerId) {
 async function blacklistUser(managerId, userId) {
   const manager = await User.findById(managerId);
   if (!manager || manager.role !== "Manager") {
-    return { error: "Unauthorized. Only managers can blacklist users." }, 403;
+    return [{ error: "Unauthorized. Only managers can blacklist users." }, 403];
   }
   
   const user = await User.findById(userId);
   if (!user) {
-    return { error: "User not found." }, 404;
+    return [{ error: "User not found." }, 404];
   }
   
   user.status = "Blacklisted";
   await user.save();
-  return { message: "User has been blacklisted." }, 200;
+  return [{ message: "User has been blacklisted." }, 200];
 }
 
 module.exports = {

@@ -3,8 +3,9 @@
  * uses transformer.js for local embeddings (no api calls)
  */
 
-import fs from 'fs';
-import { embedText } from './embeddings.js';
+const fs = require('fs');
+const path = require('path');
+const { embedText } = require('./embeddings.js');
 
 // cache for kb chunks and embeddings
 let kbChunks = null;
@@ -235,7 +236,7 @@ function cosineSimilarity(vecA, vecB) {
  * initialize kb chunks and embeddings (call once at startup)
  * @param {object} kb - knowledge base object
  */
-export async function initializeKb(kb) {
+async function initializeKb(kb) {
   console.log('[vectorSearch] creating chunks...');
   kbChunks = createKbChunks(kb);
   console.log(`[vectorSearch] created ${kbChunks.length} kb chunks`);
@@ -266,7 +267,7 @@ export async function initializeKb(kb) {
  * @param {number} minScore - minimum similarity score threshold (default: 0.3)
  * @returns {promise<array>} - array of { text, metadata, score } sorted by score, filtered by threshold
  */
-export async function searchKb(query, topK = 3, minScore = 0.3) {
+async function searchKb(query, topK = 3, minScore = 0.3) {
   if (!kbChunks || !kbEmbeddings || kbChunks.length === 0) {
     console.warn('[vectorSearch] kb not initialized, returning empty results');
     return [];
@@ -305,7 +306,7 @@ export async function searchKb(query, topK = 3, minScore = 0.3) {
  * @param {object} kb - knowledge base object (for full item details)
  * @returns {string} - formatted answer
  */
-export function formatKbAnswer(chunk, kb) {
+function formatKbAnswer(chunk, kb) {
   const meta = chunk.metadata;
   
   if (meta.type === 'menu_item' && meta.item) {
@@ -358,3 +359,5 @@ export function formatKbAnswer(chunk, kb) {
   // extract text from chunk
   return chunk.text.replace(/^(restaurant|location|menu|faq|policy|allergy)\s+\w+:\s*/, '');
 }
+
+module.exports = { initializeKb, searchKb, formatKbAnswer };

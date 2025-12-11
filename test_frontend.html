@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frontend Test Page</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+    .pass { color: green; }
+    .fail { color: red; }
+    button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Frontend JavaScript Files Test</h1>
+  
+  <div class="test-section">
+    <h2>JavaScript File Loading Test</h2>
+    <div id="file-tests"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>API Connection Test</h2>
+    <button onclick="testAPI()">Test Backend API</button>
+    <div id="api-result"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>localStorage Test</h2>
+    <button onclick="testLocalStorage()">Test localStorage</button>
+    <div id="storage-result"></div>
+  </div>
+  
+  <script>
+    const jsFiles = [
+      'js/cart.js',
+      'js/chat.js',
+      'js/checkout.js',
+      'js/chef-dashboard.js',
+      'js/chef-ratings.js',
+      'js/complaints.js',
+      'js/delivery-dashboard.js',
+      'js/index.js',
+      'js/login.js',
+      'js/manager-complaints.js',
+      'js/manager-dashboard.js',
+      'js/menu.js',
+      'js/order-confirmation.js',
+      'js/profile.js',
+      'js/register.js',
+      'js/vip-dashboard.js',
+      'js/vip-membership.js'
+    ];
+    
+    function testFileLoading() {
+      const container = document.getElementById('file-tests');
+      container.innerHTML = '<p>Testing file loading...</p>';
+      
+      let loaded = 0;
+      let failed = 0;
+      
+      jsFiles.forEach(file => {
+        const script = document.createElement('script');
+        script.src = file;
+        script.onload = () => {
+          loaded++;
+          updateFileTestResults(loaded, failed);
+        };
+        script.onerror = () => {
+          failed++;
+          updateFileTestResults(loaded, failed);
+        };
+        document.head.appendChild(script);
+      });
+    }
+    
+    function updateFileTestResults(loaded, failed) {
+      const container = document.getElementById('file-tests');
+      const total = jsFiles.length;
+      if (loaded + failed === total) {
+        container.innerHTML = `
+          <p class="${failed === 0 ? 'pass' : 'fail'}">
+            Loaded: ${loaded}/${total} files
+            ${failed > 0 ? `<br>Failed: ${failed} files` : ''}
+          </p>
+        `;
+      }
+    }
+    
+    async function testAPI() {
+      const resultDiv = document.getElementById('api-result');
+      resultDiv.innerHTML = '<p>Testing API connection...</p>';
+      
+      try {
+        const response = await fetch('http://127.0.0.1:5000/');
+        const data = await response.json();
+        resultDiv.innerHTML = `<p class="pass">✓ API is running: ${data.message}</p>`;
+      } catch (error) {
+        resultDiv.innerHTML = `<p class="fail">✗ API connection failed: ${error.message}</p>`;
+      }
+    }
+    
+    function testLocalStorage() {
+      const resultDiv = document.getElementById('storage-result');
+      try {
+        localStorage.setItem('test', 'value');
+        const value = localStorage.getItem('test');
+        localStorage.removeItem('test');
+        resultDiv.innerHTML = `<p class="pass">✓ localStorage is working</p>`;
+      } catch (error) {
+        resultDiv.innerHTML = `<p class="fail">✗ localStorage failed: ${error.message}</p>`;
+      }
+    }
+    
+    // Run file loading test on page load
+    window.addEventListener('load', testFileLoading);
+  </script>
+</body>
+</html>

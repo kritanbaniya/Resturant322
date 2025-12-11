@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path');
 const config = require('./config');
 
 const app = express();
@@ -20,11 +21,7 @@ mongoose.connect(config.MONGO_URI)
     process.exit(1);
   });
 
-// routes
-app.get("/", (req, res) => {
-  return res.status(200).json({ message: "API is running." });
-});
-
+// api routes (must come before static files)
 app.use('/api/auth', require('./routes/auth_routes'));
 app.use('/api/users', require('./routes/user_routes'));
 app.use('/api/orders', require('./routes/order_routes'));
@@ -36,7 +33,33 @@ app.use('/api/chat', require('./routes/chat_routes'));
 app.use('/api/complaints', require('./routes/complaint_route'));
 app.use('/api/visitor', require('./routes/visitor_routes'));
 
-// error handling middleware
+// ai chat route (from resturantAI)
+app.use('/chat', require('./resturantAI/routes/chat'));
+
+// ai voice route (from resturantAI) - always generates audio
+app.use('/voice', require('./resturantAI/routes/voice'));
+
+// api health check (before static files)
+app.get("/api/health", (req, res) => {
+  return res.status(200).json({ message: "API is running." });
+});
+
+// serve static frontend files (after api routes, before error handlers)
+app.use(express.static(path.join(__dirname, '../Front_End_of_AI_Eats')));
+
+// serve index.html for root path
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, '../Front_End_of_AI_Eats/index.html'));
+});
+
+// 404 handler for API routes only (after static files)
+app.use('/api/*', (req, res) => {
+  return res.status(404).json({
+    error: "API route not found"
+  });
+});
+
+// error handling middleware (must be last)
 app.use((err, req, res, next) => {
   console.error("Unhandled Error:", err);
   
@@ -56,13 +79,6 @@ app.use((err, req, res, next) => {
   return res.status(500).json({
     error: "An unexpected error occurred",
     details: err.message
-  });
-});
-
-// 404 handler
-app.use((req, res) => {
-  return res.status(404).json({
-    error: "Route not found"
   });
 });
 

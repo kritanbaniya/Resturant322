@@ -3,8 +3,8 @@
  * handles communication with ollama cloud llm
  */
 
-import { Ollama } from 'ollama';
-import { removeEmojis } from './textUtils.js';
+const { Ollama } = require('ollama');
+const { removeEmojis } = require('./textUtils.js');
 
 /**
  * call ollama cloud llama3.2:3b
@@ -15,7 +15,7 @@ import { removeEmojis } from './textUtils.js';
  * @param {array} kbFacts - kb facts array (optional) array of fact strings
  * @returns {promise<object>} - { answer: string, responseTime: number }
  */
-export async function callLLM(prompt, history = [], systemPrompt, modelName = 'llama3.2:3b', kbFacts = null) {
+async function callLLM(prompt, history = [], systemPrompt, modelName = 'llama3.2:3b', kbFacts = null) {
   const start = Date.now();
 
   // get api key from environment variable
@@ -139,3 +139,5 @@ export async function callLLM(prompt, history = [], systemPrompt, modelName = 'l
   
   return { answer: cleanedAnswer, responseTime };
 }
+
+module.exports = { callLLM };

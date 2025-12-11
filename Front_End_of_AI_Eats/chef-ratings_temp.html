@@ -86,7 +86,7 @@
 
         <!-- Check Performance Button -->
         <div style="text-align: center; margin: 30px 0;">
-            <button class="btn-primary" id="check-performance-btn" style="padding: 15px 30px; font-size: 16px;">
+            <button class="btn-primary" onclick="checkPerformance()" style="padding: 15px 30px; font-size: 16px;">
                 Check My Performance Status
             </button>
         </div>
@@ -97,181 +97,15 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Performance Evaluation Result</h3>
-                <span class="close" id="close-modal-btn">&times;</span>
+                <span class="close" onclick="closePerformanceModal()">&times;</span>
             </div>
             <div class="modal-body">
                 <div id="performance-result"></div>
             </div>
             <div class="modal-footer">
-                <button class="btn-primary" id="close-modal-footer-btn">Close</button>
+                <button class="btn-primary" onclick="closePerformanceModal()">Close</button>
             </div>
         </div>
     </div>
 
   <script src="js/chef-ratings.js"></script>
-  <style>
-    .performance-card {
-      background: white;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      margin-bottom: 30px;
-    }
-
-    .performance-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
-    }
-
-    .perf-item {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 20px;
-      border-radius: 8px;
-      text-align: center;
-    }
-
-    .perf-label {
-      font-size: 14px;
-      opacity: 0.9;
-      margin-bottom: 10px;
-    }
-
-    .perf-value {
-      font-size: 32px;
-      font-weight: bold;
-    }
-
-    .status-card {
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 30px;
-      border-left: 5px solid;
-    }
-
-    .status-card.danger {
-      background: #ffebee;
-      border-left-color: #F44336;
-      color: #C62828;
-    }
-
-    .status-card.success {
-      background: #e8f5e9;
-      border-left-color: #4CAF50;
-      color: #2e7d32;
-    }
-
-    .status-card.info {
-      background: #e3f2fd;
-      border-left-color: #2196F3;
-      color: #1565c0;
-    }
-
-    .status-card h3 {
-      margin-top: 0;
-    }
-
-    .requirements-card {
-      background: white;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      margin-bottom: 30px;
-    }
-
-    .criteria-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
-    }
-
-    .criteria-item {
-      padding: 20px;
-      border-radius: 8px;
-      border-left: 5px solid;
-    }
-
-    .criteria-item.demotion {
-      background: #fff3e0;
-      border-left-color: #F57C00;
-    }
-
-    .criteria-item.bonus {
-      background: #f3e5f5;
-      border-left-color: #7B1FA2;
-    }
-
-    .criteria-item h4 {
-      margin-top: 0;
-    }
-
-    .reviews-section {
-      background: white;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      margin-bottom: 30px;
-    }
-
-    .review-card {
-      background: #f9f9f9;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      border-left: 4px solid #2196F3;
-    }
-
-    .review-card.valid {
-      border-left-color: #4CAF50;
-    }
-
-    .review-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .review-type {
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .review-type.complaint {
-      background: #ffebee;
-      color: #c62828;
-    }
-
-    .review-type.compliment {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
-
-    .review-rating {
-      color: #FF9800;
-      font-weight: bold;
-    }
-
-    .review-content p {
-      margin: 8px 0;
-      font-size: 14px;
-    }
-
-    .review-date {
-      color: #999;
-      font-size: 12px;
-    }
-
-    .modal-content {
-      max-width: 600px;
-    }
-  </style>
-</body>
-</html>

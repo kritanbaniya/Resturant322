@@ -8,7 +8,7 @@
  * @param {string} text - text to clean
  * @returns {string} - cleaned text without emojis
  */
-export function removeEmojis(text) {
+function removeEmojis(text) {
   if (!text) return text;
   
   // remove emojis using regex pattern that matches most unicode emoji ranges
@@ -27,3 +27,5 @@ export function removeEmojis(text) {
     .replace(/[\u{2060}]/gu, '') // word joiner
     .trim();
 }
+
+module.exports = { removeEmojis };
