@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Eats - Delivery Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .dashboard-card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .dashboard-card h3 {
+      margin-top: 0;
+      color: #ff6b6b;
+    }
+
+    .bids-list, .deliveries-list {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .bid-item, .delivery-item {
+      background: #f9f9f9;
+      padding: 15px;
+      border-left: 4px solid #ff6b6b;
+      margin-bottom: 12px;
+      border-radius: 4px;
+    }
+
+    .bid-header, .delivery-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .order-info {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .bid-amount {
+      font-size: 18px;
+      font-weight: bold;
+      color: #ff6b6b;
+    }
+
+    .delivery-status {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    .status-assigned {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .status-in-transit {
+      background-color: #e2e3e5;
+      color: #383d41;
+    }
+
+    .status-delivered {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .bid-details, .delivery-details {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+
+    .detail-row {
+      margin-bottom: 5px;
+    }
+
+    .bid-actions, .delivery-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-small {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    .btn-bid {
+      background-color: #4dabf7;
+      color: white;
+    }
+
+    .btn-bid:hover {
+      background-color: #339af0;
+    }
+
+    .btn-update {
+      background-color: #ffd43b;
+      color: #333;
+    }
+
+    .btn-update:hover {
+      background-color: #ffca3d;
+    }
+
+    .form-section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .form-group button {
+      background-color: #ff6b6b;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    .form-group button:hover {
+      background-color: #ff5252;
+    }
+
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 32px;
+      font-weight: bold;
+      color: #ff6b6b;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .message {
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .message.success {
+      background-color: #d3f9d8;
+      color: #2f9e44;
+      border: 1px solid #51cf66;
+    }
+
+    .message.error {
+      background-color: #ffe0e0;
+      color: #c92a2a;
+      border: 1px solid #ff6b6b;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      border: 2px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background-color: #ff6b6b;
+      color: white;
+      border-color: #ff6b6b;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <h1>AI Eats - Delivery Dashboard</h1>
+    <nav>
+      <div class="nav-left">
+        <a href="profile.html" id="auth-link">👤 Profile</a>
+      </div>
+      <div class="nav-center">
+        <a href="index.html">Home</a>
+      </div>
+      <div class="nav-right">
+        <button onclick="logout()" class="nav-btn">Logout</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- DASHBOARD SECTION -->
+  <section class="profile-section">
+    <div class="profile-container">
+      <h2>Delivery Management</h2>
+
+      <div class="stats-container">
+        <div class="stat-box">
+          <div class="stat-number" id="statAvailable">0</div>
+          <div class="stat-label">Available Orders</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="statAssigned">0</div>
+          <div class="stat-label">Assigned to You</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="statCompleted">0</div>
+          <div class="stat-label">Completed Today</div>
+        </div>
+      </div>
+
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('bids')">🤝 Available Orders</button>
+        <button class="tab-btn" onclick="switchTab('deliveries')">🚗 My Deliveries</button>
+      </div>
+
+      <div id="message" class="message" style="display: none;"></div>
+
+      <!-- BIDS TAB -->
+      <div id="bids" class="tab-content active">
+        <div class="dashboard-card">
+          <h3>Available Orders for Bidding</h3>
+          <p style="color: #666; font-size: 13px;">View upcoming orders and place your bid amount</p>
+          <div class="bids-list" id="bidsList">
+            <p>Loading available orders...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- DELIVERIES TAB -->
+      <div id="deliveries" class="tab-content">
+        <div class="dashboard-card">
+          <h3>My Assigned Deliveries</h3>
+          <div class="deliveries-list" id="deliveriesList">
+            <p>Loading deliveries...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2025 AI Eats. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const API_URL = "http://127.0.0.1:5000";
+    const deliveryPersonId = localStorage.getItem("userId");
+    const userRole = localStorage.getItem("userRole");
+
+    if (userRole !== "DeliveryPerson") {
+      alert("Access Denied: This dashboard is for Delivery Personnel only.");
+      window.location.href = "index.html";
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+
+      if (tabName === 'bids') loadAvailableBids();
+      if (tabName === 'deliveries') loadMyDeliveries();
+    }
+
+    async function loadAvailableBids() {
+      try {
+        const response = await fetch(`${API_URL}/api/orders/available`, {
+          headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const container = document.getElementById('bidsList');
+
+          if (data.orders && data.orders.length > 0) {
+            container.innerHTML = data.orders.map(order => `
+              <div class="bid-item">
+                <div class="bid-header">
+                  <div class="order-info">Order #${order._id.slice(-6)}</div>
+                </div>
+                <div class="bid-details">
+                  <div class="detail-row"><strong>Customer:</strong> ${order.customer_name || 'Unknown'}</div>
+                  <div class="detail-row"><strong>Delivery Location:</strong> ${order.delivery_address || 'TBD'}</div>
+                  <div class="detail-row"><strong>Items:</strong> ${order.items.length} items</div>
+                  <div class="detail-row"><strong>Estimated Delivery Fee:</strong> $${(order.items.length * 2.5).toFixed(2)}</div>
+                </div>
+                <div class="bid-actions">
+                  <button class="btn-small btn-bid" onclick="placeBid('${order._id}')">Place Bid</button>
+                </div>
+              </div>
+            `).join('');
+            document.getElementById('statAvailable').textContent = data.orders.length;
+          } else {
+            container.innerHTML = '<p>No available orders at the moment</p>';
+            document.getElementById('statAvailable').textContent = '0';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading bids:', error);
+      }
+    }
+
+    async function placeBid(orderId) {
+      const amount = prompt("Enter your bid amount ($):");
+      if (!amount || isNaN(amount)) {
+        showMessage('Invalid amount', false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/api/delivery/bid`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
+          body: JSON.stringify({
+            delivery_person_id: deliveryPersonId,
+            order_id: orderId,
+            amount: parseFloat(amount)
+          })
+        });
+
+        const data = await response.json();
+        showMessage(data.message || 'Bid placed!', response.ok);
+        if (response.ok) loadAvailableBids();
+      } catch (error) {
+        console.error('Error placing bid:', error);
+        showMessage('Error placing bid', false);
+      }
+    }
+
+    async function loadMyDeliveries() {
+      try {
+        const response = await fetch(`${API_URL}/api/delivery/assigned/${deliveryPersonId}`, {
+          headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const container = document.getElementById('deliveriesList');
+
+          if (data.deliveries && data.deliveries.length > 0) {
+            let assigned = 0, completed = 0;
+
+            container.innerHTML = data.deliveries.map(delivery => {
+              const status = delivery.status || 'pending';
+              if (status === 'assigned') assigned++;
+              if (status === 'delivered') completed++;
+
+              const statusClass = {
+                'pending': 'status-pending',
+                'assigned': 'status-assigned',
+                'in_transit': 'status-in-transit',
+                'delivered': 'status-delivered'
+              }[status] || 'status-pending';
+
+              const statusText = {
+                'pending': 'Pending',
+                'assigned': 'Assigned',
+                'in_transit': 'In Transit',
+                'delivered': 'Delivered'
+              }[status] || 'Pending';
+
+              return `
+                <div class="delivery-item">
+                  <div class="delivery-header">
+                    <div class="order-info">Order #${delivery.order_id.slice(-6)}</div>
+                    <div class="delivery-status ${statusClass}">${statusText}</div>
+                  </div>
+                  <div class="delivery-details">
+                    <div class="detail-row"><strong>Customer:</strong> ${delivery.customer_name || 'Unknown'}</div>
+                    <div class="detail-row"><strong>Address:</strong> ${delivery.delivery_address}</div>
+                    <div class="detail-row"><strong>Bid Amount:</strong> $${delivery.amount.toFixed(2)}</div>
+                    <div class="detail-row"><strong>Status:</strong> ${statusText}</div>
+                  </div>
+                  ${status !== 'delivered' ? `
+                    <div class="delivery-actions">
+                      ${status === 'assigned' ? `<button class="btn-small btn-update" onclick="updateStatus('${delivery._id}', 'in_transit')">Start Delivery</button>` : ''}
+                      ${status === 'in_transit' ? `<button class="btn-small btn-update" onclick="updateStatus('${delivery._id}', 'delivered')">Mark Delivered</button>` : ''}
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('');
+
+            document.getElementById('statAssigned').textContent = assigned;
+            document.getElementById('statCompleted').textContent = completed;
+          } else {
+            container.innerHTML = '<p>No assigned deliveries</p>';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading deliveries:', error);
+      }
+    }
+
+    async function updateStatus(deliveryId, newStatus) {
+      const note = prompt("Add a note (optional):");
+
+      try {
+        const response = await fetch(`${API_URL}/api/delivery/update-status/${deliveryId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
+          body: JSON.stringify({
+            delivery_person_id: deliveryPersonId,
+            status: newStatus,
+            note: note || ''
+          })
+        });
+
+        const data = await response.json();
+        showMessage(data.message || 'Status updated!', response.ok);
+        if (response.ok) loadMyDeliveries();
+      } catch (error) {
+        console.error('Error updating status:', error);
+        showMessage('Error updating status', false);
+      }
+    }
+
+    function showMessage(message, isSuccess) {
+      const el = document.getElementById('message');
+      el.textContent = message;
+      el.className = `message ${isSuccess ? 'success' : 'error'}`;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 3000);
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    loadAvailableBids();
+  </script>
+</body>
+</html>

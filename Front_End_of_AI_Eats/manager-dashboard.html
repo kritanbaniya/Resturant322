@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Eats - Manager Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .dashboard-card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .dashboard-card h3 {
+      margin-top: 0;
+      color: #ff6b6b;
+    }
+
+    .registrations-list, .complaints-list, .kb-list, .flagged-list {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      padding: 10px;
+    }
+
+    .item {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 8px;
+    }
+
+    .item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .item-header {
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .item-details {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-approve {
+      background-color: #51cf66;
+      color: white;
+    }
+
+    .btn-approve:hover {
+      background-color: #40c057;
+    }
+
+    .btn-reject {
+      background-color: #ff6b6b;
+      color: white;
+    }
+
+    .btn-reject:hover {
+      background-color: #ff5252;
+    }
+
+    .btn-resolve {
+      background-color: #4dabf7;
+      color: white;
+    }
+
+    .btn-resolve:hover {
+      background-color: #339af0;
+    }
+
+    .btn-edit {
+      background-color: #ffd43b;
+      color: #333;
+    }
+
+    .btn-edit:hover {
+      background-color: #ffca3d;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-group button {
+      background-color: #ff6b6b;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    .form-group button:hover {
+      background-color: #ff5252;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      border: 2px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background-color: #ff6b6b;
+      color: white;
+      border-color: #ff6b6b;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .message {
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .message.success {
+      background-color: #d3f9d8;
+      color: #2f9e44;
+      border: 1px solid #51cf66;
+    }
+
+    .message.error {
+      background-color: #ffe0e0;
+      color: #c92a2a;
+      border: 1px solid #ff6b6b;
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <h1>AI Eats - Manager Dashboard</h1>
+    <nav>
+      <div class="nav-left">
+        <a href="profile.html" id="auth-link">👤 Profile</a>
+      </div>
+      <div class="nav-center">
+        <a href="index.html">Home</a>
+      </div>
+      <div class="nav-right">
+        <button onclick="logout()" class="nav-btn">Logout</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- DASHBOARD SECTION -->
+  <section class="profile-section">
+    <div class="profile-container">
+      <h2>Manager Control Center</h2>
+
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('registrations')">📝 Registration Approvals</button>
+        <button class="tab-btn" onclick="switchTab('complaints')">⚠️ Complaints</button>
+        <button class="tab-btn" onclick="switchTab('bids')"> Delivery Bids</button>
+        <button class="tab-btn" onclick="switchTab('knowledge-base')">📚 Knowledge Base</button>
+        <button class="tab-btn" onclick="switchTab('flagged-chat')">🚩 Flagged Chat</button>
+      </div>
+
+      <!-- REGISTRATIONS TAB -->
+      <div id="registrations" class="tab-content active">
+        <div class="dashboard-card">
+          <h3>Pending User Registrations</h3>
+          <div id="registrationsMessage" class="message" style="display: none;"></div>
+          <div class="registrations-list" id="registrationsList">
+            <p>Loading registrations...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMPLAINTS TAB -->
+      <div id="complaints" class="tab-content">
+        <div class="dashboard-grid">
+          <div class="dashboard-card">
+            <h3>Open Complaints</h3>
+            <div id="complaintsMessage" class="message" style="display: none;"></div>
+            <div class="complaints-list" id="complaintsList">
+              <p>Loading complaints...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BIDS TAB -->
+      <div id="bids" class="tab-content">
+        <div class="dashboard-card">
+          <h3>Delivery Bids</h3>
+          <p style="color: #666; font-size: 13px;">Review and select the best delivery bids for orders</p>
+          <div id="bidsMessage" class="message" style="display: none;"></div>
+          <div class="registrations-list" id="bidsList">
+            <p>Loading bids...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- KNOWLEDGE BASE TAB -->
+      <div id="knowledge-base" class="tab-content">
+        <div class="dashboard-grid">
+          <div class="dashboard-card">
+            <h3>Add KB Entry</h3>
+            <form onsubmit="addKBEntry(event)">
+              <div class="form-group">
+                <label>Question:</label>
+                <input type="text" id="kbQuestion" placeholder="Enter question" required>
+              </div>
+              <div class="form-group">
+                <label>Answer:</label>
+                <textarea id="kbAnswer" placeholder="Enter answer" required></textarea>
+              </div>
+              <div class="form-group">
+                <label>Keywords (comma-separated):</label>
+                <input type="text" id="kbKeywords" placeholder="e.g., delivery, refund, order">
+              </div>
+              <div class="form-group">
+                <button type="submit">Add Entry</button>
+              </div>
+            </form>
+            <div id="kbAddMessage" class="message" style="display: none;"></div>
+          </div>
+
+          <div class="dashboard-card">
+            <h3>KB Entries</h3>
+            <div class="kb-list" id="kbList">
+              <p>Loading KB entries...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FLAGGED CHAT TAB -->
+      <div id="flagged-chat" class="tab-content">
+        <div class="dashboard-card">
+          <h3>Flagged Chat Responses</h3>
+          <div id="flaggedMessage" class="message" style="display: none;"></div>
+          <div class="flagged-list" id="flaggedList">
+            <p>Loading flagged responses...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2025 AI Eats. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const API_URL = "http://127.0.0.1:5000";
+    const managerId = localStorage.getItem("userId");
+    const userRole = localStorage.getItem("userRole");
+
+    if (userRole !== "Manager") {
+      alert("Access Denied: This dashboard is for Managers only.");
+      window.location.href = "index.html";
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+
+      if (tabName === 'registrations') loadRegistrations();
+      if (tabName === 'complaints') loadComplaints();
+      if (tabName === 'bids') loadBids();
+      if (tabName === 'knowledge-base') loadKBEntries();
+      if (tabName === 'flagged-chat') loadFlaggedChat();
+    }
+
+    async function loadBids() {
+      try {
+        const response = await fetch(`${API_URL}/api/delivery/bids`, {
+          headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const container = document.getElementById('bidsList');
+
+          if (data.bids && data.bids.length > 0) {
+            container.innerHTML = data.bids.map(bid => `
+              <div class="item">
+                <div class="item-header">Order #${bid.order_id.slice(-6)} - ${bid.delivery_person_name}</div>
+                <div class="item-details">
+                  <strong>Delivery Person:</strong> ${bid.delivery_person_name}<br>
+                  <strong>Bid Amount:</strong> $${bid.amount.toFixed(2)}<br>
+                  <strong>Customer Location:</strong> ${bid.delivery_address || 'TBD'}<br>
+                  <strong>Status:</strong> ${bid.status}
+                </div>
+                <div class="item-actions">
+                  <button class="btn-small btn-approve" onclick="selectBid('${bid._id}')">Select Bid</button>
+                  <button class="btn-small btn-reject" onclick="rejectBid('${bid._id}')">Reject</button>
+                </div>
+              </div>
+            `).join('');
+          } else {
+            container.innerHTML = '<p>No pending bids</p>';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading bids:', error);
+      }
+    }
+
+    async function selectBid(bidId) {
+      const justification = prompt("Enter selection justification (optional):");
+
+      try {
+        const response = await fetch(`${API_URL}/api/delivery/assign`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
+          body: JSON.stringify({
+            manager_id: managerId,
+            bid_id: bidId,
+            justification: justification || ''
+          })
+        });
+
+        const data = await response.json();
+        showMessage('bidsMessage', data.message || 'Bid selected!', response.ok);
+        if (response.ok) loadBids();
+      } catch (error) {
+        console.error('Error selecting bid:', error);
+        showMessage('bidsMessage', 'Error selecting bid', false);
+      }
+    }
+
+    async function rejectBid(bidId) {
+      if (!confirm("Are you sure you want to reject this bid?")) return;
+
+      try {
+        const response = await fetch(`${API_URL}/api/delivery/bid/${bidId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        });
+
+        const data = await response.json();
+        showMessage('bidsMessage', data.message || 'Bid rejected', response.ok);
+        if (response.ok) loadBids();
+      } catch (error) {
+        console.error('Error rejecting bid:', error);
+        showMessage('bidsMessage', 'Error rejecting bid', false);
+      }
+    }
+
+    async function loadRegistrations() {
+      try {
+        const response = await fetch(`${API_URL}/api/users/pending`, {
+          headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const container = document.getElementById('registrationsList');
+
+          if (data.users && data.users.length > 0) {
+            container.innerHTML = data.users.map(user => `
+              <div class="item">
+                <div class="item-header">${user.name}</div>
+                <div class="item-details">
+                  <strong>Email:</strong> ${user.email}<br>
+                  <strong>Status:</strong> ${user.status}
+                </div>
+                <div class="item-actions">
+                  <button class="btn-small btn-approve" onclick="approveUser('${user._id}')">Approve</button>
+                  <button class="btn-small btn-reject" onclick="rejectUser('${user._id}')">Reject</button>
+                </div>
+              </div>
+            `).join('');
+          } else {
+            container.innerHTML = '<p>No pending registrations</p>';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading registrations:', error);
+      }
+    }
+
+    async function approveUser(userId) {
+      try {
+        const response = await fetch(`${API_URL}/api/manager/approve-registration`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
+          body: JSON.stringify({
+            manager_id: managerId,
+            user_id: userId,
+            decision: "approved"
+          })
+        });
+
+        const data = await response.json();
+        showMessage('registrationsMessage', data.message || 'User approved!', response.ok);
+        if (response.ok) loadRegistrations();
+      } catch (error) {
+        console.error('Error approving user:', error);
+        showMessage('registrationsMessage', 'Error approving user', false);
+      }
+    }
+
+    async function rejectUser(userId) {
+      const reason = prompt("Enter rejection reason:");
+      if (!reason) return;
+
+      try {
+        const response = await fetch(`${API_URL}/api/manager/approve-registration`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
+          body: JSON.stringify({
+            manager_id: managerId,
+            user_id: userId,
+            decision: "rejected",
+            reason: reason
+          })
+        });
+
+        const data = await response.json();
+        showMessage('registrationsMessage', data.message || 'User rejected', response.ok);
+        if (response.ok) loadRegistrations();
+      } catch (error) {
+        console.error('Error rejecting user:', error);
+        showMessage('registrationsMessage', 'Error rejecting user', false);
+      }
+    }
+
+    async function loadComplaints() {
+      try {
+        const response = await fetch(`${API_URL}/api/complaints/`, {
+          headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const container = document.getElementById('complaintsList');
+
+          if (data.complaints && data.complaints.length > 0) {
+            container.innerHTML = data.complaints.filter(c => c.status !== 'resolved').map(complaint => `
+              <div class="item">
+                <div class="item-header">Order #${complaint.order_id}</div>
+                <div class="item-details">
+                  <strong>Issue:</strong> ${complaint.complaint_type}<br>
+                  <strong>Description:</strong> ${complaint.description}<br>
+                  <strong>Status:</strong> ${complaint.status}
+                </div>
+                <div class="item-actions">
+                  <button class="btn-small btn-resolve" onclick="resolveComplaint('${complaint._id}')">Resolve</button>
+                </div>
+              </div>
+            `).join('');
+          } else {
+            container.innerHTML = '<p>No open complaints</p>';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading complaints:', error);
+      }
+    }
+
+    async function resolveComplaint(complaintId) {
+      const decision = prompt("Enter resolution (e.g., 'refund', 'replacement', 'credit'):");
+      if (!decision) return;
+
+      try {
+        const response = await fetch(`${API_URL}/api/manager/resolve-complaint`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
+          body: JSON.stringify({
+            manager_id: managerId,
+            complaint_id: complaintId,
+            decision: decision
+          })
+        });
+
+        const data = await response.json();
+        showMessage('complaintsMessage', data.message || 'Complaint resolved', response.ok);
+        if (response.ok) loadComplaints();
+      } catch (error) {
+        console.error('Error resolving complaint:', error);
+        showMessage('complaintsMessage', 'Error resolving complaint', false);
+      }
+    }
+
+    async function addKBEntry(event) {
+      event.preventDefault();
+
+      const question = document.getElementById('kbQuestion').value;
+      const answer = document.getElementById('kbAnswer').value;
+      const keywords = document.getElementById('kbKeywords').value.split(',').map(k => k.trim());
+
+      try {
+        const response = await fetch(`${API_URL}/api/manager/kb/add`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
+          body: JSON.stringify({ question, answer, keywords })
+        });
+
+        const data = await response.json();
+        showMessage('kbAddMessage', 'KB entry added!', response.ok);
+        if (response.ok) {
+          document.getElementById('kbQuestion').value = '';
+          document.getElementById('kbAnswer').value = '';
+          document.getElementById('kbKeywords').value = '';
+          loadKBEntries();
+        }
+      } catch (error) {
+        console.error('Error adding KB entry:', error);
+        showMessage('kbAddMessage', 'Error adding entry', false);
+      }
+    }
+
+    async function loadKBEntries() {
+      try {
+        const response = await fetch(`${API_URL}/api/knowledge-base/all`, {
+          headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const container = document.getElementById('kbList');
+
+          if (data.entries && data.entries.length > 0) {
+            container.innerHTML = data.entries.map(entry => `
+              <div class="item">
+                <div class="item-header">${entry.question}</div>
+                <div class="item-details">
+                  <strong>Answer:</strong> ${entry.answer}
+                </div>
+                <div class="item-actions">
+                  <button class="btn-small btn-edit" onclick="editKBEntry('${entry._id}')">Edit</button>
+                </div>
+              </div>
+            `).join('');
+          } else {
+            container.innerHTML = '<p>No KB entries</p>';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading KB entries:', error);
+      }
+    }
+
+    async function editKBEntry(entryId) {
+      const newAnswer = prompt("Enter new answer:");
+      if (!newAnswer) return;
+
+      try {
+        const response = await fetch(`${API_URL}/api/manager/kb/update/${entryId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
+          body: JSON.stringify({ answer: newAnswer })
+        });
+
+        const data = await response.json();
+        showMessage('kbAddMessage', 'KB entry updated!', response.ok);
+        if (response.ok) loadKBEntries();
+      } catch (error) {
+        console.error('Error updating KB entry:', error);
+        showMessage('kbAddMessage', 'Error updating entry', false);
+      }
+    }
+
+    async function loadFlaggedChat() {
+      try {
+        const response = await fetch(`${API_URL}/api/manager/chat/flagged`, {
+          headers: { "Authorization": `Bearer ${localStorage.getItem("token")}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const container = document.getElementById('flaggedList');
+
+          if (data && data.length > 0) {
+            container.innerHTML = data.map(chat => `
+              <div class="item">
+                <div class="item-header">Q: ${chat.question}</div>
+                <div class="item-details">
+                  <strong>AI Response:</strong> ${chat.response}<br>
+                  <strong>Flagged:</strong> ${chat.flagged_reason || 'Marked for review'}
+                </div>
+                <div class="item-actions">
+                  <button class="btn-small btn-resolve" onclick="resolveFlaggedChat('${chat._id}')">Correct</button>
+                </div>
+              </div>
+            `).join('');
+          } else {
+            container.innerHTML = '<p>No flagged responses</p>';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading flagged chat:', error);
+      }
+    }
+
+    async function resolveFlaggedChat(chatId) {
+      const correctedAnswer = prompt("Enter corrected answer:");
+      if (!correctedAnswer) return;
+
+      try {
+        const response = await fetch(`${API_URL}/api/manager/chat/resolve/${chatId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          },
+          body: JSON.stringify({ corrected_answer: correctedAnswer })
+        });
+
+        const data = await response.json();
+        showMessage('flaggedMessage', 'Response corrected!', response.ok);
+        if (response.ok) loadFlaggedChat();
+      } catch (error) {
+        console.error('Error resolving flagged chat:', error);
+        showMessage('flaggedMessage', 'Error correcting response', false);
+      }
+    }
+
+    function showMessage(elementId, message, isSuccess) {
+      const el = document.getElementById(elementId);
+      el.textContent = message;
+      el.className = `message ${isSuccess ? 'success' : 'error'}`;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 3000);
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    loadRegistrations();
+  </script>
+</body>
+</html>

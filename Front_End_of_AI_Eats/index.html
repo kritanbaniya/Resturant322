@@ -15,6 +15,7 @@
    <nav>
      <div class="nav-left">
        <a href="login.html" id="auth-link">Login/Register</a>
+       <a href="#" id="dashboard-link" style="display: none; margin-left: 15px; background-color: #ff6b6b; color: white; padding: 8px 15px; border-radius: 5px; font-weight: bold;">Dashboard</a>
      </div>
 
      <div class="nav-center">
@@ -315,16 +316,39 @@
   function updateAuthStatus() {
     const isLoggedIn = localStorage.getItem("isLoggedIn");
     const username = localStorage.getItem("username");
+    const userRole = localStorage.getItem("userRole");
     const isVIP = localStorage.getItem("isVIP") === "true";
     const authLink = document.getElementById("auth-link");
+    const dashboardLink = document.getElementById("dashboard-link");
     
     if (isLoggedIn === "true" && username) {
       const vipIcon = isVIP ? "👑 " : "";
       authLink.textContent = `👤 ${vipIcon}${username}`;
       authLink.href = "profile.html";
+      
+      if (isVIP) {
+        dashboardLink.style.display = "block";
+        dashboardLink.href = "vip-dashboard.html";
+        dashboardLink.textContent = "VIP Dashboard";
+      } else if (userRole && userRole !== "Customer") {
+        dashboardLink.style.display = "block";
+        const dashboardMap = {
+          "Manager": "manager-dashboard.html",
+          "Chef": "chef-dashboard.html",
+          "DeliveryPerson": "delivery-dashboard.html"
+        };
+        const linkTextMap = {
+          "Manager": "Tasks",
+          "Chef": "Orders",
+          "DeliveryPerson": "Deliveries"
+        };
+        dashboardLink.href = dashboardMap[userRole] || "profile.html";
+        dashboardLink.textContent = linkTextMap[userRole] || "Dashboard";
+      }
     } else {
       authLink.textContent = "Login/Register";
       authLink.href = "login.html";
+      dashboardLink.style.display = "none";
     }
   }
 

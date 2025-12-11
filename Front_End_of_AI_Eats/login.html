@@ -84,12 +84,31 @@
           if (data.user_id) {
             localStorage.setItem("userId", data.user_id);
           }
+          if (data.role) {
+            localStorage.setItem("userRole", data.role);
+          }
+          if (data.isVIP) {
+            localStorage.setItem("isVIP", "true");
+          }
           localStorage.setItem("username", loginEmail);
           localStorage.setItem("email", loginEmail);
           localStorage.setItem("isLoggedIn", "true");
           
+          const userRole = data.role || "Customer";
+          const isVIP = data.isVIP || false;
+          
+          const redirectMap = {
+            "Manager": "manager-dashboard.html",
+            "Chef": "chef-dashboard.html",
+            "DeliveryPerson": "delivery-dashboard.html",
+            "VIP": "vip-dashboard.html",
+            "Customer": "index.html"
+          };
+          
+          let redirectUrl = isVIP ? "vip-dashboard.html" : (redirectMap[userRole] || "index.html");
+          
           setTimeout(() => {
-            window.location.href = "index.html";
+            window.location.href = redirectUrl;
           }, 1500);
         } else {
           messageEl.textContent = data.error || "Invalid email or password.";
