@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Eats - Order Confirmed</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <h1>AI Eats</h1>
+    <nav>
+      <div class="nav-left">
+        <a href="login.html" id="auth-link">Login/Register</a>
+      </div>
+      <div class="nav-center">
+        <a href="index.html">Home</a>
+        <a href="menu.html">Menu</a>
+        <a href="chat.html">AI Chat</a>
+      </div>
+      <div class="nav-right">
+        <a href="cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- CONFIRMATION SECTION -->
+  <section class="confirmation-section">
+    <div class="confirmation-container">
+      <div class="success-icon">✅</div>
+      <h2>Order Confirmed!</h2>
+      <p>Thank you for your order. We're preparing your delicious meal!</p>
+      
+      <div class="order-details">
+        <h3>Order Details</h3>
+        <div class="order-info">
+          <div class="info-row">
+            <span>Order ID:</span>
+            <span id="order-id"></span>
+          </div>
+          <div class="info-row">
+            <span>Total:</span>
+            <span id="order-total"></span>
+          </div>
+          <div class="info-row">
+            <span>Estimated Delivery:</span>
+            <span id="delivery-time"></span>
+          </div>
+        </div>
+        
+        <div class="ordered-items">
+          <h4>Items Ordered:</h4>
+          <div id="confirmation-items"></div>
+        </div>
+      </div>
+
+      <div class="confirmation-actions">
+        <a href="menu.html" class="btn">Order More</a>
+        <a href="index.html" class="btn btn-secondary">Back to Home</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2025 AI Eats. All rights reserved.</p>
+  </footer>
+
+  <script>
+    function loadOrderConfirmation() {
+      const orderData = JSON.parse(localStorage.getItem("lastOrder"));
+      
+      if (!orderData) {
+        window.location.href = "index.html";
+        return;
+      }
+      
+      document.getElementById("order-id").textContent = orderData.orderId;
+      document.getElementById("order-total").textContent = orderData.total;
+      
+      // Calculate delivery time (30-45 minutes from now)
+      const deliveryTime = new Date();
+      deliveryTime.setMinutes(deliveryTime.getMinutes() + 35);
+      document.getElementById("delivery-time").textContent = deliveryTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      
+      // Display ordered items
+      const itemsContainer = document.getElementById("confirmation-items");
+      orderData.items.forEach(item => {
+        itemsContainer.innerHTML += `
+          <div class="confirmation-item">
+            <span>${item.name} x${item.quantity}</span>
+            <span>$${(item.price * item.quantity).toFixed(2)}</span>
+          </div>
+        `;
+      });
+      
+      // Clear the last order data
+      localStorage.removeItem("lastOrder");
+    }
+
+    function updateCartCount() {
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById("cart-count").textContent = totalItems;
+    }
+
+    function updateAuthStatus() {
+      const isLoggedIn = localStorage.getItem("isLoggedIn");
+      const username = localStorage.getItem("username");
+      const authLink = document.getElementById("auth-link");
+      
+      if (isLoggedIn === "true" && username) {
+        authLink.textContent = `👤 ${username}`;
+        authLink.href = "profile.html";
+      } else {
+        authLink.textContent = "Login/Register";
+        authLink.href = "login.html";
+      }
+    }
+
+    loadOrderConfirmation();
+    updateCartCount();
+    updateAuthStatus();
+  </script>
+</body>
+</html>

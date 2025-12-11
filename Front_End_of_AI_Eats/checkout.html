@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Eats - Checkout</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <h1>AI Eats</h1>
+    <nav>
+      <div class="nav-left">
+        <a href="login.html" id="auth-link">Login/Register</a>
+      </div>
+      <div class="nav-center">
+        <a href="index.html">Home</a>
+        <a href="menu.html">Menu</a>
+        <a href="chat.html">AI Chat</a>
+      </div>
+      <div class="nav-right">
+        <a href="cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- CHECKOUT SECTION -->
+  <section class="checkout-section">
+    <div class="checkout-container">
+      <h2>🛒 Checkout</h2>
+      
+      <div class="checkout-content">
+        <!-- ORDER SUMMARY -->
+        <div class="order-summary">
+          <h3>Order Summary</h3>
+          <div id="checkout-items"></div>
+          <div class="summary-totals">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span id="checkout-subtotal">$0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Delivery Fee</span>
+              <span>$2.99</span>
+            </div>
+            <div class="summary-row">
+              <span>Tax</span>
+              <span id="checkout-tax">$0.00</span>
+            </div>
+            <div class="summary-row total-row">
+              <span>Total</span>
+              <span id="checkout-total">$0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHECKOUT FORM -->
+        <div class="checkout-form">
+          <form id="checkout-form">
+            <h3>Delivery Information</h3>
+            <div class="form-group">
+              <label for="full-name">Full Name *</label>
+              <input type="text" id="full-name" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="phone">Phone Number *</label>
+              <input type="tel" id="phone" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="address">Delivery Address *</label>
+              <textarea id="address" rows="3" required></textarea>
+            </div>
+
+            <h3>Payment Information</h3>
+            <div class="form-group">
+              <label for="card-number">Card Number *</label>
+              <input type="text" id="card-number" placeholder="1234 5678 9012 3456" required>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="expiry">Expiry Date *</label>
+                <input type="text" id="expiry" placeholder="MM/YY" required>
+              </div>
+              <div class="form-group">
+                <label for="cvv">CVV *</label>
+                <input type="text" id="cvv" placeholder="123" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="card-name">Name on Card *</label>
+              <input type="text" id="card-name" required>
+            </div>
+
+            <div class="form-group">
+              <label for="special-instructions">Special Instructions</label>
+              <textarea id="special-instructions" rows="2" placeholder="Any special delivery instructions..."></textarea>
+            </div>
+
+            <button type="submit" class="place-order-btn">Place Order</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2025 AI Eats. All rights reserved.</p>
+  </footer>
+
+  <script>
+    function loadCheckoutSummary() {
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      let container = document.getElementById("checkout-items");
+      
+      if (cart.length === 0) {
+        window.location.href = "cart.html";
+        return;
+      }
+      
+      container.innerHTML = "";
+      let subtotal = 0;
+      
+      cart.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        subtotal += itemTotal;
+        
+        container.innerHTML += `
+          <div class="checkout-item">
+            <img src="${item.image}" alt="${item.name}">
+            <div class="item-info">
+              <h4>${item.name}</h4>
+              <span>Qty: ${item.quantity}</span>
+            </div>
+            <span class="item-price">$${itemTotal.toFixed(2)}</span>
+          </div>
+        `;
+      });
+      
+      const tax = subtotal * 0.08;
+      const total = subtotal + 2.99 + tax;
+      
+      document.getElementById("checkout-subtotal").textContent = `$${subtotal.toFixed(2)}`;
+      document.getElementById("checkout-tax").textContent = `$${tax.toFixed(2)}`;
+      document.getElementById("checkout-total").textContent = `$${total.toFixed(2)}`;
+    }
+
+    function updateCartCount() {
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById("cart-count").textContent = totalItems;
+    }
+
+    function updateAuthStatus() {
+      const isLoggedIn = localStorage.getItem("isLoggedIn");
+      const username = localStorage.getItem("username");
+      const authLink = document.getElementById("auth-link");
+      
+      if (isLoggedIn === "true" && username) {
+        authLink.textContent = `👤 ${username}`;
+        authLink.href = "profile.html";
+      } else {
+        authLink.textContent = "Login/Register";
+        authLink.href = "login.html";
+      }
+    }
+
+    document.getElementById("checkout-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      
+      // Simulate payment processing
+      const submitBtn = document.querySelector(".place-order-btn");
+      submitBtn.textContent = "Processing...";
+      submitBtn.disabled = true;
+      
+      setTimeout(() => {
+        // Generate order ID
+        const orderId = "AI" + Date.now().toString().slice(-6);
+        
+        // Save order to localStorage
+        const orderData = {
+          orderId: orderId,
+          items: JSON.parse(localStorage.getItem("cart")) || [],
+          total: document.getElementById("checkout-total").textContent,
+          customerInfo: {
+            name: document.getElementById("full-name").value,
+            phone: document.getElementById("phone").value,
+            address: document.getElementById("address").value
+          },
+          orderDate: new Date().toISOString(),
+          status: "confirmed"
+        };
+        
+        let orders = JSON.parse(localStorage.getItem("orders")) || [];
+        orders.push(orderData);
+        localStorage.setItem("orders", JSON.stringify(orders));
+        
+        // Clear cart
+        localStorage.removeItem("cart");
+        
+        // Redirect to confirmation
+        localStorage.setItem("lastOrder", JSON.stringify(orderData));
+        window.location.href = "order-confirmation.html";
+      }, 2000);
+    });
+
+    loadCheckoutSummary();
+    updateCartCount();
+    updateAuthStatus();
+  </script>
+</body>
+</html>
