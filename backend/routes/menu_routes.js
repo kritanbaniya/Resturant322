@@ -4,7 +4,9 @@ const Dish = require('../models/Dish');
 const User = require('../models/User');
 
 router.get("/", async (req, res) => {
-  const dishes = await Dish.find({});
+  // return all available dishes (includes seeded dishes, chef-created dishes, and manager-created dishes)
+  // sorted by popularity (order_count) and rating (average_rating)
+  const dishes = await Dish.find({ is_available: true }).sort({ order_count: -1, average_rating: -1 });
   return res.status(200).json(dishes.map(d => ({
     id: d._id.toString(),
     name: d.name,
@@ -16,7 +18,8 @@ router.get("/", async (req, res) => {
     order_count: d.order_count,
     average_rating: d.average_rating,
     rating_count: d.rating_count,
-    tags: d.tags
+    tags: d.tags || [],
+    created_by_chef_id: d.created_by_chef_id ? d.created_by_chef_id.toString() : null
   })));
 });
 
@@ -37,7 +40,8 @@ router.get("/:dish_id", async (req, res) => {
     order_count: dish.order_count,
     average_rating: dish.average_rating,
     rating_count: dish.rating_count,
-    tags: dish.tags
+    tags: dish.tags,
+    created_by_chef_id: dish.created_by_chef_id ? dish.created_by_chef_id.toString() : null
   });
 });
 

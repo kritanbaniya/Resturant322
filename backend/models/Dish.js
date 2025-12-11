@@ -31,7 +31,12 @@ const dishSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  tags: [String]
+  tags: [String],
+  created_by_chef_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  }
 }, {
   collection: 'dishes'
 });
@@ -41,6 +46,7 @@ dishSchema.index({ name: 1 });
 dishSchema.index({ category: 1 });
 dishSchema.index({ order_count: 1 });
 dishSchema.index({ average_rating: 1 });
+dishSchema.index({ created_by_chef_id: 1 });
 
 // methods
 dishSchema.methods.add_rating = function(rating) {

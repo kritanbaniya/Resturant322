@@ -2,35 +2,6 @@ const API_URL = "http://127.0.0.1:5000";
 let menuItems = {};
 let menuLoaded = false;
 
-const staticItems = [
-  { name: "Salmon Sushi", price: 14.99, description: "Fresh salmon with perfectly seasoned rice.", image: "images/sushi.jpeg", vipOnly: false },
-  { name: "Fettuccine Alfredo", price: 12.99, description: "Creamy pasta with parmesan cheese and herbs.", image: "images/pasta.jpeg", vipOnly: false },
-  { name: "Spaghetti Bolognese", price: 12.99, description: "Classic Italian pasta with meat sauce.", image: "images/spaghetti_bolognese.jpeg", vipOnly: false },
-  { name: "Grilled Chicken Salad", price: 10.99, description: "Fresh greens with chicken and dressing.", image: "images/salad.jpeg", vipOnly: false },
-  { name: "Margherita Pizza", price: 14.99, description: "Tomatoes, mozzarella, and fresh basil.", image: "images/margherita_pizza.jpeg", vipOnly: false },
-  { name: "Chicken Parmesan", price: 15.99, description: "Breaded chicken topped with marinara and cheese.", image: "images/chicken_parmesan.jpeg", vipOnly: false },
-  { name: "Penne alla Vodka", price: 13.99, description: "Pasta in a creamy tomato-vodka sauce.", image: "images/penne_alla_vodka.jpeg", vipOnly: false },
-  { name: "Chicken Wings", price: 11.99, description: "Spicy and crispy chicken wings with dipping sauce.", image: "images/chicken_wings.jpeg", vipOnly: false },
-  { name: "Grilled Lobster", price: 35.99, description: "Succulent lobster grilled to perfection.", image: "images/lobster.jpeg", vipOnly: true },
-  { name: "Ribeye Steak", price: 29.99, description: "Juicy ribeye steak, perfectly seared.", image: "images/ribeye.jpeg", vipOnly: true },
-  { name: "Tomahawk Steak", price: 49.99, description: "Premium tomahawk cut with rich marbling.", image: "images/tomahawk.jpeg", vipOnly: true }
-];
-
-function seedStaticMenu() {
-  staticItems.forEach(item => {
-    menuItems[item.name] = {
-      id: null,
-      name: item.name,
-      price: item.price,
-      description: item.description,
-      image: item.image,
-      vipOnly: item.vipOnly,
-      rating: 5,
-      ratingCount: 0
-    };
-  });
-}
-
 let currentFilter = '';
 let allDishes = [];
 
@@ -52,16 +23,20 @@ function filterMenu() {
   }
   
   filtered.forEach(dish => {
-    const stars = generateStars(dish.average_rating);
+    const imageUrl = dish.image_url || 'images/default.jpeg';
+    const rating = dish.average_rating || 0;
+    const ratingCount = dish.rating_count || 0;
+    const stars = generateStars(rating);
+    
     const menuCard = document.createElement("div");
     menuCard.className = "menu-card";
     menuCard.innerHTML = `
-      <img src="${dish.image_url || 'images/default.jpeg'}" alt="${dish.name}">
+      <img src="${imageUrl}" alt="${dish.name}" onerror="this.src='images/default.jpeg'">
       <h3>${dish.name}</h3>
-      <p>${dish.description}</p>
+      <p>${dish.description || 'No description available'}</p>
       <div class="dish-rating">
         <span class="stars">${stars}</span>
-        <span class="rating-text">${dish.average_rating.toFixed(1)} (${dish.rating_count} reviews)</span>
+        <span class="rating-text">${rating.toFixed(1)} (${ratingCount} review${ratingCount !== 1 ? 's' : ''})</span>
       </div>
       <span class="price">$${dish.price.toFixed(2)}</span>
       <button class="add-to-cart" onclick="addToCart('${dish.name}')">Add to Cart</button>
@@ -85,93 +60,78 @@ function filterByCategory(category) {
 }
 
 async function loadMenu() {
+  const menuGrid = document.getElementById("menu-grid");
+  menuGrid.innerHTML = "<p style='text-align: center; padding: 20px;'>Loading menu...</p>";
+  
   try {
     const response = await fetch(`${API_URL}/api/menu/`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
     const dishes = await response.json();
     
     console.log("API returned dishes:", dishes);
     
-    const menuGrid = document.getElementById("menu-grid");
     menuGrid.innerHTML = "";
     
-    // If API returns empty or error, use static items
-    let dishesToDisplay = dishes;
-    if (!Array.isArray(dishes) || dishes.length === 0) {
-      console.log("Using static menu items as fallback");
-      seedStaticMenu();
-      dishesToDisplay = staticItems;
+    // ensure dishes is an array
+    if (!Array.isArray(dishes)) {
+      throw new Error("Invalid response format from API");
     }
     
-    allDishes = dishesToDisplay; // Store for filtering
+    // filter out unavailable dishes (shouldn't happen if backend filters, but double-check)
+    const availableDishes = dishes.filter(dish => dish.is_available !== false);
     
-    dishesToDisplay.forEach(dish => {
-      const imageUrl = dish.image_url || dish.image || 'images/default.jpeg';
-      console.log("Processing dish:", dish.name, "with image:", imageUrl);
+    if (availableDishes.length === 0) {
+      menuGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">No dishes available at the moment. Please check back later!</p>';
+      allDishes = [];
+      menuLoaded = true;
+      return;
+    }
+    
+    allDishes = availableDishes; // store for filtering
+    
+    // clear menuItems object and populate with dish data for cart
+    menuItems = {};
+    availableDishes.forEach(dish => {
+      const imageUrl = dish.image_url || 'images/default.jpeg';
+      const rating = dish.average_rating || 0;
+      const ratingCount = dish.rating_count || 0;
+      
+      // store dish info for cart
       menuItems[dish.name] = {
-        id: dish.id,
+        id: dish.id || dish._id,
         name: dish.name,
         price: dish.price,
-        description: dish.description,
+        description: dish.description || '',
         image: imageUrl,
-        vipOnly: dish.vipOnly || false,
-        rating: dish.average_rating || 5,
-        ratingCount: dish.rating_count || 0,
+        vipOnly: false, // vip-only dishes are handled differently now
+        rating: rating,
+        ratingCount: ratingCount,
         category: dish.category || 'Other'
       };
-      
-      const rating = dish.average_rating || 5;
-      const stars = generateStars(rating);
-      const menuCard = document.createElement("div");
-      menuCard.className = "menu-card";
-      menuCard.innerHTML = `
-        <img src="${imageUrl}" alt="${dish.name}" onerror="this.src='images/default.jpeg'">
-        <h3>${dish.name}</h3>
-        <p>${dish.description}</p>
-        <div class="dish-rating">
-          <span class="stars">${stars}</span>
-          <span class="rating-text">${rating.toFixed(1)} (${dish.rating_count || 0} reviews)</span>
-        </div>
-        <span class="price">$${dish.price.toFixed(2)}</span>
-        <button class="add-to-cart" onclick="addToCart('${dish.name}')">Add to Cart</button>
-      `;
-      menuGrid.appendChild(menuCard);
     });
     
-    console.log("Menu loaded with", dishesToDisplay.length, "dishes");
+    console.log("Menu loaded with", availableDishes.length, "dishes from database");
     menuLoaded = true;
+    
+    // display dishes using filterMenu
+    filterMenu();
   } catch (error) {
     console.error("Error loading menu:", error);
-    // Fallback to static items on error
-    seedStaticMenu();
-    allDishes = staticItems;
-    const menuGrid = document.getElementById("menu-grid");
-    menuGrid.innerHTML = "";
-    
-    staticItems.forEach(dish => {
-      const menuCard = document.createElement("div");
-      menuCard.className = "menu-card";
-      menuCard.innerHTML = `
-        <img src="${dish.image}" alt="${dish.name}" onerror="this.src='images/default.jpeg'">
-        <h3>${dish.name}</h3>
-        <p>${dish.description}</p>
-        <div class="dish-rating">
-          <span class="stars">[*][*][*][*][*]</span>
-          <span class="rating-text">5.0 (0 reviews)</span>
-        </div>
-        <span class="price">$${dish.price.toFixed(2)}</span>
-        <button class="add-to-cart" onclick="addToCart('${dish.name}')">Add to Cart</button>
-      `;
-      menuGrid.appendChild(menuCard);
-    });
-    menuLoaded = true;
+    menuGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #d32f2f;">Error loading menu. Please refresh the page or contact support.</p>';
+    allDishes = [];
+    menuLoaded = false;
   }
 }
 
 function generateStars(rating) {
   const fullStars = Math.floor(rating);
   const hasHalfStar = rating % 1 >= 0.5;
-  let stars = "[*]".repeat(fullStars);
-  if (hasHalfStar && fullStars < 5) stars += "[o]";
+  let stars = "⭐".repeat(fullStars);
+  if (hasHalfStar && fullStars < 5) stars += "☆";
   return stars;
 }
 
@@ -183,7 +143,13 @@ function addToCart(itemName) {
     return;
   }
   
-  // Don't require item.id - static items won't have it
+  // require item.id - all items should have database ID now
+  if (!item.id) {
+    console.error("Item missing ID:", item);
+    alert("Error: Item data incomplete. Please refresh the page.");
+    return;
+  }
+  
   const isVIP = localStorage.getItem("isVIP") === "true";
   
   if (item.vipOnly && !isVIP) {
@@ -193,13 +159,20 @@ function addToCart(itemName) {
   
   let cart = JSON.parse(localStorage.getItem("cart")) || [];
   
-  const existingItem = cart.find(cartItem => cartItem.name === itemName);
+  // find existing item by name or id
+  const existingItem = cart.find(cartItem => 
+    cartItem.name === itemName || cartItem.id === item.id
+  );
   
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
     cart.push({
-      ...item,
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      description: item.description,
+      image: item.image,
       quantity: 1
     });
   }
@@ -241,17 +214,7 @@ function updateAuthStatus() {
 }
 
 function checkVIPMenuAccess() {
-  const isVIP = localStorage.getItem("isVIP") === "true";
-  const vipMenuContent = document.getElementById("vip-menu-content");
-  const vipMenuLocked = document.getElementById("vip-menu-locked");
-  
-  if (isVIP) {
-    vipMenuContent.style.display = "block";
-    vipMenuLocked.style.display = "none";
-  } else {
-    vipMenuContent.style.display = "none";
-    vipMenuLocked.style.display = "block";
-  }
+  // vip menu section removed, function kept for compatibility but does nothing
 }
 
 document.addEventListener('DOMContentLoaded', async function() {

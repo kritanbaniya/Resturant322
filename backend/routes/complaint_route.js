@@ -3,6 +3,7 @@ const router = express.Router();
 const Complaint = require('../models/Complaint');
 const User = require('../models/User');
 const { applyWarning, applyComplaintEffect } = require('../services/user_service');
+const { tokenRequired } = require('../utils/auth');
 const mongoose = require('mongoose');
 
 router.get("/test", (req, res) => {
@@ -10,22 +11,28 @@ router.get("/test", (req, res) => {
   return res.status(200).json({ message: "Complaints API is working!" });
 });
 
-router.post("/file", async (req, res) => {
+router.post("/file", tokenRequired, async (req, res) => {
   const data = req.body;
   console.log("Received complaint data:", data);
   
-  const fromUser = data.from_user;
+  // use authenticated user id instead of body from_user
+  const fromUser = req.current_user.id;
   const targetId = data.to_user;
   const message = data.text;
   let entityType = data.entity_type || "General";
   const rating = data.rating || 0;
-  const weight = data.weight || 1;
+  let weight = data.weight || 1;
   const isComplaint = data.isComplaint !== undefined ? data.isComplaint : true;
+  
+  // vip complaints count twice as important
+  if (req.current_user.role === "VIP") {
+    weight = weight * 2;
+  }
   
   console.log(`from_user: ${fromUser}, target_id: ${targetId}, message: ${message}, entity_type: ${entityType}`);
   
-  if (!fromUser || !targetId || !message) {
-    const errorMsg = `Missing fields - from_user: ${!!fromUser}, to_user: ${!!targetId}, text: ${!!message}`;
+  if (!targetId || !message) {
+    const errorMsg = `Missing fields - to_user: ${!!targetId}, text: ${!!message}`;
     console.log(errorMsg);
     return res.status(400).json({ error: errorMsg });
   }
@@ -88,7 +95,12 @@ router.post("/file", async (req, res) => {
   }
 });
 
-router.get("/received/:user_id", async (req, res) => {
+router.get("/received/:user_id", tokenRequired, async (req, res) => {
+  // verify user_id matches authenticated user
+  if (req.current_user.id !== req.params.user_id && req.current_user.role !== "Manager") {
+    return res.status(403).json({ error: "Unauthorized. You can only access your own received complaints." });
+  }
+  
   const complaints = await Complaint.find({ toUser: req.params.user_id }).populate('fromUser', 'name');
   
   return res.status(200).json(complaints.map(c => ({
@@ -105,7 +117,12 @@ router.get("/received/:user_id", async (req, res) => {
   })));
 });
 
-router.get("/submitted/:user_id", async (req, res) => {
+router.get("/submitted/:user_id", tokenRequired, async (req, res) => {
+  // verify user_id matches authenticated user
+  if (req.current_user.id !== req.params.user_id && req.current_user.role !== "Manager") {
+    return res.status(403).json({ error: "Unauthorized. You can only access your own submitted complaints." });
+  }
+  
   const complaints = await Complaint.find({ fromUser: req.params.user_id }).populate('toUser', 'name');
   
   return res.status(200).json(complaints.map(c => ({
@@ -122,7 +139,12 @@ router.get("/submitted/:user_id", async (req, res) => {
   })));
 });
 
-router.get("/pending", async (req, res) => {
+router.get("/pending", tokenRequired, async (req, res) => {
+  // only managers can see pending complaints
+  if (req.current_user.role !== "Manager") {
+    return res.status(403).json({ error: "Unauthorized. Only managers can view pending complaints." });
+  }
+  
   const complaints = await Complaint.find({ status: "PendingReview" })
     .populate('fromUser', 'name')
     .populate('toUser', 'name');
@@ -144,16 +166,16 @@ router.get("/pending", async (req, res) => {
   })));
 });
 
-router.put("/resolve/:complaint_id", async (req, res) => {
-  const { outcome, manager_id, reason } = req.body;
+router.put("/resolve/:complaint_id", tokenRequired, async (req, res) => {
+  // only managers can resolve complaints
+  if (req.current_user.role !== "Manager") {
+    return res.status(403).json({ error: "Unauthorized. Only managers can resolve complaints." });
+  }
+  
+  const { outcome, reason } = req.body;
   
   if (!["Valid", "Invalid"].includes(outcome)) {
     return res.status(400).json({ error: "Outcome must be 'Valid' or 'Invalid'" });
-  }
-  
-  const manager = await User.findById(manager_id);
-  if (!manager || manager.role !== "Manager") {
-    return res.status(403).json({ error: "Unauthorized. Only managers can resolve complaints." });
   }
   
   const complaint = await Complaint.findById(req.params.complaint_id).populate('toUser');
@@ -182,7 +204,9 @@ router.put("/resolve/:complaint_id", async (req, res) => {
     }
   } else {
     await complaint.mark_invalid();
-    await applyWarning(complaint.fromUser._id.toString(), reason);
+    // use complaint.fromUser (populated) or complaint.fromUser from db
+    const fromUserId = complaint.fromUser._id ? complaint.fromUser._id.toString() : complaint.fromUser.toString();
+    await applyWarning(fromUserId, reason);
     
     return res.status(200).json({
       message: "Complaint marked as Invalid. Warning applied to complainer.",

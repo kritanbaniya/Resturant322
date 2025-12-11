@@ -230,7 +230,8 @@ async function loadEmployees() {
       const container = document.getElementById('employeesList');
 
       if (data.employees && data.employees.length > 0) {
-        container.innerHTML = data.employees.map(emp => `
+        container.innerHTML = data.employees.map(emp => {
+          return `
           <div class="item">
             <div class="item-header">${emp.name} - ${emp.role}</div>
             <div class="item-meta">
@@ -239,17 +240,25 @@ async function loadEmployees() {
             </div>
             <div class="item-actions">
               ${emp.status === 'Active' && emp.role.includes('Demoted') ? `
-                <button class="btn-small btn-approve" onclick="promoteEmployee('${emp.user_id}')">Restore Role</button>
+                <button class="btn-small btn-approve" data-action="promote" data-user-id="${emp.user_id}">Restore Role</button>
               ` : ''}
               ${emp.status === 'Active' ? `
-                <button class="btn-small btn-valid" onclick="showBonusModal('${emp.user_id}', '${emp.name}')">Pay Bonus</button>
+                <button class="btn-small btn-valid" data-action="bonus" data-user-id="${emp.user_id}" data-user-name="${emp.name.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}">Pay Bonus</button>
               ` : ''}
               ${emp.status === 'Active' ? `
-                <button class="btn-small btn-reject" onclick="fireEmployee('${emp.user_id}', '${emp.name}')">Fire</button>
+                <button class="btn-small btn-reject" data-action="fire" data-user-id="${emp.user_id}" data-user-name="${emp.name.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}">Fire</button>
               ` : ''}
             </div>
           </div>
-        `).join('');
+        `;
+        }).join('');
+        
+        // verify buttons were created
+        const allButtons = container.querySelectorAll('[data-action]');
+        console.log('Total action buttons created:', allButtons.length);
+        allButtons.forEach(btn => {
+          console.log('Button:', btn.textContent.trim(), 'Action:', btn.getAttribute('data-action'), 'User ID:', btn.getAttribute('data-user-id'));
+        });
       } else {
         container.innerHTML = '<p>No employees</p>';
       }
@@ -284,13 +293,20 @@ async function promoteEmployee(userId) {
 
 // UC-04 Step 6: Show bonus payment modal
 function showBonusModal(userId, empName) {
+  console.log('showBonusModal called with userId:', userId, 'empName:', empName);
   const amount = prompt(`Pay performance bonus to ${empName}. Enter amount ($):`);
+  console.log('Bonus amount entered:', amount);
   if (!amount || isNaN(amount) || amount <= 0) {
+    console.log('Invalid bonus amount');
     showMessage('Invalid bonus amount', false);
     return;
   }
   payBonus(userId, parseFloat(amount));
 }
+
+// make functions globally accessible
+window.promoteEmployee = promoteEmployee;
+window.showBonusModal = showBonusModal;
 
 // UC-04 Step 6: Pay bonus
 async function payBonus(userId, amount) {
@@ -315,9 +331,24 @@ async function payBonus(userId, amount) {
 
 // UC-04 Step 6: Fire employee
 async function fireEmployee(userId, empName) {
+  console.log('fireEmployee function called');
+  console.log('Employee ID:', userId);
+  console.log('Employee Name:', empName);
+  
   const reason = prompt(`Fire ${empName}. Provide reason:`);
-  if (!reason) return;
+  console.log('Reason entered:', reason);
+  
+  if (reason === null) {
+    console.log('User cancelled the prompt');
+    return; // user cancelled
+  }
+  if (!reason || !reason.trim()) {
+    console.log('Empty reason provided');
+    showMessage('Reason is required to fire an employee', false);
+    return;
+  }
 
+  console.log('Sending fire request to API...');
   try {
     const response = await fetch(`${API_URL}/api/manager/employees/${userId}/fire`, {
       method: "POST",
@@ -325,17 +356,26 @@ async function fireEmployee(userId, empName) {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
-      body: JSON.stringify({ reason })
+      body: JSON.stringify({ reason: reason.trim() })
     });
 
+    console.log('API Response status:', response.status);
     const data = await response.json();
-    showMessage(data.message, response.ok);
-    if (response.ok) loadEmployees();
+    console.log('API Response data:', data);
+    
+    showMessage(data.message || data.error || 'Employee fired successfully', response.ok);
+    if (response.ok) {
+      console.log('Fire successful, reloading employees list...');
+      loadEmployees();
+    }
   } catch (error) {
     console.error('Error firing employee:', error);
-    showMessage('Error firing employee', false);
+    showMessage('Error firing employee: ' + error.message, false);
   }
 }
+
+// make function globally accessible
+window.fireEmployee = fireEmployee;
 
 // UC-04 Step 7: Load delivery bids
 async function loadDeliveryBids() {
@@ -484,6 +524,36 @@ document.addEventListener('DOMContentLoaded', function() {
       if (tabName) switchTab(tabName);
     });
   });
+
+  // setup event delegation for employee action buttons
+  const employeesContainer = document.getElementById('employeesList');
+  if (employeesContainer) {
+    employeesContainer.addEventListener('click', function(e) {
+      const button = e.target.closest('[data-action]');
+      if (!button) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const action = button.getAttribute('data-action');
+      const userId = button.getAttribute('data-user-id');
+      const userName = button.getAttribute('data-user-name');
+      
+      console.log('Button clicked - Action:', action, 'User ID:', userId, 'User Name:', userName);
+      
+      if (action === 'promote') {
+        console.log('Calling promoteEmployee');
+        promoteEmployee(userId);
+      } else if (action === 'bonus') {
+        console.log('Calling showBonusModal');
+        showBonusModal(userId, userName);
+      } else if (action === 'fire') {
+        console.log('Calling fireEmployee');
+        fireEmployee(userId, userName);
+      }
+    });
+    console.log('Event delegation set up for employee buttons');
+  }
 
   // Load dashboard on page load
   loadDashboard();

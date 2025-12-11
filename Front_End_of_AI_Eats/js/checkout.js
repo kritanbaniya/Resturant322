@@ -59,7 +59,12 @@ async function checkBalance(orderTotal) {
   const userId = localStorage.getItem("userId");
   
   try {
-    const response = await fetch(`${API_URL}/api/users/${userId}`);
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_URL}/api/users/${userId}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
     if (response.ok) {
       const userData = await response.json();
       const balance = userData.balance;
@@ -137,8 +142,8 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log("Formatted items for API:", JSON.stringify(items, null, 2));
       console.log("User ID:", userId);
       
+      const token = localStorage.getItem("token");
       const requestBody = {
-        customer_id: userId,
         items: items
       };
       
@@ -147,7 +152,8 @@ document.addEventListener('DOMContentLoaded', function() {
       const response = await fetch(`${API_URL}/api/orders/create`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(requestBody)
       });
@@ -158,10 +164,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const orderId = data.order_id;
         
         // Confirm the order (process payment and move to kitchen queue)
+        const token = localStorage.getItem("token");
         const confirmResponse = await fetch(`${API_URL}/api/orders/confirm/${orderId}`, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
           }
         });
         
@@ -177,7 +185,12 @@ document.addEventListener('DOMContentLoaded', function() {
           // Update balance in localStorage if provided
           if (confirmData.new_balance !== undefined) {
             // Fetch updated user data to sync balance
-            const userResponse = await fetch(`${API_URL}/api/users/${userId}`);
+            const token = localStorage.getItem("token");
+            const userResponse = await fetch(`${API_URL}/api/users/${userId}`, {
+              headers: {
+                "Authorization": `Bearer ${token}`
+              }
+            });
             if (userResponse.ok) {
               const userData = await userResponse.json();
               localStorage.setItem("balance", userData.balance);

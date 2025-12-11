@@ -24,7 +24,12 @@ async function loadProfile() {
   // Fetch user data from backend if userId is available
   if (userId) {
     try {
-      const response = await fetch(`${API_URL}/api/users/${userId}`);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/api/users/${userId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
       if (response.ok) {
         const userData = await response.json();
         // Update profile with backend data
@@ -145,13 +150,14 @@ async function processDeposit() {
   processBtn.disabled = true;
 
   try {
+    const token = localStorage.getItem("token");
     const response = await fetch(`${API_URL}/api/users/deposit`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
-        user_id: userId,
         amount: amount
       })
     });
@@ -164,9 +170,9 @@ async function processDeposit() {
       messageEl.style.color = "#2e7d32";
       document.getElementById("deposit-amount").value = "25.00";
       
-      // Refresh balance display
+      // Refresh balance display immediately
+      loadUserBalance();
       setTimeout(() => {
-        loadUserBalance();
         messageEl.textContent = "";
       }, 3000);
     } else {
@@ -211,7 +217,12 @@ async function loadUserBalance() {
   const userId = localStorage.getItem("userId");
   
   try {
-    const response = await fetch(`${API_URL}/api/users/${userId}`);
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_URL}/api/users/${userId}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
     if (response.ok) {
       const userData = await response.json();
       document.getElementById("balance-value").textContent = `$${userData.balance.toFixed(2)}`;
@@ -284,7 +295,12 @@ async function loadOrderHistory() {
   try {
     // Try to fetch from backend first
     if (userId) {
-      const response = await fetch(`${API_URL}/api/orders/history/${userId}`);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/api/orders/history/${userId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
       if (response.ok) {
         const orders = await response.json();
         if (orders.length > 0) {
@@ -338,7 +354,12 @@ async function updateVIPStatus() {
   const userId = localStorage.getItem("userId");
   
   try {
-    const response = await fetch(`${API_URL}/api/users/${userId}`);
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_URL}/api/users/${userId}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
     if (response.ok) {
       const userData = await response.json();
       const isVIP = userData.role === "VIP";

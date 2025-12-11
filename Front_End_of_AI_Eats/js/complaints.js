@@ -37,7 +37,12 @@ async function loadSubmittedComplaints() {
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/complaints/submitted/${userId}`);
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_URL}/api/complaints/submitted/${userId}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
     if (response.ok) {
       const complaints = await response.json();
       
@@ -81,7 +86,12 @@ async function loadReceivedComplaints() {
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/complaints/received/${userId}`);
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_URL}/api/complaints/received/${userId}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
     if (response.ok) {
       const complaints = await response.json();
       
@@ -211,10 +221,16 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log("Full data object:", JSON.stringify(formData, null, 2));
 
     try {
+      const token = localStorage.getItem("token");
+      // remove from_user from formData - backend will use authenticated user
+      const { from_user, ...complaintData } = formData;
       const response = await fetch(`${API_URL}/api/complaints/file`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(complaintData)
       });
 
       const data = await response.json();

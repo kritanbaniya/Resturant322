@@ -206,6 +206,107 @@
       color: #c92a2a;
       border: 1px solid #ff6b6b;
     }
+
+    .menu-item {
+      background: #f9f9f9;
+      padding: 15px;
+      border-left: 4px solid #4dabf7;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .menu-item-info {
+      flex: 1;
+    }
+
+    .menu-item-name {
+      font-weight: bold;
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .menu-item-details {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 3px;
+    }
+
+    .menu-item-price {
+      font-weight: bold;
+      color: #ff6b6b;
+      font-size: 18px;
+    }
+
+    .menu-item-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 5% auto;
+      padding: 30px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: #000;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -257,8 +358,62 @@
           <p>Loading orders...</p>
         </div>
       </div>
+
+      <div class="dashboard-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h3>[MENU] My Dishes</h3>
+          <button class="btn-action btn-start" onclick="showCreateDishForm()">+ Add New Dish</button>
+        </div>
+        <div id="chefMenuList">
+          <p>Loading your dishes...</p>
+        </div>
+      </div>
     </div>
   </section>
+
+  <!-- CREATE/EDIT DISH MODAL -->
+  <div id="dishModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close" onclick="closeDishModal()">&times;</span>
+      <h2 id="modalTitle">Create New Dish</h2>
+      <form id="dishForm" onsubmit="saveDish(event)">
+        <div class="form-group">
+          <label for="dishName">Dish Name *</label>
+          <input type="text" id="dishName" required>
+        </div>
+        <div class="form-group">
+          <label for="dishDescription">Description</label>
+          <textarea id="dishDescription" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="dishCategory">Category *</label>
+          <input type="text" id="dishCategory" required placeholder="e.g., Appetizer, Main Course, Dessert">
+        </div>
+        <div class="form-group">
+          <label for="dishPrice">Price ($) *</label>
+          <input type="number" id="dishPrice" step="0.01" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="dishImageUrl">Image URL</label>
+          <input type="url" id="dishImageUrl" placeholder="https://example.com/image.jpg">
+        </div>
+        <div class="form-group">
+          <label for="dishTags">Tags (comma-separated)</label>
+          <input type="text" id="dishTags" placeholder="spicy, vegetarian, gluten-free">
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="dishAvailable" checked>
+            Available for ordering
+          </label>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-action btn-hold" onclick="closeDishModal()">Cancel</button>
+          <button type="submit" class="btn-action btn-complete">Save Dish</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- FOOTER -->
   <footer>

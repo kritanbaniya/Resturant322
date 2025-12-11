@@ -26,27 +26,27 @@ async function getPendingRegistrations() {
 async function approveRegistration(managerId, userId, decision, reason = null) {
   const manager = await User.findById(managerId);
   if (!manager || manager.role !== "Manager") {
-    return { error: "Unauthorized. Only managers can approve registrations." }, 403;
+    return [{ error: "Unauthorized. Only managers can approve registrations." }, 403];
   }
   
   const user = await User.findById(userId);
   if (!user || user.status !== "PendingApproval") {
-    return { error: "User not found or not pending approval." }, 404;
+    return [{ error: "User not found or not pending approval." }, 404];
   }
   
   if (decision === "APPROVE") {
     user.status = "Active";
     const message = `User ${user.name} approved successfully.`;
     await user.save();
-    return { message }, 200;
+    return [{ message }, 200];
   } else if (decision === "REJECT") {
     user.status = "Rejected";
     user.rejectionReason = reason || "Application rejected by manager.";
     const message = `User ${user.name} rejected. Reason: ${reason || 'No reason provided'}`;
     await user.save();
-    return { message }, 200;
+    return [{ message }, 200];
   } else {
-    return { error: "Invalid decision. Use 'APPROVE' or 'REJECT'." }, 400;
+    return [{ error: "Invalid decision. Use 'APPROVE' or 'REJECT'." }, 400];
   }
 }
 
@@ -74,17 +74,17 @@ async function getPendingComplaints() {
 async function resolveComplaint(managerId, complaintId, decision, escalationNote = null) {
   const manager = await User.findById(managerId);
   if (!manager || manager.role !== "Manager") {
-    return { error: "Unauthorized. Only managers can resolve complaints." }, 403;
+    return [{ error: "Unauthorized. Only managers can resolve complaints." }, 403];
   }
   
   const complaint = await Complaint.findById(complaintId).populate('toUser').populate('fromUser');
   if (!complaint) {
-    return { error: "Complaint not found." }, 404;
+    return [{ error: "Complaint not found." }, 404];
   }
   
   const target = complaint.toUser;
   if (!target) {
-    return { error: "Cannot resolve complaint without target user." }, 400;
+    return [{ error: "Cannot resolve complaint without target user." }, 400];
   }
   
   let result = { message: "" };
@@ -113,16 +113,17 @@ async function resolveComplaint(managerId, complaintId, decision, escalationNote
     await complaint.save();
     result.message = "Complaint ESCALATED for further investigation.";
   } else {
-    return { error: "Invalid decision. Use 'VALID', 'INVALID', or 'ESCALATED'." }, 400;
+    return [{ error: "Invalid decision. Use 'VALID', 'INVALID', or 'ESCALATED'." }, 400];
   }
   
-  return result, 200;
+  return [result, 200];
 }
 
 // get all employees
 async function getEmployees() {
   const employees = await User.find({
-    role: { $in: ["Chef", "DeliveryPerson", "Demoted_Chef", "Demoted_DeliveryPerson"] }
+    role: { $in: ["Chef", "DeliveryPerson", "Demoted_Chef", "Demoted_DeliveryPerson"] },
+    status: { $ne: "Terminated" }
   }).sort({ role: 1 });
   
   return employees.map(e => ({
@@ -142,52 +143,53 @@ async function getEmployees() {
 async function hireEmployee(managerId, userId, employeeRole) {
   const manager = await User.findById(managerId);
   if (!manager || manager.role !== "Manager") {
-    return { error: "Unauthorized" }, 403;
+    return [{ error: "Unauthorized" }, 403];
   }
   
   const user = await User.findById(userId);
   if (!user) {
-    return { error: "User not found" }, 404;
+    return [{ error: "User not found" }, 404];
   }
   
   if (!["Chef", "DeliveryPerson"].includes(employeeRole)) {
-    return { error: "Invalid employee role" }, 400;
+    return [{ error: "Invalid employee role" }, 400];
   }
   
   user.role = employeeRole;
   user.status = "Active";
   await user.save();
-  return { message: `User ${user.name} hired as ${employeeRole}` }, 200;
+  return [{ message: `User ${user.name} hired as ${employeeRole}` }, 200];
 }
 
 // fire employee
 async function fireEmployee(managerId, userId, reason = null) {
   const manager = await User.findById(managerId);
   if (!manager || manager.role !== "Manager") {
-    return { error: "Unauthorized" }, 403;
+    return [{ error: "Unauthorized" }, 403];
   }
   
   const user = await User.findById(userId);
   if (!user) {
-    return { error: "User not found" }, 404;
+    return [{ error: "User not found" }, 404];
   }
   
-  user.status = "Terminated";
+  user.role = "Customer";
+  user.status = "Active";
   user.terminationReason = reason || "Terminated by manager";
   await user.save();
-  return { message: `Employee ${user.name} terminated.` }, 200;
+  return [{ message: `Employee ${user.name} fired and converted to customer.` }, 200];
 }
 
 // promote employee
 async function promoteEmployee(managerId, userId) {
   const manager = await User.findById(managerId);
   if (!manager || manager.role !== "Manager") {
-    return { error: "Unauthorized" }, 403;
+    return [{ error: "Unauthorized" }, 403];
   }
   
   const user = await User.findById(userId);
   if (!user) {
-    return { error: "User not found" }, 404;
+    return [{ error: "User not found" }, 404];
   }
   
   let message = "";
@@ -202,36 +204,36 @@ async function promoteEmployee(managerId, userId) {
     user.netComplaints = 0;
     message = "DeliveryPerson promoted back to full role";
   } else {
-    return { error: "User is not in demoted status" }, 400;
+    return [{ error: "User is not in demoted status" }, 400];
   }
   
   await user.save();
-  return { message }, 200;
+  return [{ message }, 200];
 }
 
 // pay bonus
 async function payBonus(managerId, userId, bonusAmount) {
   const manager = await User.findById(managerId);
   if (!manager || manager.role !== "Manager") {
-    return { error: "Unauthorized" }, 403;
+    return [{ error: "Unauthorized" }, 403];
   }
   
   const user = await User.findById(userId);
   if (!user) {
-    return { error: "User not found" }, 404;
+    return [{ error: "User not found" }, 404];
   }
   
   if (bonusAmount <= 0) {
-    return { error: "Bonus amount must be positive" }, 400;
+    return [{ error: "Bonus amount must be positive" }, 400];
   }
   
   user.balance += bonusAmount;
   await user.save();
   
-  return {
+  return [{
     message: `Bonus of $${bonusAmount.toFixed(2)} paid to ${user.name}`,
     new_balance: user.balance
-  }, 200;
+  }, 200];
 }
 
 // get pending delivery bids
@@ -257,23 +259,23 @@ async function getPendingDeliveryBids() {
 async function assignDeliveryWithJustification(managerId, bidId, justification = null) {
   const manager = await User.findById(managerId);
   if (!manager || manager.role !== "Manager") {
-    return { error: "Unauthorized" }, 403;
+    return [{ error: "Unauthorized" }, 403];
   }
   
   const bid = await DeliveryBid.findById(bidId).populate('order');
   if (!bid) {
-    return { error: "Bid not found" }, 404;
+    return [{ error: "Bid not found" }, 404];
   }
   
   const lowestBid = await DeliveryBid.findOne({ order: bid.order._id, status: "Pending" })
     .sort({ bid_amount: 1 });
   
   if (bid.bid_amount > lowestBid.bid_amount && !justification) {
-    return {
+    return [{
       error: "Justification required for accepting higher bid",
       lowest_bid: lowestBid.bid_amount,
       selected_bid: bid.bid_amount
-    }, 400;
+    }, 400];
   }
   
   return await assignDelivery(managerId, bidId, justification);
@@ -297,12 +299,12 @@ async function getFlaggedAiResponses() {
 async function updateKbFromFlagged(managerId, chatId, correctedAnswer) {
   const manager = await User.findById(managerId);
   if (!manager || manager.role !== "Manager") {
-    return { error: "Unauthorized" }, 403;
+    return [{ error: "Unauthorized" }, 403];
   }
   
   const answer = await ChatAnswer.findById(chatId);
   if (!answer) {
-    return { error: "Chat answer not found" }, 404;
+    return [{ error: "Chat answer not found" }, 404];
   }
   
   const kbEntry = new KnowledgeBaseEntry({
@@ -316,10 +318,10 @@ async function updateKbFromFlagged(managerId, chatId, correctedAnswer) {
   answer.flagged = false;
   await answer.save();
   
-  return {
+  return [{
     message: "Knowledge base updated with corrected answer",
     kb_entry_id: kbEntry._id.toString()
-  }, 200;
+  }, 200];
 }
 
 // system alert for unresolved complaints
@@ -357,11 +359,11 @@ async function addKbEntry(question, answer, keywords = []) {
 async function updateKbEntry(entryId, newAnswer) {
   const entry = await KnowledgeBaseEntry.findById(entryId);
   if (!entry) {
-    return { error: "Knowledge base entry not found." }, 404;
+    return [{ error: "Knowledge base entry not found." }, 404];
   }
   
   await entry.update_answer(newAnswer);
-  return { message: "Knowledge base entry updated successfully." }, 200;
+  return [{ message: "Knowledge base entry updated successfully." }, 200];
 }
 
 // get flagged chat responses
@@ -380,7 +382,7 @@ async function getFlaggedChatResponses() {
 async function resolveFlaggedChatResponse(chatId, correctedAnswer) {
   const answer = await ChatAnswer.findById(chatId);
   if (!answer) {
-    return { error: "Chat answer not found." }, 404;
+    return [{ error: "Chat answer not found." }, 404];
   }
   
   const kbEntry = new KnowledgeBaseEntry({
@@ -393,7 +395,7 @@ async function resolveFlaggedChatResponse(chatId, correctedAnswer) {
   answer.flagged = false;
   await answer.save();
   
-  return { message: "Flagged chat response resolved and knowledge base updated." }, 200;
+  return [{ message: "Flagged chat response resolved and knowledge base updated." }, 200];
 }
 
 module.exports = {

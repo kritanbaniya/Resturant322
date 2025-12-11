@@ -64,17 +64,11 @@ function updateAuthStatus() {
 
 function checkVIPAccess() {
   const isVIP = localStorage.getItem("isVIP") === "true";
-  const vipContent = document.getElementById("vip-content");
-  const vipLocked = document.getElementById("vip-locked");
   const vipBanner = document.getElementById("vip-banner");
   
-  if (isVIP) {
-    vipContent.style.display = "block";
-    vipLocked.style.display = "none";
+  if (isVIP && vipBanner) {
     vipBanner.style.display = "block";
-  } else {
-    vipContent.style.display = "none";
-    vipLocked.style.display = "block";
+  } else if (vipBanner) {
     vipBanner.style.display = "none";
   }
 }
@@ -106,7 +100,12 @@ function loadOrderHistory() {
   const userId = localStorage.getItem("userId");
   const API_URL = "http://127.0.0.1:5000";
   
-  fetch(`${API_URL}/api/orders/history/${userId}`)
+  const token = localStorage.getItem("token");
+  fetch(`${API_URL}/api/orders/history/${userId}`, {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  })
     .then(res => res.json())
     .then(orders => {
       const ordersSection = document.getElementById("orders-section");
@@ -114,9 +113,7 @@ function loadOrderHistory() {
       const noOrders = document.getElementById("no-orders");
       
       if (!Array.isArray(orders) || orders.length === 0) {
-        ordersSection.style.display = "block";
-        ordersList.innerHTML = "";
-        noOrders.style.display = "block";
+        ordersSection.style.display = "none";
         return;
       }
       
@@ -233,8 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // UC-05: Initialize menu links
   document.getElementById("menu-link").onclick = function(e) {
     e.preventDefault();
-    loadVisitorMenu();
-    document.getElementById("visitor-menu-section").scrollIntoView({ behavior: 'smooth' });
+    window.location.href = "menu.html";
   };
 
   document.getElementById("chat-link").onclick = function(e) {
