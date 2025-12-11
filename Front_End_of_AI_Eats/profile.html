@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Eats - Profile</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- HEADER -->
+  <header>
+    <h1>AI Eats</h1>
+    <nav>
+      <div class="nav-left">
+        <a href="profile.html" id="auth-link">👤 Profile</a>
+      </div>
+      <div class="nav-center">
+        <a href="index.html">Home</a>
+        <a href="menu.html">Menu</a>
+        <a href="chat.html">AI Chat</a>
+      </div>
+      <div class="nav-right">
+        <a href="cart.html">🛒 Cart (<span id="cart-count">0</span>)</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- PROFILE SECTION -->
+  <section class="profile-section">
+    <div class="profile-container">
+      <div class="profile-header">
+        <div class="profile-avatar">👤</div>
+        <h2 id="profile-username">Loading...</h2>
+        <p id="profile-email">Loading...</p>
+      </div>
+
+      <div class="profile-content">
+        <div class="profile-card">
+          <h3>Account Information</h3>
+          <div class="info-row">
+            <span class="label">Username:</span>
+            <span id="display-username">-</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Email:</span>
+            <span id="display-email">-</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Member Since:</span>
+            <span id="member-since">-</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Account Status:</span>
+            <span class="status-active">Active</span>
+          </div>
+        </div>
+
+        <div class="profile-card">
+          <h3>Order History</h3>
+          <div id="order-history">
+            <p class="no-orders">No orders yet. <a href="menu.html">Start ordering!</a></p>
+          </div>
+        </div>
+
+        <div class="profile-card">
+          <h3>Account Actions</h3>
+          <div class="action-buttons">
+            <button class="btn-secondary" onclick="editProfile()">Edit Profile</button>
+            <button class="btn-danger" onclick="logout()">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2025 AI Eats. All rights reserved.</p>
+  </footer>
+
+  <script>
+    function loadProfile() {
+      const username = localStorage.getItem("username");
+      const email = localStorage.getItem("email");
+      const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+      // Redirect if not logged in
+      if (isLoggedIn !== "true" || !username) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      // Update profile information
+      document.getElementById("profile-username").textContent = username;
+      document.getElementById("profile-email").textContent = email || "Not provided";
+      document.getElementById("display-username").textContent = username;
+      document.getElementById("display-email").textContent = email || "Not provided";
+      
+      // Set member since date (using current date as placeholder)
+      const memberSince = localStorage.getItem("memberSince") || new Date().toLocaleDateString();
+      localStorage.setItem("memberSince", memberSince);
+      document.getElementById("member-since").textContent = memberSince;
+
+      updateCartCount();
+      updateAuthStatus();
+    }
+
+    function editProfile() {
+      alert("Edit profile feature coming soon!");
+    }
+
+    function logout() {
+      if (confirm("Are you sure you want to logout?")) {
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("username");
+        localStorage.removeItem("email");
+        localStorage.removeItem("password");
+        window.location.href = "index.html";
+      }
+    }
+
+    function updateCartCount() {
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      document.getElementById("cart-count").textContent = totalItems;
+    }
+
+    function updateAuthStatus() {
+      const username = localStorage.getItem("username");
+      const authLink = document.getElementById("auth-link");
+      
+      if (username) {
+        authLink.textContent = `👤 ${username}`;
+        authLink.href = "profile.html";
+      }
+    }
+
+    // Load profile on page load
+    loadProfile();
+  </script>
+</body>
+</html>

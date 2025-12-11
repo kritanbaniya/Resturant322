@@ -12,7 +12,7 @@
     <h1>AI Eats</h1>
     <nav>
       <div class="nav-left">
-        <a href="login.html">Login/Register</a>
+        <a href="login.html" id="auth-link">Login/Register</a>
       </div>
       <div class="nav-center">
         <a href="index.html">Home</a>
@@ -161,8 +161,23 @@
       const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
       document.getElementById("cart-count").textContent = totalItems;
     }
+
+    function updateAuthStatus() {
+      const isLoggedIn = localStorage.getItem("isLoggedIn");
+      const username = localStorage.getItem("username");
+      const authLink = document.getElementById("auth-link");
+      
+      if (isLoggedIn === "true" && username) {
+        authLink.textContent = `👤 ${username}`;
+        authLink.href = "profile.html";
+      } else {
+        authLink.textContent = "Login/Register";
+        authLink.href = "login.html";
+      }
+    }
     
     loadCart();
+    updateAuthStatus();
   </script>
 </body>
 </html>
