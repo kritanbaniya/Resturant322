@@ -286,8 +286,26 @@
   </p>
 </footer>
 
-<!-- UPDATE CART COUNT AND AUTH STATUS -->
 <script>
+  const API_URL = "http://127.0.0.1:5000";
+
+  async function loadFeaturedDishes() {
+    try {
+      const response = await fetch(`${API_URL}/api/menu/`);
+      if (response.ok) {
+        const dishes = await response.json();
+        const featured = dishes
+          .filter(d => d.average_rating >= 4.5)
+          .sort((a, b) => b.average_rating - a.average_rating)
+          .slice(0, 3);
+        
+        console.log('Featured dishes loaded:', featured);
+      }
+    } catch (error) {
+      console.error('Error loading featured dishes:', error);
+    }
+  }
+
   function updateCartCount() {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -327,6 +345,7 @@
   updateCartCount();
   updateAuthStatus();
   checkVIPAccess();
+  loadFeaturedDishes();
 </script>
 
 </body>

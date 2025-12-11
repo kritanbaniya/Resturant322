@@ -72,6 +72,8 @@
   </footer>
 
   <script>
+    const API_URL = "http://127.0.0.1:5000";
+
     function loadCart() {
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
       let container = document.getElementById("cart-items");
@@ -119,7 +121,6 @@
       const isVIP = localStorage.getItem("isVIP") === "true";
       let finalSubtotal = subtotal;
       
-      // Apply VIP 10% discount
       if (isVIP) {
         finalSubtotal = subtotal * 0.9;
       }

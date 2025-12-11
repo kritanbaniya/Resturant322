@@ -33,7 +33,6 @@
   <section class="menu">
     <h2>Our Menu</h2>
     <div class="menu-grid" id="menu-grid">
-      <!-- Menu items will be loaded from backend -->
     </div>
         <h3>Salmon Sushi</h3>
         <p>Fresh salmon with perfectly seasoned rice.</p>
@@ -186,17 +185,14 @@
     </div>
   </section>
 
-  <!-- FOOTER -->
   <footer>
     &copy; 2025 AI Eats. All rights reserved.
   </footer>
 
-  <!-- ADD TO CART SCRIPT -->
   <script>
     const API_URL = "http://127.0.0.1:5000";
     let menuItems = {};
 
-    // Load menu from backend
     async function loadMenu() {
       try {
         const response = await fetch(`${API_URL}/api/menu/`);
@@ -251,7 +247,6 @@
       const item = menuItems[itemName];
       const isVIP = localStorage.getItem("isVIP") === "true";
       
-      // Check if item is VIP-only and user is not VIP
       if (item.vipOnly && !isVIP) {
         alert("This item is exclusive to VIP members!\n\nUpgrade to VIP membership to access premium dishes.");
         return;
@@ -259,7 +254,6 @@
       
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
       
-      // Check if item already exists in cart
       const existingItem = cart.find(cartItem => cartItem.name === itemName);
       
       if (existingItem) {
@@ -274,7 +268,6 @@
       localStorage.setItem("cart", JSON.stringify(cart));
       updateCartCount();
       
-      // Show success message
       const btn = event.target;
       const originalText = btn.textContent;
       btn.textContent = 'Added!';

@@ -64,7 +64,6 @@
       const confirmPass = document.getElementById("regConfirmPass").value;
       const messageEl = document.getElementById("registerMessage");
 
-      // Validation
       if (pass !== confirmPass) {
         messageEl.textContent = "Passwords do not match.";
         messageEl.className = "message error";
@@ -96,7 +95,6 @@
           messageEl.textContent = data.message || "Account created successfully! Redirecting to login...";
           messageEl.className = "message success";
 
-          // Save user data for potential auto-login
           if (data.user_id) {
             localStorage.setItem("userId", data.user_id);
           }

@@ -147,7 +147,6 @@
       const isVIP = localStorage.getItem("isVIP") === "true";
       let finalSubtotal = subtotal;
       
-      // Apply VIP 10% discount
       if (isVIP) {
         finalSubtotal = subtotal * 0.9;
       }
@@ -201,14 +200,12 @@
         const userId = localStorage.getItem("userId");
         const cart = JSON.parse(localStorage.getItem("cart")) || [];
         
-        // Prepare order items
         const items = cart.map(item => ({
           name: item.name,
           quantity: item.quantity,
           price: item.price
         }));
         
-        // Create order on backend
         const response = await fetch(`${API_URL}/api/orders/create`, {
           method: "POST",
           headers: {
@@ -223,7 +220,6 @@
         const data = await response.json();
         
         if (response.ok) {
-          // Save order data locally
           const orderId = data.order_id || "AI" + Date.now().toString().slice(-6);
           const orderData = {
             orderId: orderId,
@@ -243,10 +239,8 @@
           orders.push(orderData);
           localStorage.setItem("orders", JSON.stringify(orders));
           
-          // Clear cart
           localStorage.removeItem("cart");
           
-          // Redirect to confirmation
           localStorage.setItem("lastOrder", JSON.stringify(orderData));
           window.location.href = "order-confirmation.html";
         } else {
