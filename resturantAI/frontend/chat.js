@@ -60,6 +60,10 @@ let isListening = false;
 let hasReceivedResult = false; // track if we got any results
 let pendingTranscript = ''; // store interim results
 
+// processing state - prevents multiple simultaneous requests
+let isProcessing = false;
+let currentAudio = null; // track current audio playback
+
 // check if browser supports web speech api
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -299,10 +303,33 @@ function updateVoiceButton() {
     voiceBtn.style.backgroundColor = '#28a745';
     voiceBtn.textContent = 'mic';
     voiceBtn.title = 'Click to start listening';
-    // enable chat input when mic is not recording
-    input.disabled = false;
-    input.placeholder = 'Ask something...';
-    sendBtn.disabled = false;
+    // enable chat input when mic is not recording (unless processing)
+    updateInputState();
+  }
+}
+
+// update input state based on processing status
+function updateInputState() {
+  if (isProcessing) {
+    // disable all inputs while processing
+    input.disabled = true;
+    input.placeholder = 'bot is responding...';
+    sendBtn.disabled = true;
+    voiceBtn.disabled = true;
+    voiceBtn.style.opacity = '0.5';
+    voiceBtn.style.cursor = 'not-allowed';
+    voiceBtn.title = 'Please wait for bot to finish responding';
+  } else {
+    // enable inputs when not processing (unless mic is recording)
+    if (!isListening) {
+      input.disabled = false;
+      input.placeholder = 'Ask something...';
+      sendBtn.disabled = false;
+      voiceBtn.disabled = false;
+      voiceBtn.style.opacity = '1';
+      voiceBtn.style.cursor = 'pointer';
+      voiceBtn.title = 'Hold to talk';
+    }
   }
 }
 
@@ -314,6 +341,12 @@ voiceBtn.addEventListener('click', (e) => {
 
 // toggle voice recognition on/off
 function toggleVoiceRecognition() {
+  // safety: don't allow starting voice if bot is processing
+  if (isProcessing) {
+    console.log('[voice] toggle blocked - bot is processing');
+    return;
+  }
+
   if (!recognition) {
     console.log('[voice] toggle clicked but recognition not available');
     addMessage('voice recognition not supported in this browser.', 'system');
@@ -418,6 +451,16 @@ function stopVoiceRecognition() {
 
 // send voice message to backend
 async function sendVoiceMessage(transcript) {
+  // safety: don't allow multiple simultaneous requests
+  if (isProcessing) {
+    console.log('[voice] request blocked - already processing');
+    return;
+  }
+
+  // set processing state
+  isProcessing = true;
+  updateInputState();
+
   try {
     // get current history (don't add user message yet - backend will do it)
     const history = loadHistory();
@@ -438,6 +481,9 @@ async function sendVoiceMessage(transcript) {
 
     if (data.source === 'error') {
       addMessage(data.answer, 'error');
+      // reset processing state on error
+      isProcessing = false;
+      updateInputState();
       return;
     }
 
@@ -453,47 +499,80 @@ async function sendVoiceMessage(transcript) {
     const senderLabel = data.source === 'kb' ? 'kb (voice)' : 'ai (voice)';
     addMessage(data.answer, senderLabel);
 
-    // play audio if available
+    // play audio if available (wait for audio to finish before re-enabling inputs)
     if (data.audioBase64) {
-      playAudio(data.audioBase64, data.audioMimeType || 'audio/mpeg');
+      await playAudio(data.audioBase64, data.audioMimeType || 'audio/mpeg');
+    } else {
+      // no audio, re-enable inputs immediately
+      isProcessing = false;
+      updateInputState();
     }
   } catch (err) {
     console.error('error sending voice message:', err);
     addMessage('error processing voice request.', 'error');
+    // reset processing state on error
+    isProcessing = false;
+    updateInputState();
   }
 }
 
-// play audio from base64
+// play audio from base64 and return promise that resolves when playback completes
 function playAudio(base64Audio, mimeType) {
-  try {
-    // convert base64 to blob
-    const binaryString = atob(base64Audio);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    const blob = new Blob([bytes], { type: mimeType });
-    const audioUrl = URL.createObjectURL(blob);
+  return new Promise((resolve, reject) => {
+    try {
+      // convert base64 to blob
+      const binaryString = atob(base64Audio);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: mimeType });
+      const audioUrl = URL.createObjectURL(blob);
 
-    // create and play audio element
-    const audio = new Audio(audioUrl);
-    audio.play().catch(err => {
+      // create and play audio element
+      const audio = new Audio(audioUrl);
+      currentAudio = audio; // track current audio
+
+      audio.play().catch(err => {
+        console.error('error playing audio:', err);
+        URL.revokeObjectURL(audioUrl);
+        currentAudio = null;
+        reject(err);
+      });
+
+      // cleanup url and resolve promise after playback
+      audio.addEventListener('ended', () => {
+        URL.revokeObjectURL(audioUrl);
+        currentAudio = null;
+        // re-enable inputs after audio finishes
+        isProcessing = false;
+        updateInputState();
+        resolve();
+      });
+
+      // also handle errors during playback
+      audio.addEventListener('error', (err) => {
+        console.error('error during audio playback:', err);
+        URL.revokeObjectURL(audioUrl);
+        currentAudio = null;
+        isProcessing = false;
+        updateInputState();
+        reject(err);
+      });
+    } catch (err) {
       console.error('error playing audio:', err);
-    });
-
-    // cleanup url after playback
-    audio.addEventListener('ended', () => {
-      URL.revokeObjectURL(audioUrl);
-    });
-  } catch (err) {
-    console.error('error playing audio:', err);
-  }
+      currentAudio = null;
+      isProcessing = false;
+      updateInputState();
+      reject(err);
+    }
+  });
 }
 
 // regular text chat
 sendBtn.onclick = async () => {
-  // safety check: don't allow sending if mic is recording
-  if (isListening) {
+  // safety checks: don't allow sending if mic is recording or bot is processing
+  if (isListening || isProcessing) {
     return;
   }
 
@@ -502,6 +581,10 @@ sendBtn.onclick = async () => {
 
   addMessage(msg, 'you');
   input.value = '';
+
+  // set processing state
+  isProcessing = true;
+  updateInputState();
 
   try {
     // get current history (don't add user message yet - backend will do it)
@@ -531,16 +614,23 @@ sendBtn.onclick = async () => {
     
     const senderLabel = data.source === 'kb' ? 'kb' : 'ai';
     addMessage(data.answer, senderLabel);
+
+    // reset processing state after response
+    isProcessing = false;
+    updateInputState();
   } catch (err) {
     console.error('error sending message:', err);
     addMessage('error processing request.', 'error');
+    // reset processing state on error
+    isProcessing = false;
+    updateInputState();
   }
 };
 
 // allow enter key to send message
 input.addEventListener('keypress', (e) => {
-  // safety check: don't allow sending if mic is recording
-  if (isListening) {
+  // safety checks: don't allow sending if mic is recording or bot is processing
+  if (isListening || isProcessing) {
     e.preventDefault();
     return;
   }
