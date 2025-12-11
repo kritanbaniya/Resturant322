@@ -98,6 +98,8 @@ export function getKbAnswer(message, kb) {
     lower.includes('location') ||
     lower.includes('where are you') ||
     lower.includes('where is the restaurant') ||
+    lower.includes('where is this restaurant') ||
+    (lower.includes('where') && lower.includes('restaurant') && (lower.includes('located') || lower.includes('location'))) ||
     lower.includes('street') ||
     lower.includes('brooklyn')
   ) {

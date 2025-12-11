@@ -207,18 +207,27 @@ export async function callLLM(prompt, history = [], systemPrompt, modelName = 'm
   // format conversation history for context
   const historyContext = formatConversationHistory(history);
   
-  const fullPrompt = `${systemPrompt.trim()}${historyContext}user: ${prompt}
-assistant:`;
+  // build prompt with proper spacing
+  // ensure newlines between system prompt, history, and user message
+  let fullPrompt = systemPrompt.trim();
+  
+  // add history if it exists (historyContext already includes newlines)
+  if (historyContext && historyContext.trim()) {
+    fullPrompt += historyContext; // historyContext already has leading/trailing newlines
+  } else {
+    // if no history, add a newline before user message
+    fullPrompt += '\n';
+  }
+  
+  // add user message with proper formatting
+  fullPrompt += `user: ${prompt}\nassistant:`;
 
-  // enhanced logging
-  console.log('====== llm log ======');
-  console.log('model:', modelName);
-  console.log('history length:', history.length, 'messages');
-  console.log('=== formatted history ===');
-  console.log(historyContext);
-  console.log('=== full prompt (first 500 chars) ===');
-  console.log(fullPrompt.substring(0, 500) + (fullPrompt.length > 500 ? '...' : ''));
-  console.log('=====================');
+  // log the complete prompt being sent to llm
+  console.log('====== complete llm prompt ======');
+  console.log(fullPrompt);
+  console.log('================================');
+  console.log('history array length:', history.length);
+  console.log('history array:', JSON.stringify(history, null, 2));
 
   const start = Date.now();
 
@@ -237,11 +246,6 @@ assistant:`;
   const end = Date.now();
   const responseTime = end - start;
 
-  console.log('====== llm response ======');
-  console.log('llm raw response:', data);
-  console.log('llm response time:', responseTime, 'ms');
-  console.log('=====================');
-
   if (!data || !data.response) {
     return { answer: "sorry, i couldn't generate a response.", responseTime };
   }
@@ -249,22 +253,8 @@ assistant:`;
   // remove emojis from response as a safety measure
   let cleanedAnswer = removeEmojis(data.response.trim());
   
-  // log if emojis were removed
-  if (cleanedAnswer !== data.response.trim()) {
-    console.log('emojis were removed from llm response');
-  }
-  
   // validate memory response to catch hallucinations
-  const originalAnswer = cleanedAnswer;
   cleanedAnswer = validateMemoryResponse(cleanedAnswer, prompt, history);
-  
-  if (cleanedAnswer !== originalAnswer) {
-    console.log('====== validation correction ======');
-    console.log('original answer:', originalAnswer);
-    console.log('corrected answer:', cleanedAnswer);
-    console.log('reason: hallucination detected and corrected');
-    console.log('===================================');
-  }
   
   return { answer: cleanedAnswer, responseTime };
 }
