@@ -4,8 +4,6 @@ from models.user import User
 
 menu_bp = Blueprint("menu", __name__)
 
-
-
 # Get all dishes
 @menu_bp.get("/")
 def get_menu():
@@ -27,9 +25,7 @@ def get_menu():
         for d in dishes
     ]), 200
 
-
-
-# Public: Get one dish
+# Get one dish
 @menu_bp.get("/<dish_id>")
 def get_dish(dish_id):
     dish = Dish.objects(id=dish_id).first()
@@ -52,7 +48,7 @@ def get_dish(dish_id):
 
 
 
-# Manager: Add a new dish
+# Manager adds a new dish
 @menu_bp.post("/add")
 def add_dish():
     data = request.get_json()
@@ -83,8 +79,7 @@ def add_dish():
     }), 201
 
 
-
-# Manager: Update a dish
+# Manager updates dish details
 @menu_bp.put("/update/<dish_id>")
 def update_dish(dish_id):
     data = request.get_json()
@@ -99,7 +94,6 @@ def update_dish(dish_id):
     if not dish:
         return jsonify({"error": "Dish not found."}), 404
 
-    # Optional fields
     for field in ["name", "description", "category", "price", "image_url", "tags"]:
         if field in data:
             setattr(dish, field, data[field])
@@ -109,8 +103,7 @@ def update_dish(dish_id):
     return jsonify({"message": "Dish updated successfully."}), 200
 
 
-# Manager: Change availability
-
+# Manager changes dish availability
 @menu_bp.put("/availability/<dish_id>")
 def change_availability(dish_id):
     data = request.get_json()
@@ -137,7 +130,7 @@ def change_availability(dish_id):
     }), 200
 
 
-# Manager: Delete a dish
+# Manager deletes a dish
 @menu_bp.delete("/delete/<dish_id>")
 def delete_dish(dish_id):
     data = request.get_json()
@@ -156,7 +149,7 @@ def delete_dish(dish_id):
     return jsonify({"message": "Dish removed from menu."}), 200
 
 
-# 🟢 Customer: Rate a dish
+# Customer rates a dish
 @menu_bp.post("/rate/<dish_id>")
 def rate_dish(dish_id):
     data = request.get_json()
