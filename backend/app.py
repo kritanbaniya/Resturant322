@@ -23,6 +23,7 @@ def create_app():
     from routes.manager_routes import manager_bp
     from routes.menu_routes import menu_bp
     from routes.chat_routes import chat_bp
+    from routes.complaint_route import complaint_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(user_bp, url_prefix='/api/users')
@@ -32,6 +33,7 @@ def create_app():
     app.register_blueprint(manager_bp, url_prefix='/api/manager')
     app.register_blueprint(menu_bp, url_prefix='/api/menu')
     app.register_blueprint(chat_bp, url_prefix='/api/chat')
+    app.register_blueprint(complaint_bp, url_prefix='/api/complaints')
 
     @app.errorhandler(ValidationError)
     def handle_validation_error(e):

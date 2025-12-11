@@ -271,7 +271,7 @@
 
   <!-- VIP HEADER -->
   <section class="vip-header">
-    <div class="vip-badge-large">👑</div>
+    <div class="vip-badge-large">VIP</div>
     <h2>Welcome, VIP Member!</h2>
     <p>Enjoy exclusive benefits, premium dishes, and priority service</p>
   </section>
@@ -283,34 +283,20 @@
       <h2 style="margin-top: 0;">Your VIP Benefits</h2>
       <div class="benefits-grid">
         <div class="benefit-card">
-          <div class="benefit-icon">🚗</div>
           <div class="benefit-title">Free Delivery</div>
           <div class="benefit-desc">All orders ship free, no minimum</div>
         </div>
         <div class="benefit-card">
-          <div class="benefit-icon">💰</div>
           <div class="benefit-title">10% Discount</div>
           <div class="benefit-desc">Save 10% on all orders</div>
         </div>
         <div class="benefit-card">
-          <div class="benefit-icon">⭐</div>
           <div class="benefit-title">Priority Support</div>
           <div class="benefit-desc">24/7 VIP customer service</div>
         </div>
         <div class="benefit-card">
-          <div class="benefit-icon">🍽️</div>
           <div class="benefit-title">Exclusive Menu</div>
           <div class="benefit-desc">Premium dishes unavailable elsewhere</div>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">🎁</div>
-          <div class="benefit-title">Birthday Bonus</div>
-          <div class="benefit-desc">Special gift on your birthday</div>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">👥</div>
-          <div class="benefit-title">Referral Rewards</div>
-          <div class="benefit-desc">Earn credits when friends join</div>
         </div>
       </div>
 
@@ -337,10 +323,8 @@
 
       <!-- TABS -->
       <div class="tab-buttons">
-        <button class="tab-btn active" onclick="switchTab('exclusive')">🍽️ Exclusive Menu</button>
-        <button class="tab-btn" onclick="switchTab('rewards')">🎁 Rewards & Perks</button>
-        <button class="tab-btn" onclick="switchTab('referral')">👥 Referral Program</button>
-        <button class="tab-btn" onclick="switchTab('history')">📜 Order History</button>
+        <button class="tab-btn active" onclick="switchTab('exclusive')">Exclusive Menu</button>
+        <button class="tab-btn" onclick="switchTab('history')">Order History</button>
       </div>
 
       <!-- EXCLUSIVE MENU TAB -->
@@ -353,72 +337,6 @@
           </div>
         </div>
       </div>
-
-      <!-- REWARDS TAB -->
-      <div id="rewards" class="tab-content">
-        <div class="dashboard-grid">
-          <div class="dashboard-card">
-            <h3>Active Perks</h3>
-            <ul class="perks-list">
-              <li>Free delivery on all orders</li>
-              <li>10% discount on all food items</li>
-              <li>Early access to new menu items</li>
-              <li>Priority order processing</li>
-              <li>24/7 VIP support hotline</li>
-              <li>Special birthday discount</li>
-              <li>Referral bonus program</li>
-              <li>Monthly surprise rewards</li>
-            </ul>
-          </div>
-
-          <div class="dashboard-card">
-            <h3>Points & Credits</h3>
-            <div class="vip-exclusive">
-              <div class="vip-exclusive-title">Loyalty Points</div>
-              <div style="font-size: 24px; font-weight: bold; color: #ff6b6b; margin: 10px 0;">2,500 Points</div>
-              <p style="margin: 0; color: #666; font-size: 12px;">Earn 1 point per $1 spent, redeem for rewards</p>
-            </div>
-            <div class="vip-exclusive">
-              <div class="vip-exclusive-title">Account Credit</div>
-              <div style="font-size: 24px; font-weight: bold; color: #51cf66; margin: 10px 0;">$45.50</div>
-              <p style="margin: 0; color: #666; font-size: 12px;">Redeemable on any future order</p>
-            </div>
-            <button class="upgrade-btn" style="width: 100%; margin-top: 10px;">Redeem Points</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- REFERRAL TAB -->
-      <div id="referral" class="tab-content">
-        <div class="dashboard-card">
-          <h3>Referral Program</h3>
-          <p style="color: #666; font-size: 13px;">Share your unique code and earn rewards</p>
-          
-          <div class="referral-box">
-            <strong>Your Referral Code:</strong>
-            <div class="referral-code" id="referralCode">VIP-LOADING</div>
-            <button class="upgrade-btn" style="width: 100%;" onclick="copyReferralCode()">Copy Code</button>
-          </div>
-
-          <div class="vip-exclusive">
-            <div class="vip-exclusive-title">How It Works</div>
-            <ol style="margin: 10px 0; padding-left: 20px; color: #666; font-size: 12px;">
-              <li>Share your unique referral code with friends</li>
-              <li>They sign up and use your code at registration</li>
-              <li>You earn $10 credit when they place their first order</li>
-              <li>They get 15% off their first order too!</li>
-            </ol>
-          </div>
-
-          <div class="dashboard-card" style="background: #f0f9ff; border-top: 4px solid #4dabf7;">
-            <h4>Referrals Pending</h4>
-            <div id="referralsList" style="font-size: 13px; color: #666;">
-              <p>No pending referrals. Start sharing your code!</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- ORDER HISTORY TAB -->
       <div id="history" class="tab-content">
         <div class="dashboard-card">

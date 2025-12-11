@@ -1,16 +1,16 @@
 from models.dish import Dish
 from models.user import User
 
-
+# Retrieve all dishes
 def get_all_dishes():
     dishes = Dish.objects()
     return dishes
 
-
+# Retrieve dish by ID
 def get_dish_by_id(dish_id):
     return Dish.objects(id=dish_id).first()
 
-
+# Add a new dish to the menu
 def add_dish(manager_id, data):
     manager = User.objects(id=manager_id).first()
 
@@ -33,6 +33,7 @@ def add_dish(manager_id, data):
 
     return {"message": "Dish created successfully.", "dish_id": str(dish.id)}, 201
 
+# Update existing dish details
 def update_dish(manager_id, dish_id, data):
     manager = User.objects(id=manager_id).first()
     if not manager or manager.role != "Manager":
@@ -49,7 +50,7 @@ def update_dish(manager_id, dish_id, data):
     dish.save()
     return {"message": "Dish updated successfully."}, 200
 
-
+# Change dish availability
 def change_availability(manager_id, dish_id, is_available):
     manager = User.objects(id=manager_id).first()
     if not manager or manager.role != "Manager":
@@ -64,7 +65,7 @@ def change_availability(manager_id, dish_id, is_available):
 
     return {"message": "Availability updated.", "is_available": dish.is_available}, 200
 
-
+# Remove a dish from the menu
 def delete_dish(manager_id, dish_id):
     manager = User.objects(id=manager_id).first()
     if not manager or manager.role != "Manager":
@@ -77,7 +78,7 @@ def delete_dish(manager_id, dish_id):
     dish.delete()
     return {"message": "Dish removed from menu."}, 200
 
-
+# Rate a dish
 def rate_dish(dish_id, rating):
     dish = Dish.objects(id=dish_id).first()
     if not dish:

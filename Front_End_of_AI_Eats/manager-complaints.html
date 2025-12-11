@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager - Review Complaints | AI Eats</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">AI Eats</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="menu.html">Menu</a></li>
+            <li><a href="cart.html">Cart</a></li>
+            <li><a href="profile.html">Profile</a></li>
+            <li><a href="chat.html">Chat</a></li>
+            <li><a href="complaints.html">Ratings</a></li>
+            <li><a href="manager-complaints.html" class="active">Review Complaints</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Review Pending Complaints</h1>
+        
+        <div id="complaints-list">
+            <p>Loading complaints...</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "http://127.0.0.1:5000/api";
+        let currentUser = null;
+
+        // Check if user is logged in
+        function checkAuth() {
+            const token = localStorage.getItem("token");
+            const userId = localStorage.getItem("user_id");
+            const role = localStorage.getItem("role");
+
+            if (!token || !userId) {
+                alert("Please log in first.");
+                window.location.href = "login.html";
+                return null;
+            }
+
+            if (role !== "Manager") {
+                alert("Unauthorized. Only managers can access this page.");
+                window.location.href = "index.html";
+                return null;
+            }
+
+            return { token, userId, role };
+        }
+
+        // Load pending complaints
+        async function loadPendingComplaints() {
+            try {
+                const response = await fetch(`${API_BASE}/complaints/pending`, {
+                    headers: {
+                        "Authorization": `Bearer ${currentUser.token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch complaints");
+                }
+
+                const complaints = await response.json();
+                displayComplaints(complaints);
+            } catch (error) {
+                console.error("Error loading complaints:", error);
+                document.getElementById("complaints-list").innerHTML = 
+                    `<p class="error">Error loading complaints: ${error.message}</p>`;
+            }
+        }
+
+        // Display complaints
+        function displayComplaints(complaints) {
+            const container = document.getElementById("complaints-list");
+
+            if (complaints.length === 0) {
+                container.innerHTML = "<p>No pending complaints to review.</p>";
+                return;
+            }
+
+            container.innerHTML = complaints.map(c => `
+                <div class="complaint-card" id="complaint-${c.id}">
+                    <div class="complaint-header">
+                        <span class="complaint-type ${c.is_complaint ? 'complaint-type-complaint' : 'complaint-type-compliment'}">
+                            ${c.is_complaint ? '⚠️ Complaint' : '👍 Compliment'}
+                        </span>
+                        <span class="complaint-status status-${c.status.toLowerCase()}">${c.status}</span>
+                    </div>
+                    
+                    <div class="complaint-details">
+                        <p><strong>From:</strong> ${c.from_name} (ID: ${c.from})</p>
+                        <p><strong>To:</strong> ${c.to_name || 'N/A'} (ID: ${c.target_id})</p>
+                        <p><strong>Entity:</strong> ${c.entity_type}</p>
+                        <p><strong>Rating:</strong> ${'★'.repeat(c.rating)}${'☆'.repeat(5 - c.rating)} (${c.rating}/5)</p>
+                        <p><strong>Weight:</strong> ${c.weight} ${c.weight === 2 ? '(VIP)' : ''}</p>
+                        <p><strong>Message:</strong> ${c.text}</p>
+                        <p><strong>Submitted:</strong> ${new Date(c.created_at).toLocaleString()}</p>
+                    </div>
+
+                    <div class="complaint-actions">
+                        <button class="btn-valid" onclick="resolveComplaint('${c.id}', 'Valid')">
+                            ✅ Mark as Valid
+                        </button>
+                        <button class="btn-invalid" onclick="resolveComplaint('${c.id}', 'Invalid')">
+                            ❌ Mark as Invalid
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Resolve complaint
+        async function resolveComplaint(complaintId, outcome) {
+            const reason = outcome === "Invalid" 
+                ? prompt("Enter reason for marking as invalid (optional):") || ""
+                : "";
+
+            if (outcome === "Invalid" && !confirm("This will apply a warning to the complainer. Continue?")) {
+                return;
+            }
+
+            if (outcome === "Valid" && !confirm("This will apply punishment to the employee if applicable. Continue?")) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/complaints/resolve/${complaintId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${currentUser.token}`
+                    },
+                    body: JSON.stringify({
+                        outcome: outcome,
+                        manager_id: currentUser.userId,
+                        reason: reason
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || "Failed to resolve complaint");
+                }
+
+                alert(result.message);
+                
+                // Remove the complaint card from view
+                const card = document.getElementById(`complaint-${complaintId}`);
+                if (card) {
+                    card.remove();
+                }
+
+                // Reload if no complaints left
+                const remaining = document.querySelectorAll('.complaint-card');
+                if (remaining.length === 0) {
+                    loadPendingComplaints();
+                }
+
+            } catch (error) {
+                console.error("Error resolving complaint:", error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        // Logout
+        document.getElementById("logout-btn").addEventListener("click", (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = "login.html";
+        });
+
+        // Initialize page
+        currentUser = checkAuth();
+        if (currentUser) {
+            loadPendingComplaints();
+        }
+    </script>
+
+    <style>
+        .complaint-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .complaint-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .complaint-type-complaint {
+            background: #ffebee;
+            color: #c62828;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .complaint-type-compliment {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .status-pendingreview {
+            background: #fff3cd;
+            color: #856404;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .complaint-details p {
+            margin: 10px 0;
+        }
+
+        .complaint-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #eee;
+        }
+
+        .btn-valid {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            flex: 1;
+        }
+
+        .btn-valid:hover {
+            background: #45a049;
+        }
+
+        .btn-invalid {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            flex: 1;
+        }
+
+        .btn-invalid:hover {
+            background: #da190b;
+        }
+
+        .error {
+            color: #c62828;
+            background: #ffebee;
+            padding: 15px;
+            border-radius: 5px;
+        }
+    </style>
+</body>
+</html>

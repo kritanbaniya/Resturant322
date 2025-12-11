@@ -3,6 +3,7 @@ from models.complaint import Complaint
 from models.knowledge_base import KnowledgeBaseEntry
 from models.chat import ChatAnswer
 
+# Manager approval of user registrations
 def approve_registration(manager_id, user_id, decision, reason=None):
     manager = User.objects(id=manager_id).first()
     if not manager or manager.role != "Manager":
@@ -22,6 +23,7 @@ def approve_registration(manager_id, user_id, decision, reason=None):
     user.save()
     return {"message": f"User {decision.lower()}ed successfully."}, 200
 
+# Manager resolution of complaints
 def resolve_complaint(manager_id, complaint_id, decision):
     manager = User.objects(id=manager_id).first()
     if not manager or manager.role != "Manager":
@@ -64,6 +66,7 @@ def resolve_complaint(manager_id, complaint_id, decision):
     
     return {"message": f"Complaint marked as {decision.lower()}."}, 200
 
+# Add knowledge base entry
 def add_kb_entry(question, answer, keywords=None):
     entry = KnowledgeBaseEntry(
         questionText=question,
@@ -72,6 +75,7 @@ def add_kb_entry(question, answer, keywords=None):
     ).save()
     return {"message": "Knowledge base entry added successfully.", "entry_id": str(entry.id)}, 201
 
+# Update knowledge base entry
 def update_kb_entry(entry_id, new_answer):
     entry = KnowledgeBaseEntry.objects(id=entry_id).first()
     if not entry:
@@ -80,6 +84,7 @@ def update_kb_entry(entry_id, new_answer):
     entry.update_answer(new_answer)
     return {"message": "Knowledge base entry updated successfully."}, 200
 
+# Get flagged chat responses
 def get_flagged_chat_responses():
     flagged = ChatAnswer.objects(flagged=True)
     return [
@@ -93,6 +98,7 @@ def get_flagged_chat_responses():
         for c in flagged
     ]
 
+# Resolve flagged chat response
 def resolve_flagged_chat_response(chat_id, corrected_answer):
     answer = ChatAnswer.objects(id=chat_id).first()
     if not answer:

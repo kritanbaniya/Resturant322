@@ -24,5 +24,5 @@ def confirm(order_id):
 
 @order_bp.get("/history/<customer_id>")
 def history(customer_id):
-    response, status = get_customer_orders(customer_id)
-    return jsonify(response), status
+    orders = get_customer_orders(customer_id)
+    return jsonify(orders), 200

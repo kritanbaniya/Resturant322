@@ -468,7 +468,7 @@
           body: JSON.stringify({
             manager_id: managerId,
             user_id: userId,
-            decision: "approved"
+            decision: "APPROVE"
           })
         });
 
@@ -495,7 +495,7 @@
           body: JSON.stringify({
             manager_id: managerId,
             user_id: userId,
-            decision: "rejected",
+            decision: "REJECT",
             reason: reason
           })
         });

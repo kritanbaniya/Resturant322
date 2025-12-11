@@ -13,14 +13,14 @@ class User(Document):
     #role
     role = StringField(
         required=True,
-        choices=["Customer", "VIP", "Chef", "DeliveryPerson", "Manager"],
+        choices=["Customer", "VIP", "Chef", "DeliveryPerson", "Manager", "Demoted_Chef", "Demoted_DeliveryPerson"],
         default="Customer"
     )
 
     #status
     status = StringField(
         required=True,
-        choices=["Active", "PendingApproval", "Rejected", "Blacklisted"],
+        choices=["Active", "PendingApproval", "Rejected", "Blacklisted", "Deregistered", "Terminated"],
         default="PendingApproval"
     )
 

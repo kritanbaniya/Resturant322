@@ -2,6 +2,7 @@ from models.delivery import Delivery, DeliveryBid
 from models.order import Order
 from models.user import User
 
+# Delivery person submits a bid for an order
 def submit_bid(delivery_person_id, order_id, bid_amount):
     delivery_person = User.objects(id=delivery_person_id).first()
     if not delivery_person or delivery_person.role != "DeliveryPerson":
@@ -20,6 +21,7 @@ def submit_bid(delivery_person_id, order_id, bid_amount):
 
     return {"message": "Bid submitted successfully", "bid_id": str(bid.id)}, 201
 
+# Manager assigns a delivery person based on bids and justification if needed
 def assign_delivery(manager_id, bid_id, justification=None):
     manager = User.objects(id=manager_id).first()
     if not manager or manager.role != "Manager":
@@ -54,6 +56,7 @@ def assign_delivery(manager_id, bid_id, justification=None):
          "delivery_id": str(delivery.id)
    }, 200
 
+# Delivery person updates delivery status
 def update_delivery_status(delivery_person_id, delivery_id, new_status, note=None):
     delivery = Delivery.objects(id=delivery_id).first()
     if not delivery:

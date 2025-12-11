@@ -4,6 +4,7 @@ from config import JWT_SECRET_KEY
 import jwt
 import datetime
 
+# Generate JWT token for authenticated user
 def generate_token(user):
     payload = {
         "user_id": str(user.id),
@@ -78,19 +79,25 @@ def deposit_money(user_id, amount):
         
     user.balance += amount
     user.save()
-    return {"message": f"Deposited ${amount:.2f}. New balance: ${user.balance:.2f}."}
+    return {"message": f"Deposited ${amount:.2f}. New balance: ${user.balance:.2f}."}, 200
 
 def apply_warning(user_id, reason=""):
+    """
+    UC-01 A3: Warnings
+    - Regular Customers: 3 warnings → Deregistered
+    - VIPs: 2 warnings → Demoted to Customer (warnings cleared)
+    """
     user = User.objects(id=user_id).first()
     if not user:
         return
         
     user.warningCount += 1
 
-    if user.role == "Customer":
-        if user.isVIP: # Warning for VIP customer
+    if user.role in ["Customer", "VIP"]:
+        if user.role == "VIP": # Warning for VIP customer
             if user.warningCount >= 2:
                 user.isVIP = False
+                user.role = "Customer"
                 user.warningCount = 0
         else: # Regular customer
             if user.warningCount >= 3:
@@ -99,6 +106,35 @@ def apply_warning(user_id, reason=""):
                 return
     
     user.save()
+
+def apply_complaint_effect(employee_id, entity_type, weight):
+    """
+    Apply complaint effect to employee (Chef or DeliveryPerson)
+    Rules:
+    - netComplaints += weight
+    - If netComplaints >= 3:
+      - First time: Demote (role = "Demoted_Chef" or "Demoted_DeliveryPerson")
+      - Second time: Terminate (status = "Terminated")
+    """
+    employee = User.objects(id=employee_id).first()
+    if not employee:
+        return False
+    
+    employee.netComplaints += weight
+    
+    # Only apply demotion/termination to Chef and DeliveryPerson
+    if entity_type in ["Chef", "DeliveryPerson"] and employee.netComplaints >= 3:
+        if employee.demotionsCount == 0:
+            # First demotion
+            employee.role = f"Demoted_{entity_type}"
+            employee.demotionsCount += 1
+            employee.netComplaints = 0  # Reset after demotion
+        elif employee.demotionsCount >= 1:
+            # Second demotion = termination
+            employee.status = "Terminated"
+    
+    employee.save()
+    return True
 
 def update_vip_status(customer_id):
     user = User.objects(id=customer_id).first()

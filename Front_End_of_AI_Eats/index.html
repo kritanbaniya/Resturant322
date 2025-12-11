@@ -22,6 +22,7 @@
        <a href="index.html">Home</a>
        <a href="menu.html">Menu</a>
        <a href="chat.html">AI Chat</a>
+       <a href="complaints.html">Ratings</a>
      </div>
 
      <div class="nav-right">
@@ -29,6 +30,22 @@
      </div>
    </nav>
  </header>
+
+ <!-- ORDER TRACKING SECTION -->
+ <section class="home-section" id="orders-section" style="display: none;">
+  <h2>Your Orders</h2>
+  <div id="vip-banner" style="display: none; margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #f57f17, #fbc02d); border-radius: 8px; color: white; text-align: center;">
+    <h3>🎉 Congratulations!</h3>
+    <p>You've earned VIP status! Enjoy <strong>10% discounts</strong>, <strong>free delivery</strong>, and <strong>exclusive dishes</strong>!</p>
+    <a href="vip-dashboard.html" style="color: white; text-decoration: underline; font-weight: bold;">View VIP Benefits →</a>
+  </div>
+  <div class="orders-container">
+    <div id="orders-list"></div>
+    <div id="no-orders" class="empty-state" style="display: none;">
+      <p>No orders yet. <a href="menu.html">Start ordering now!</a></p>
+    </div>
+  </div>
+ </section>
 
  <!-- HERO SECTION -->
  <section class="hero">
@@ -356,22 +373,97 @@
     const isVIP = localStorage.getItem("isVIP") === "true";
     const vipContent = document.getElementById("vip-content");
     const vipLocked = document.getElementById("vip-locked");
+    const vipBanner = document.getElementById("vip-banner");
     
     if (isVIP) {
       vipContent.style.display = "block";
       vipLocked.style.display = "none";
+      vipBanner.style.display = "block";
     } else {
       vipContent.style.display = "none";
       vipLocked.style.display = "block";
+      vipBanner.style.display = "none";
     }
+  }
+
+  function getStatusLabel(status) {
+    const statusMap = {
+      'PendingPayment': 'Pending Payment',
+      'Paid': 'Payment Confirmed',
+      'Rejected_Insufficient_Funds': 'Payment Failed',
+      'Queued_For_Preparation': 'Waiting for Chef',
+      'In_Preparation': 'Preparing',
+      'On_Hold': 'On Hold',
+      'Ready_For_Delivery': 'Ready',
+      'Awaiting_Pickup': 'Awaiting Pickup',
+      'Out_For_Delivery': 'Out for Delivery',
+      'Completed': 'Delivered',
+      'Delivery_Failed': 'Delivery Failed'
+    };
+    return statusMap[status] || status;
+  }
+
+  function loadOrderHistory() {
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    if (isLoggedIn !== "true") {
+      document.getElementById("orders-section").style.display = "none";
+      return;
+    }
+
+    const userId = localStorage.getItem("userId");
+    const API_URL = "http://127.0.0.1:5000";
+    
+    fetch(`${API_URL}/api/orders/history/${userId}`)
+      .then(res => res.json())
+      .then(orders => {
+        const ordersSection = document.getElementById("orders-section");
+        const ordersList = document.getElementById("orders-list");
+        const noOrders = document.getElementById("no-orders");
+        
+        if (!Array.isArray(orders) || orders.length === 0) {
+          ordersSection.style.display = "block";
+          ordersList.innerHTML = "";
+          noOrders.style.display = "block";
+          return;
+        }
+        
+        ordersSection.style.display = "block";
+        noOrders.style.display = "none";
+        
+        ordersList.innerHTML = orders.map(order => `
+          <div class="order-card">
+            <div class="order-header">
+              <div class="order-id">Order #${String(order.id).slice(-6).toUpperCase()}</div>
+              <div class="order-status ${order.status.toLowerCase()}">${getStatusLabel(order.status)}</div>
+            </div>
+            <div class="order-details">
+              <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleDateString()}</p>
+              <p><strong>Total:</strong> $${order.final_price.toFixed(2)}</p>
+              <p><strong>Status:</strong> ${order.status}</p>
+              <p><strong>Updated:</strong> ${new Date(order.created_at).toLocaleTimeString()}</p>
+            </div>
+            <div class="order-items-list">
+              <strong>Items (${order.items.length}):</strong>
+              <ul style="margin: 8px 0 0 0; padding-left: 20px; font-size: 13px; color: #666;">
+                ${order.items.map(item => `<li>${item.dish_name} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}</li>`).join('')}
+              </ul>
+              ${order.discount_applied > 0 ? `<p style="margin: 8px 0 0 0; font-size: 12px; color: #ff6b6b;">VIP Discount Applied: -$${order.discount_applied.toFixed(2)}</p>` : ''}
+            </div>
+          </div>
+        `).join("");
+      })
+      .catch(err => {
+        console.error("Error loading orders:", err);
+        document.getElementById("orders-section").style.display = "none";
+      });
   }
 
   updateCartCount();
   updateAuthStatus();
   checkVIPAccess();
+  loadOrderHistory();
   loadFeaturedDishes();
 </script>
 
 </body>
 </html>
-

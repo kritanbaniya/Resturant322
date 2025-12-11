@@ -5,12 +5,16 @@ from .order import Order
 
 class Complaint(Document):
     fromUser = ReferenceField(User, required=True)
-    toUser = ReferenceField(User, required=True)
+    toUser = ReferenceField(User)
+    targetId = StringField()
     entityType = StringField(required=True)
     
     # is complaint or compliment
     isComplaint = BooleanField(required=True)
     message = StringField()
+    
+    # Star rating (0-5, 0 means no rating)
+    rating = IntField(default=0, min_value=0, max_value=5)
 
     weight = IntField(default=1)  # vip: 2, regular: 1
 

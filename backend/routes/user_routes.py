@@ -50,3 +50,18 @@ def update_vip(user_id):
         return jsonify({"message": "User does not qualify for VIP status."}), 400
     
     return jsonify({"message": "User promoted to VIP status."}), 200
+
+@user_bp.get("/pending")
+def get_pending_users():
+    pending_users = User.objects(status="PendingApproval")
+
+    users_list = []
+    for user in pending_users:
+        users_list.append({
+            "_id": str(user.id),
+            "email": user.email,
+            "name": user.name,
+            "status": user.status
+        })
+
+    return jsonify({"users": users_list}), 200

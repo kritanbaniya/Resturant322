@@ -29,60 +29,38 @@
   <section class="vip-membership-section">
     <div class="vip-container">
       <div class="vip-header">
-        <div class="vip-icon">👑</div>
+        <div class="vip-icon">VIP</div>
         <h1>AI Eats VIP</h1>
         <p>Unlock exclusive benefits and premium dining experiences</p>
       </div>
 
-      <div class="membership-plans">
-        <div class="plan-card" id="regular-plan">
-          <h3>Regular</h3>
-          <div class="price">Free</div>
-          <ul class="benefits">
-            <li>✓ Access to regular menu</li>
-            <li>✓ Standard delivery ($2.99)</li>
-            <li>✓ Basic customer support</li>
-          </ul>
-          <button class="plan-btn" disabled>Current Plan</button>
-        </div>
-
-        <div class="plan-card premium-plan" id="vip-plan">
-          <div class="popular-badge">Most Popular</div>
-          <h3>VIP Member</h3>
-          <div class="price">$9.99<span>/month</span></div>
-          <ul class="benefits">
-            <li>✓ Access to exclusive VIP menu</li>
-            <li>✓ FREE delivery on all orders</li>
-            <li>✓ Priority customer support</li>
-            <li>✓ Early access to new dishes</li>
-            <li>✓ 10% discount on all orders</li>
-            <li>✓ Special VIP-only events</li>
-          </ul>
-          <button class="plan-btn vip-btn" onclick="upgradeToVIP()" id="vip-plan-btn">Upgrade to VIP</button>
-          <button class="plan-btn cancel-btn" onclick="cancelVIP()" id="cancel-vip-btn" style="display: none;">Cancel Membership</button>
-        </div>
+      <div class="vip-info-box">
+        <h2>How to Become VIP</h2>
+        <p>VIP membership is earned automatically when you meet these requirements:</p>
+        <ul class="vip-requirements">
+          <li>Spend more than $100 in total orders, OR</li>
+          <li>Place 3 or more orders</li>
+          <li>AND maintain 0 warnings on your account</li>
+        </ul>
+        <p class="vip-note">Once you meet these criteria, you'll automatically become a VIP member with all benefits!</p>
       </div>
 
       <div class="vip-features">
         <h2>VIP Exclusive Benefits</h2>
         <div class="features-grid">
           <div class="feature-card">
-            <div class="feature-icon">🚚</div>
             <h4>Free Delivery</h4>
             <p>Enjoy free delivery on every order, no minimum required</p>
           </div>
           <div class="feature-card">
-            <div class="feature-icon">🍽️</div>
             <h4>Exclusive Menu</h4>
             <p>Access premium dishes available only to VIP members</p>
           </div>
           <div class="feature-card">
-            <div class="feature-icon">💰</div>
             <h4>10% Discount</h4>
             <p>Save 10% on every order with your VIP membership</p>
           </div>
           <div class="feature-card">
-            <div class="feature-icon">⭐</div>
             <h4>Priority Support</h4>
             <p>Get faster response times and dedicated customer service</p>
           </div>
@@ -97,76 +75,6 @@
   </footer>
 
   <script>
-    function checkMembershipStatus() {
-      const isVIP = localStorage.getItem("isVIP") === "true";
-      const regularPlan = document.getElementById("regular-plan");
-      const vipPlan = document.getElementById("vip-plan");
-      
-      const vipPlanBtn = document.getElementById("vip-plan-btn");
-      const cancelBtn = document.getElementById("cancel-vip-btn");
-      
-      // Reset both plans first
-      regularPlan.classList.remove("current-plan");
-      vipPlan.classList.remove("current-plan");
-      
-      if (isVIP) {
-        vipPlan.classList.add("current-plan");
-        vipPlanBtn.textContent = "Current Plan";
-        vipPlanBtn.disabled = true;
-        vipPlanBtn.style.display = "none";
-        cancelBtn.style.display = "block";
-        
-        // Update regular plan button
-        const regularBtn = regularPlan.querySelector(".plan-btn");
-        regularBtn.textContent = "Downgrade";
-        regularBtn.disabled = true;
-      } else {
-        regularPlan.classList.add("current-plan");
-        vipPlanBtn.textContent = "Upgrade to VIP";
-        vipPlanBtn.disabled = false;
-        vipPlanBtn.style.display = "block";
-        cancelBtn.style.display = "none";
-        
-        // Reset regular plan button
-        const regularBtn = regularPlan.querySelector(".plan-btn");
-        regularBtn.textContent = "Current Plan";
-        regularBtn.disabled = true;
-      }
-    }
-
-    function upgradeToVIP() {
-      const isLoggedIn = localStorage.getItem("isLoggedIn");
-      if (isLoggedIn !== "true") {
-        alert("Please login first to upgrade to VIP membership.");
-        window.location.href = "login.html";
-        return;
-      }
-
-      if (confirm("Upgrade to VIP membership for $9.99/month?\n\nBenefits include:\n• Free delivery\n• Exclusive VIP menu access\n• 10% discount on all orders\n• Priority support")) {
-        // Simulate payment processing
-        const btn = document.querySelector(".vip-btn");
-        btn.textContent = "Processing...";
-        btn.disabled = true;
-        
-        setTimeout(() => {
-          localStorage.setItem("isVIP", "true");
-          localStorage.setItem("vipStartDate", new Date().toISOString());
-          alert("Welcome to AI Eats VIP! 🎉\n\nYour membership is now active. Enjoy exclusive benefits!");
-          checkMembershipStatus();
-        }, 2000);
-      }
-    }
-
-    function cancelVIP() {
-      if (confirm("Are you sure you want to cancel your VIP membership?\n\nYou will lose access to:\n• Free delivery\n• 10% discount on orders\n• Exclusive VIP menu\n• Priority support")) {
-        localStorage.removeItem("isVIP");
-        localStorage.removeItem("vipStartDate");
-        alert("Your VIP membership has been cancelled.\n\nYou can reactivate it anytime!");
-        checkMembershipStatus();
-        window.location.reload();
-      }
-    }
-
     function updateCartCount() {
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
       const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -180,8 +88,8 @@
       const authLink = document.getElementById("auth-link");
       
       if (isLoggedIn === "true" && username) {
-        const vipIcon = isVIP ? "👑 " : "";
-        authLink.textContent = `👤 ${vipIcon}${username}`;
+        const vipIcon = isVIP ? "VIP " : "";
+        authLink.textContent = `${vipIcon}${username}`;
         authLink.href = "profile.html";
       } else {
         authLink.textContent = "Login/Register";
@@ -189,7 +97,6 @@
       }
     }
 
-    checkMembershipStatus();
     updateCartCount();
     updateAuthStatus();
   </script>

@@ -2,10 +2,12 @@ from models.chat import ChatQuestion, ChatAnswer
 from models.knowledge_base import KnowledgeBaseEntry
 import datetime
 
+# Generate a response using a generative AI model (placeholder function)
 def generative_ai_response(prompt: str) -> str:
     # Placeholder for actual AI integration
     return "This is a generated response to your prompt."
 
+# Search the knowledge base for a relevant answer
 def search_knowledge_base(query):
     query = query.lower()
     entries = KnowledgeBaseEntry.objects()
@@ -19,6 +21,7 @@ def search_knowledge_base(query):
             return entry.answerText
     return None
 
+# Handle user question and generate answer
 def ask_ai(user_id, question_text):
     chat_question = ChatQuestion(
         userId=user_id,
@@ -53,6 +56,7 @@ def ask_ai(user_id, question_text):
         "answer_id": str(chat_answer.id)
     }, 200
 
+# Rate a chat answer
 def rate_answer(answer_id, rating):
     answer = ChatAnswer.objects(id=answer_id).first()
     if not answer:
@@ -68,6 +72,7 @@ def rate_answer(answer_id, rating):
     answer.save()
     return {"message": "Rating submitted successfully."}, 200
 
+# Flag a chat answer for review
 def flag_answer(answer_id, reason = None):
     answer = ChatAnswer.objects(id=answer_id).first()
     if not answer:
@@ -77,6 +82,7 @@ def flag_answer(answer_id, reason = None):
     answer.save()
     return {"message": "Answer flagged for review."}, 200
 
+# Retrieve chat history for a user
 def get_chat_history(user_id):
     questions = ChatQuestion.objects(userId=user_id).order_by("-timestamp")
     
