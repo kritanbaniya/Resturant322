@@ -9,9 +9,28 @@ const {
   confirmPickup,
   updateDeliveryStatus,
   evaluateDeliveryPerformance,
-  getDeliveryHistory
+  getDeliveryHistory,
+  getAvailableOrders
 } = require('../services/delivery_service');
 const { tokenRequired } = require('../utils/auth');
+
+// specific routes must come before parameterized routes
+router.get("/available", tokenRequired, async (req, res) => {
+  try {
+    if (!["DeliveryPerson", "Demoted_DeliveryPerson"].includes(req.current_user.role)) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+    
+    const orders = await getAvailableOrders(req.current_user.id);
+    return res.status(200).json({
+      orders,
+      total: orders.length
+    });
+  } catch (error) {
+    console.error("Error loading available orders:", error);
+    return res.status(500).json({ error: "Failed to load available orders", details: error.message });
+  }
+});
 
 router.get('/assignments/:delivery_person_id', tokenRequired, async (req, res) => {
   if (!["DeliveryPerson", "Demoted_DeliveryPerson"].includes(req.current_user.role)) {
@@ -116,14 +135,18 @@ router.get('/history/:delivery_person_id', tokenRequired, async (req, res) => {
   });
 });
 
-router.post("/bid", async (req, res) => {
-  const { delivery_person_id, order_id, amount } = req.body;
-  
-  if (!delivery_person_id || !order_id || amount === undefined) {
-    return res.status(400).json({ error: "delivery_person_id, order_id, and amount are required." });
+router.post("/bid", tokenRequired, async (req, res) => {
+  if (!["DeliveryPerson", "Demoted_DeliveryPerson"].includes(req.current_user.role)) {
+    return res.status(403).json({ error: "Unauthorized" });
   }
   
-  const [response, status] = await submitBid(delivery_person_id, order_id, amount);
+  const { order_id, amount } = req.body;
+  
+  if (!order_id || amount === undefined) {
+    return res.status(400).json({ error: "order_id and amount are required." });
+  }
+  
+  const [response, status] = await submitBid(req.current_user.id, order_id, amount);
   return res.status(status).json(response);
 });
 

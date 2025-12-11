@@ -309,15 +309,27 @@
       </div>
 
       <div class="tab-buttons">
-        <button class="tab-btn active" data-tab="assignments">Assignments</button>
+        <button class="tab-btn active" data-tab="available">Available Orders</button>
+        <button class="tab-btn" data-tab="assignments">Assignments</button>
         <button class="tab-btn" data-tab="history">Delivery History</button>
         <button class="tab-btn" data-tab="performance">Performance</button>
       </div>
 
       <div id="message" class="message" style="display: none;"></div>
 
+      <!-- AVAILABLE ORDERS TAB -->
+      <div id="available" class="tab-content active">
+        <div class="dashboard-card">
+          <h3>Available Orders for Bidding</h3>
+          <p style="color: #666; font-size: 13px;">Orders ready for delivery - submit your bid to compete for delivery assignments</p>
+          <div class="deliveries-list" id="availableOrdersList">
+            <p>Loading available orders...</p>
+          </div>
+        </div>
+      </div>
+
       <!-- ASSIGNMENTS TAB (UC-03) -->
-      <div id="assignments" class="tab-content active">
+      <div id="assignments" class="tab-content">
         <div class="dashboard-card">
           <h3>My Assigned Deliveries</h3>
           <p style="color: #666; font-size: 13px;">UC-03 Main Flow: View assigned deliveries and manage status</p>

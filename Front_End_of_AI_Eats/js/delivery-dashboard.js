@@ -20,9 +20,102 @@ function switchTab(tabName) {
     }
   });
 
+  if (tabName === 'available') loadAvailableOrders();
   if (tabName === 'assignments') loadAssignedDeliveries();
   if (tabName === 'history') loadDeliveryHistory();
   if (tabName === 'performance') loadPerformanceEvaluation();
+}
+
+// Load available orders for bidding
+async function loadAvailableOrders() {
+  try {
+    const response = await fetch(`${API_URL}/api/delivery/available`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const container = document.getElementById('availableOrdersList');
+
+      if (data.orders && data.orders.length > 0) {
+        container.innerHTML = data.orders.map(order => {
+          const itemsList = order.items.map(item => `${item.quantity}x ${item.name}`).join(', ');
+          
+          return `
+            <div class="delivery-item">
+              <div class="delivery-header">
+                <div class="order-info">Order #${order.order_id.slice(-6)}</div>
+                ${order.has_bid ? '<div class="delivery-status status-assigned">Bid Submitted</div>' : ''}
+              </div>
+              <div class="delivery-details">
+                <div class="detail-row"><strong>Customer:</strong> ${order.customer_name}</div>
+                <div class="detail-row"><strong>Address:</strong> ${order.customer_address}</div>
+                <div class="detail-row"><strong>Items:</strong> ${itemsList}</div>
+                <div class="detail-row"><strong>Order Total:</strong> $${order.final_price.toFixed(2)}</div>
+              </div>
+              ${!order.has_bid ? `
+                <div class="delivery-actions">
+                  <input type="number" id="bidAmount_${order.order_id}" placeholder="Bid amount ($)" 
+                         min="0" step="0.01" style="padding: 8px; margin-right: 8px; width: 150px; border: 1px solid #ddd; border-radius: 4px;">
+                  <button class="btn-small btn-bid" onclick="submitBid('${order.order_id}')">Submit Bid</button>
+                </div>
+              ` : `
+                <div class="delivery-actions">
+                  <p style="color: #4dabf7; font-weight: bold; margin: 0;">Your bid is pending manager review</p>
+                </div>
+              `}
+            </div>
+          `;
+        }).join('');
+
+        document.getElementById('statAvailable').textContent = data.orders.length;
+      } else {
+        container.innerHTML = '<p>No orders available for delivery at this moment</p>';
+        document.getElementById('statAvailable').textContent = '0';
+      }
+    } else {
+      showMessage('Error loading available orders', false);
+    }
+  } catch (error) {
+    console.error('Error loading available orders:', error);
+    showMessage('Error loading available orders', false);
+  }
+}
+
+// Submit bid for an order
+async function submitBid(orderId) {
+  const bidAmountInput = document.getElementById(`bidAmount_${orderId}`);
+  const bidAmount = parseFloat(bidAmountInput.value);
+
+  if (!bidAmount || bidAmount <= 0) {
+    alert('Please enter a valid bid amount');
+    return;
+  }
+
+  if (!confirm(`Submit bid of $${bidAmount.toFixed(2)} for this order?`)) return;
+
+  try {
+    const response = await fetch(`${API_URL}/api/delivery/bid`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        order_id: orderId,
+        amount: bidAmount
+      })
+    });
+
+    const data = await response.json();
+    showMessage(data.message || 'Bid submitted successfully!', response.ok);
+    if (response.ok) {
+      loadAvailableOrders();
+    }
+  } catch (error) {
+    console.error('Error submitting bid:', error);
+    showMessage('Error submitting bid', false);
+  }
 }
 
 // UC-03 Step 1: Load assigned deliveries
@@ -336,5 +429,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
+  loadAvailableOrders();
   loadAssignedDeliveries();
 });

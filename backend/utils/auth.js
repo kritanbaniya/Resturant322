@@ -24,7 +24,8 @@ const tokenRequired = (req, res, next) => {
     const payload = jwt.verify(token, config.JWT_SECRET_KEY);
     req.current_user = {
       id: payload.user_id,
-      role: payload.role
+      role: payload.role,
+      isVIP: payload.isVIP === true
     };
     next();
   } catch (error) {

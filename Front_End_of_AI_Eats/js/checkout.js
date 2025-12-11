@@ -163,86 +163,52 @@ document.addEventListener('DOMContentLoaded', function() {
       if (response.ok) {
         const orderId = data.order_id;
         
-        // Confirm the order (process payment and move to kitchen queue)
-        const token = localStorage.getItem("token");
-        const confirmResponse = await fetch(`${API_URL}/api/orders/confirm/${orderId}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          }
-        });
-        
-        const confirmData = await confirmResponse.json();
-        
-        if (confirmResponse.ok) {
-          // UC-01 A2: Check for VIP upgrade
-          if (confirmData.vip_upgraded) {
-            localStorage.setItem("isVIP", "true");
-            alert("[CONGRATS] Congratulations! You've been upgraded to VIP status!\n\nEnjoy 10% discounts and free delivery on all future orders!");
-          }
-          
-          // Update balance in localStorage if provided
-          if (confirmData.new_balance !== undefined) {
-            // Fetch updated user data to sync balance
-            const token = localStorage.getItem("token");
-            const userResponse = await fetch(`${API_URL}/api/users/${userId}`, {
-              headers: {
-                "Authorization": `Bearer ${token}`
-              }
-            });
-            if (userResponse.ok) {
-              const userData = await userResponse.json();
-              localStorage.setItem("balance", userData.balance);
-            }
-          }
-          
-          const orderData = {
-            orderId: orderId,
-            username: localStorage.getItem("username"),
-            items: cart,
-            total: document.getElementById("checkout-total").textContent,
-            customerInfo: {
-              name: document.getElementById("full-name").value,
-              phone: document.getElementById("phone").value,
-              address: document.getElementById("address").value
-            },
-            orderDate: new Date().toISOString(),
-            status: "confirmed"
-          };
-          
-          let orders = JSON.parse(localStorage.getItem("orders")) || [];
-          orders.push(orderData);
-          localStorage.setItem("orders", JSON.stringify(orders));
-          
-          localStorage.removeItem("cart");
-          
-          localStorage.setItem("lastOrder", JSON.stringify(orderData));
-          window.location.href = "order-confirmation.html";
-        } else {
-          const errorMsg = confirmData.error || "Failed to confirm order";
-          
-          // UC-01 A1: Insufficient funds error with warning applied
-          if (errorMsg.includes("Insufficient funds") || errorMsg.includes("Insufficient")) {
-            alert("[ERROR] ORDER REJECTED - INSUFFICIENT FUNDS\n\n" +
-                  "Required: $" + (confirmData.required || "N/A") + "\n" +
-                  "Your Balance: $" + (confirmData.balance || "N/A") + "\n\n" +
-                  "[WARNING] WARNING APPLIED: You have received a warning for attempting to place an order without sufficient funds.\n\n" +
-                  "Please deposit more funds in your profile before trying again.\n\n" +
-                  "Note: 3 warnings will result in account deregistration (VIPs: 2 warnings = VIP status loss).");
-          } else {
-            alert("Error confirming order: " + errorMsg);
-          }
-          console.error("Confirm error:", JSON.stringify(confirmData, null, 2));
-          submitBtn.textContent = "Place Order";
-          submitBtn.disabled = false;
+        // UC-01 A2: Check for VIP upgrade
+        if (data.vip_upgraded) {
+          localStorage.setItem("isVIP", "true");
+          alert("[CONGRATS] Congratulations! You've been upgraded to VIP status!\n\nEnjoy 10% discounts and free delivery on all future orders!");
         }
+        
+        // Update balance in localStorage if provided
+        if (data.new_balance !== undefined) {
+          localStorage.setItem("balance", data.new_balance);
+        }
+        
+        const orderData = {
+          orderId: orderId,
+          username: localStorage.getItem("username"),
+          items: cart,
+          total: document.getElementById("checkout-total").textContent,
+          customerInfo: {
+            name: document.getElementById("full-name").value,
+            phone: document.getElementById("phone").value,
+            address: document.getElementById("address").value
+          },
+          orderDate: new Date().toISOString(),
+          status: "confirmed"
+        };
+        
+        let orders = JSON.parse(localStorage.getItem("orders")) || [];
+        orders.push(orderData);
+        localStorage.setItem("orders", JSON.stringify(orders));
+        
+        localStorage.removeItem("cart");
+        
+        localStorage.setItem("lastOrder", JSON.stringify(orderData));
+        window.location.href = "order-confirmation.html";
       } else {
         const errorMsg = data.error || data.details || "Unknown error";
         const submitBtn = document.querySelector(".place-order-btn");
         
         // UC-01 Preconditions: Check for balance/login errors
-        if (errorMsg.includes("positive balance")) {
+        if (errorMsg.includes("Insufficient funds") || errorMsg.includes("Insufficient")) {
+          alert("[ERROR] ORDER REJECTED - INSUFFICIENT FUNDS\n\n" +
+                "Required: $" + (data.required || "N/A") + "\n" +
+                "Your Balance: $" + (data.balance || "N/A") + "\n\n" +
+                "[WARNING] WARNING APPLIED: You have received a warning for attempting to place an order without sufficient funds.\n\n" +
+                "Please deposit more funds in your profile before trying again.\n\n" +
+                "Note: 3 warnings will result in account deregistration (VIPs: 2 warnings = VIP status loss).");
+        } else if (errorMsg.includes("positive balance")) {
           alert("[ERROR] NO BALANCE\n\nYou must deposit funds before placing an order.\n\nPlease visit your profile to deposit money.");
           submitBtn.textContent = "Deposit Funds Required";
           submitBtn.disabled = true;

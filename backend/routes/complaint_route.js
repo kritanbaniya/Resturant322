@@ -25,7 +25,7 @@ router.post("/file", tokenRequired, async (req, res) => {
   const isComplaint = data.isComplaint !== undefined ? data.isComplaint : true;
   
   // vip complaints count twice as important
-  if (req.current_user.role === "VIP") {
+  if (req.current_user.isVIP === true) {
     weight = weight * 2;
   }
   

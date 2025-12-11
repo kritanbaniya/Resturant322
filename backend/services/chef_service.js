@@ -4,20 +4,34 @@ const Complaint = require('../models/Complaint');
 
 // orders for chefs to prepare
 async function getOrdersForPreparation() {
-  const orders = await Order.find({ status: "Queued_For_Preparation" })
+  // only show orders that are queued for preparation, in preparation, or on hold
+  // exclude ready_for_delivery since those are done and waiting for delivery
+  const orders = await Order.find({ 
+    status: { $in: ["Queued_For_Preparation", "In_Preparation", "On_Hold"] }
+  })
     .populate('customer', 'name')
     .populate('items.dish', 'name')
     .sort({ created_at: 1 });
   
+  // map database status to frontend status
+  const statusMap = {
+    "Queued_For_Preparation": "pending",
+    "In_Preparation": "preparing",
+    "On_Hold": "on_hold"
+  };
+  
   return orders.map(order => ({
+    _id: order._id.toString(),
     order_id: order._id.toString(),
-    customer_name: order.customer.name,
-    customer_id: order.customer._id.toString(),
+    customer_name: order.customer ? order.customer.name : 'Unknown',
+    customer_id: order.customer ? order.customer._id.toString() : '',
     items: order.items.map(item => ({
-      dish: item.dish.name,
+      name: item.dish ? item.dish.name : 'Unknown',
+      dish: item.dish ? item.dish.name : 'Unknown',
       quantity: item.quantity
     })),
-    status: order.status,
+    status: statusMap[order.status] || order.status.toLowerCase(),
+    notes: order.notes || '',
     created_at: order.created_at
   }));
 }
@@ -29,10 +43,10 @@ async function getOrderDetails(orderId) {
     .populate('items.dish', 'name description');
   
   if (!order) {
-    return { error: "Order not found." }, 404;
+    return [{ error: "Order not found." }, 404];
   }
   
-  return {
+  return [{
     order_id: order._id.toString(),
     customer_name: order.customer.name,
     customer_id: order.customer._id.toString(),
@@ -44,58 +58,58 @@ async function getOrderDetails(orderId) {
     })),
     status: order.status,
     created_at: order.created_at
-  }, 200;
+  }, 200];
 }
 
 // start preparing an order
 async function startPreparation(orderId) {
   const order = await Order.findById(orderId);
   if (!order) {
-    return { error: "Order not found." }, 404;
+    return [{ error: "Order not found." }, 404];
   }
   
   if (order.status !== "Queued_For_Preparation") {
-    return { error: "Order is not ready for preparation." }, 400;
+    return [{ error: "Order is not ready for preparation." }, 400];
   }
   
   await order.set_status("In_Preparation");
-  return { message: "Order is now in preparation.", order_id: order._id.toString() }, 200;
+  return [{ message: "Order is now in preparation.", order_id: order._id.toString() }, 200];
 }
 
 // complete preparing an order
 async function completePreparation(orderId) {
   const order = await Order.findById(orderId);
   if (!order) {
-    return { error: "Order not found." }, 404;
+    return [{ error: "Order not found." }, 404];
   }
   
   if (order.status !== "In_Preparation") {
-    return { error: "Order is not in preparation." }, 400;
+    return [{ error: "Order is not in preparation." }, 400];
   }
   
   await order.set_status("Ready_For_Delivery");
-  return { message: "Order is ready for delivery.", order_id: order._id.toString() }, 200;
+  return [{ message: "Order is ready for delivery.", order_id: order._id.toString() }, 200];
 }
 
 // put an order on hold due to ingredient shortage
 async function setOrderOnHold(orderId, note) {
   const order = await Order.findById(orderId);
   if (!order) {
-    return { error: "Order not found." }, 404;
+    return [{ error: "Order not found." }, 404];
   }
   
   if (!["Queued_For_Preparation", "In_Preparation"].includes(order.status)) {
-    return { error: "Order cannot be put on hold in its current status." }, 400;
+    return [{ error: "Order cannot be put on hold in its current status." }, 400];
   }
   
   await order.set_status("On_Hold");
   await order.add_note(note);
   
-  return {
+  return [{
     message: "Order has been put on hold due to ingredient shortage.",
     order_id: order._id.toString(),
     note
-  }, 200;
+  }, 200];
 }
 
 // get chef's in-progress orders
@@ -120,7 +134,7 @@ async function getChefOrders(chefId) {
 async function evaluateChefPerformance(chefId) {
   const chef = await User.findById(chefId);
   if (!chef || !["Chef", "Demoted_Chef"].includes(chef.role)) {
-    return { error: "Invalid chef." }, 400;
+    return [{ error: "Invalid chef." }, 400];
   }
   
   const complaints = await Complaint.find({ toUser: chefId, status: "Valid", isComplaint: true });

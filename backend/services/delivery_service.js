@@ -6,13 +6,24 @@ const Complaint = require('../models/Complaint');
 // delivery person submits a bid for an order
 async function submitBid(deliveryPersonId, orderId, bidAmount) {
   const deliveryPerson = await User.findById(deliveryPersonId);
-  if (!deliveryPerson || deliveryPerson.role !== "DeliveryPerson") {
+  if (!deliveryPerson || !["DeliveryPerson", "Demoted_DeliveryPerson"].includes(deliveryPerson.role)) {
     return [{ error: "Delivery person not found" }, 403];
   }
   
   const order = await Order.findById(orderId);
   if (!order || order.status !== "Ready_For_Delivery") {
     return [{ error: "Order not available for delivery bidding" }, 400];
+  }
+  
+  // check if delivery person already has a pending bid for this order
+  const existingBid = await DeliveryBid.findOne({
+    deliveryPerson: deliveryPerson._id,
+    order: order._id,
+    status: "Pending"
+  });
+  
+  if (existingBid) {
+    return [{ error: "You have already submitted a bid for this order" }, 400];
   }
   
   const bid = new DeliveryBid({
@@ -279,6 +290,41 @@ async function getDeliveryHistory(deliveryPersonId, limit = 20) {
   }));
 }
 
+// get available orders for delivery persons to bid on
+async function getAvailableOrders(deliveryPersonId) {
+  try {
+    // get orders that are ready for delivery
+    const orders = await Order.find({ status: "Ready_For_Delivery" })
+      .populate('customer', 'name phone address')
+      .populate('items.dish', 'name')
+      .sort({ created_at: 1 });
+    
+    // get existing bids by this delivery person
+    const existingBids = await DeliveryBid.find({
+      deliveryPerson: deliveryPersonId,
+      status: "Pending"
+    }).select('order');
+    
+    const bidOrderIds = new Set(existingBids.map(b => b.order.toString()));
+    
+    return orders.map(order => ({
+      order_id: order._id.toString(),
+      customer_name: order.customer ? order.customer.name : 'Unknown',
+      customer_address: order.customer ? (order.customer.address || 'N/A') : 'N/A',
+      items: order.items.map(item => ({
+        name: item.dish ? item.dish.name : 'Unknown',
+        quantity: item.quantity
+      })),
+      final_price: order.final_price,
+      created_at: order.created_at,
+      has_bid: bidOrderIds.has(order._id.toString())
+    }));
+  } catch (error) {
+    console.error("Error in getAvailableOrders:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   submitBid,
   assignDelivery,
@@ -287,5 +333,6 @@ module.exports = {
   confirmPickup,
   updateDeliveryStatus,
   evaluateDeliveryPerformance,
-  getDeliveryHistory
+  getDeliveryHistory,
+  getAvailableOrders
 };

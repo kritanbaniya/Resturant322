@@ -8,6 +8,7 @@ function generateToken(user) {
   const payload = {
     user_id: user._id.toString(),
     role: user.role,
+    isVIP: user.isVIP === true,
     exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
   };
   return jwt.sign(payload, config.JWT_SECRET_KEY);
@@ -77,7 +78,7 @@ async function loginUser(email, password) {
   }
   
   const token = generateToken(user);
-  return [{ token, role: user.role, user_id: user._id.toString() }, 200];
+  return [{ token, role: user.role, user_id: user._id.toString(), isVIP: user.isVIP === true }, 200];
 }
 
 async function depositMoney(userId, amount) {
@@ -104,7 +105,7 @@ async function applyWarning(userId, reason = "") {
   user.warningCount += 1;
   
   if (["Customer", "VIP"].includes(user.role)) {
-    if (user.role === "VIP") {
+    if (user.isVIP === true) {
       if (user.warningCount >= 2) {
         user.isVIP = false;
         user.role = "Customer";

@@ -54,7 +54,7 @@ const orderSchema = new mongoose.Schema({
       "Completed",
       "Delivery_Failed"
     ],
-    default: "PendingPayment"
+    default: "Paid"
   },
   notes: {
     type: String,
@@ -91,7 +91,9 @@ orderSchema.methods.calculate_total_price = async function() {
     await this.populate('customer');
   }
   
-  if (this.customer.isVIP) {
+  // check isVIP field explicitly
+  const customerIsVIP = this.customer && this.customer.isVIP === true;
+  if (customerIsVIP) {
     this.discount_applied = Math.round(total * 0.1 * 100) / 100; // 10% discount
   } else {
     this.discount_applied = 0.0;
