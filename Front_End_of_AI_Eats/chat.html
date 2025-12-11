@@ -36,10 +36,14 @@
     </div>
     <div class="chat-container">
       <div class="chat-box" id="chat-box">
-        <p><strong>AI:</strong> Hello! I'm here to help. Ask me anything about our menu, delivery, or restaurant. How can I assist you today?</p>
+        <div class="message assistant">
+          <span class="sender">AI:</span>
+          <span class="content">Hello! I'm here to help. Ask me anything about our menu, delivery, or restaurant. How can I assist you today?</span>
+        </div>
       </div>
       <div class="chat-input-area">
         <input type="text" id="chat-input" placeholder="Ask me anything about our menu or delivery..." />
+        <button id="voice-btn" title="Click to start voice input" style="display: none;">🎤 Mic</button>
         <button id="send-btn" onclick="sendMessage()">Send</button>
       </div>
       <div id="unavailable-notice" style="display: none; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107; margin-top: 10px; border-radius: 4px;">
@@ -52,8 +56,23 @@
     &copy; 2025 AI Eats. All rights reserved.
   </footer>
   <script>
-    const API_URL = "http://127.0.0.1:5000";
-    let currentAnswerId = null;
+    // api configuration - using resturantAI node.js backend
+    const AI_API_URL = "http://localhost:3000";
+    const FLASK_API_URL = "http://127.0.0.1:5000";
+    
+    // conversation history stored in localStorage
+    const HISTORY_KEY = 'restaurant_chat_history';
+    const MAX_HISTORY_LENGTH = 10;
+
+    // processing state
+    let isProcessing = false;
+    let currentAudio = null;
+
+    // voice recognition setup
+    let recognition = null;
+    let isListening = false;
+    let hasReceivedResult = false;
+    let pendingTranscript = '';
 
     function updateAuthStatus() {
       const isLoggedIn = localStorage.getItem("isLoggedIn");
@@ -93,147 +112,412 @@
       document.getElementById("cart-count").textContent = totalItems;
     }
 
-    /* UC-05 Step 3: Send message to AI (works for visitors and logged-in users) */
-    async function sendMessage() {
-      const input = document.getElementById("chat-input");
-      const message = input.value.trim();
-      const chatBox = document.getElementById("chat-box");
-      const sendBtn = document.getElementById("send-btn");
-      const unavailableNotice = document.getElementById("unavailable-notice");
-      
-      if (!message) return;
+    // load conversation history from localStorage
+    function loadHistory() {
+      try {
+        const stored = localStorage.getItem(HISTORY_KEY);
+        if (stored) {
+          const history = JSON.parse(stored);
+          return Array.isArray(history) ? history : [];
+        }
+      } catch (err) {
+        console.error('[history] error loading:', err);
+      }
+      return [];
+    }
 
-      const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-      const userId = isLoggedIn ? localStorage.getItem("userId") : null;
+    // save conversation history to localStorage
+    function saveHistory(history) {
+      try {
+        const trimmed = history.slice(-MAX_HISTORY_LENGTH);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
+      } catch (err) {
+        console.error('[history] error saving:', err);
+      }
+    }
+
+    // initialize voice recognition if supported
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
       
-      const userMessage = document.createElement("p");
-      userMessage.innerHTML = `<strong>You:</strong> ${escapeHtml(message)}`;
-      chatBox.appendChild(userMessage);
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+      recognition.maxAlternatives = 1;
       
-      input.value = "";
-      sendBtn.disabled = true;
-      sendBtn.textContent = "Sending...";
+      recognition.onstart = () => {
+        console.log('[voice] recognition started');
+        addMessage('listening... speak now', 'system');
+      };
+
+      recognition.onresult = (event) => {
+        hasReceivedResult = true;
+        const resultIndex = event.resultIndex !== undefined ? event.resultIndex : event.results.length - 1;
+        const currentResult = event.results[resultIndex];
+        
+        if (currentResult && currentResult.length > 0) {
+          const lastResultItem = currentResult[currentResult.length - 1];
+          const latestTranscript = lastResultItem.transcript;
+          const isFinal = currentResult.isFinal;
+          
+          if (!isFinal && latestTranscript.trim()) {
+            pendingTranscript = latestTranscript;
+          }
+          
+          if (isFinal && latestTranscript.trim()) {
+            pendingTranscript = latestTranscript;
+          }
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.error('[voice] error:', event.error);
+        switch(event.error) {
+          case 'no-speech':
+            break;
+          case 'audio-capture':
+            isListening = false;
+            updateVoiceButton();
+            addMessage('microphone not accessible. please check your microphone and permissions.', 'system');
+            break;
+          case 'not-allowed':
+            isListening = false;
+            updateVoiceButton();
+            addMessage('microphone permission denied. please allow microphone access in browser settings.', 'system');
+            break;
+          case 'network':
+            isListening = false;
+            updateVoiceButton();
+            addMessage('network error. please check your internet connection.', 'system');
+            break;
+          default:
+            isListening = false;
+            updateVoiceButton();
+            addMessage(`voice recognition error: ${event.error}. please try again.`, 'system');
+        }
+      };
+
+      recognition.onend = () => {
+        if (pendingTranscript.trim()) {
+          addMessage(pendingTranscript, 'user');
+          sendVoiceMessage(pendingTranscript);
+          pendingTranscript = '';
+        } else if (!hasReceivedResult) {
+          addMessage('no speech detected. make sure your microphone is working, speak clearly, and try clicking the mic button again.', 'system');
+        }
+        
+        hasReceivedResult = false;
+        pendingTranscript = '';
+        
+        if (isListening) {
+          isListening = false;
+          updateVoiceButton();
+        }
+      };
+
+      // show voice button
+      const voiceBtn = document.getElementById('voice-btn');
+      if (voiceBtn) voiceBtn.style.display = 'block';
+    }
+
+    // add message to chat box
+    function addMessage(text, sender) {
+      const chatBox = document.getElementById("chat-box");
+      const messageDiv = document.createElement("div");
+      let className = 'message';
+      let senderLabel = 'AI';
+      
+      if (sender === 'user') {
+        className += ' user';
+        senderLabel = 'You';
+      } else if (sender === 'system') {
+        className += ' system';
+        senderLabel = 'System';
+      } else if (sender === 'error') {
+        className += ' error';
+        senderLabel = 'Error';
+      } else {
+        className += ' assistant';
+        senderLabel = sender === 'kb' ? 'KB' : 'AI';
+      }
+      
+      messageDiv.className = className;
+      messageDiv.innerHTML = `<span class="sender">${senderLabel}:</span> <span class="content">${escapeHtml(text)}</span>`;
+      
+      chatBox.appendChild(messageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // update voice button appearance
+    function updateVoiceButton() {
+      const voiceBtn = document.getElementById('voice-btn');
+      const input = document.getElementById('chat-input');
+      const sendBtn = document.getElementById('send-btn');
+      
+      if (!voiceBtn) return;
+      
+      if (isListening) {
+        voiceBtn.style.backgroundColor = '#ff4444';
+        voiceBtn.textContent = '⏹ Stop';
+        voiceBtn.title = 'Click to stop listening';
+        input.disabled = true;
+        input.placeholder = 'mic is recording...';
+        sendBtn.disabled = true;
+      } else {
+        voiceBtn.style.backgroundColor = '#28a745';
+        voiceBtn.textContent = '🎤 Mic';
+        voiceBtn.title = 'Click to start voice input';
+        if (!isProcessing) {
+          input.disabled = false;
+          input.placeholder = 'Ask me anything about our menu or delivery...';
+          sendBtn.disabled = false;
+        }
+      }
+    }
+
+    // toggle voice recognition
+    function toggleVoiceRecognition() {
+      if (isProcessing) {
+        console.log('[voice] toggle blocked - bot is processing');
+        return;
+      }
+
+      if (!recognition) {
+        addMessage('voice recognition not supported in this browser.', 'system');
+        return;
+      }
+
+      if (isListening) {
+        stopVoiceRecognition();
+      } else {
+        startVoiceRecognition();
+      }
+    }
+
+    function startVoiceRecognition() {
+      if (!recognition || isListening) return;
+
+      hasReceivedResult = false;
+      pendingTranscript = '';
 
       try {
-        /* UC-05: Call visitor chat endpoint (works for both visitors and users) */
-        const response = await fetch(`${API_URL}/api/visitor/chat`, {
-          method: "POST",
+        recognition.start();
+        isListening = true;
+        updateVoiceButton();
+      } catch (err) {
+        console.error('[voice] error starting:', err);
+        isListening = false;
+        updateVoiceButton();
+      }
+    }
+
+    function stopVoiceRecognition() {
+      if (!recognition || !isListening) return;
+
+      try {
+        recognition.stop();
+      } catch (err) {
+        console.error('[voice] error stopping:', err);
+        isListening = false;
+        updateVoiceButton();
+      }
+    }
+
+    // send voice message to backend
+    async function sendVoiceMessage(transcript) {
+      if (isProcessing) return;
+
+      isProcessing = true;
+      updateInputState();
+
+      try {
+        const history = loadHistory();
+        
+        const res = await fetch(`${AI_API_URL}/voice`, {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json"
+            'content-type': 'application/json'
           },
-          body: JSON.stringify({
-            question: message
+          credentials: 'include',
+          body: JSON.stringify({ 
+            message: transcript,
+            history: history
           })
         });
 
-        const data = await response.json();
-        unavailableNotice.style.display = "none";
+        const data = await res.json();
 
-        if (response.ok) {
-          currentAnswerId = data.answer_id;
-          const aiMessage = document.createElement("p");
-          aiMessage.innerHTML = `<strong>AI:</strong> ${escapeHtml(data.answer || data.response || "I couldn't process that request.")}`;
-          aiMessage.id = `answer-${currentAnswerId}`;
-          chatBox.appendChild(aiMessage);
-          
-          // UC-05 Postcondition: Add rating buttons
-          const ratingDiv = document.createElement("div");
-          ratingDiv.style.marginLeft = "30px";
-          ratingDiv.style.marginTop = "5px";
-          ratingDiv.style.fontSize = "12px";
-          ratingDiv.innerHTML = `
-            <span>Was this helpful?</span>
-            <button onclick="rateAnswer('${currentAnswerId}', 5)" style="margin-left: 10px; padding: 3px 8px; background: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;">Excellent</button>
-            <button onclick="rateAnswer('${currentAnswerId}', 3)" style="margin-left: 5px; padding: 3px 8px; background: #FFC107; color: white; border: none; border-radius: 3px; cursor: pointer;">Okay</button>
-            <button onclick="rateAnswer('${currentAnswerId}', 1)" style="margin-left: 5px; padding: 3px 8px; background: #f44336; color: white; border: none; border-radius: 3px; cursor: pointer;">Poor</button>
-            <button onclick="flagAnswer('${currentAnswerId}')" style="margin-left: 10px; padding: 3px 8px; background: #FF9800; color: white; border: none; border-radius: 3px; cursor: pointer;">Flag</button>
-          `;
-          chatBox.appendChild(ratingDiv);
-        } else if (response.status === 503) {
-          /* UC-05 A2: AI Unavailable */
-          unavailableNotice.style.display = "block";
-          const aiMessage = document.createElement("p");
-          aiMessage.innerHTML = `<strong>AI:</strong> ${escapeHtml(data.message || "AI assistance is temporarily unavailable. Please try again later.")}`;
-          chatBox.appendChild(aiMessage);
+        if (data.source === 'error') {
+          addMessage(data.answer, 'error');
+          isProcessing = false;
+          updateInputState();
+          return;
+        }
+
+        if (data.history) {
+          saveHistory(data.history);
         } else {
-          const aiMessage = document.createElement("p");
-          aiMessage.innerHTML = `<strong>AI:</strong> Sorry, I couldn't process that. Please try again.`;
-          chatBox.appendChild(aiMessage);
+          const history = loadHistory();
+          history.push({ role: 'assistant', content: data.answer, source: data.source });
+          saveHistory(history);
         }
-      } catch (error) {
-        console.error("Error:", error);
-        const aiMessage = document.createElement("p");
-        aiMessage.innerHTML = `<strong>AI:</strong> Error connecting to server. Please try again.`;
-        chatBox.appendChild(aiMessage);
-      } finally {
-        sendBtn.disabled = false;
-        sendBtn.textContent = "Send";
-        chatBox.scrollTop = chatBox.scrollHeight;
+
+        const senderLabel = data.source === 'kb' ? 'kb' : 'ai';
+        addMessage(data.answer, senderLabel);
+
+        if (data.audioBase64) {
+          await playAudio(data.audioBase64, data.audioMimeType || 'audio/mpeg');
+        } else {
+          isProcessing = false;
+          updateInputState();
+        }
+      } catch (err) {
+        console.error('error sending voice message:', err);
+        addMessage('error processing voice request. please check if the ai service is running on port 3000.', 'error');
+        isProcessing = false;
+        updateInputState();
       }
     }
 
-    /* UC-05 Postcondition: Rate AI response */
-    async function rateAnswer(answerId, rating) {
+    // play audio from base64
+    function playAudio(base64Audio, mimeType) {
+      return new Promise((resolve, reject) => {
+        try {
+          const binaryString = atob(base64Audio);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const blob = new Blob([bytes], { type: mimeType });
+          const audioUrl = URL.createObjectURL(blob);
+
+          const audio = new Audio(audioUrl);
+          currentAudio = audio;
+
+          audio.play().catch(err => {
+            console.error('error playing audio:', err);
+            URL.revokeObjectURL(audioUrl);
+            currentAudio = null;
+            reject(err);
+          });
+
+          audio.addEventListener('ended', () => {
+            URL.revokeObjectURL(audioUrl);
+            currentAudio = null;
+            isProcessing = false;
+            updateInputState();
+            resolve();
+          });
+
+          audio.addEventListener('error', (err) => {
+            console.error('error during audio playback:', err);
+            URL.revokeObjectURL(audioUrl);
+            currentAudio = null;
+            isProcessing = false;
+            updateInputState();
+            reject(err);
+          });
+        } catch (err) {
+          console.error('error playing audio:', err);
+          currentAudio = null;
+          isProcessing = false;
+          updateInputState();
+          reject(err);
+        }
+      });
+    }
+
+    // update input state based on processing status
+    function updateInputState() {
+      const input = document.getElementById('chat-input');
+      const sendBtn = document.getElementById('send-btn');
+      const voiceBtn = document.getElementById('voice-btn');
+
+      if (isProcessing) {
+        input.disabled = true;
+        input.placeholder = 'bot is responding...';
+        sendBtn.disabled = true;
+        if (voiceBtn) voiceBtn.disabled = true;
+      } else {
+        if (!isListening) {
+          input.disabled = false;
+          input.placeholder = 'Ask me anything about our menu or delivery...';
+          sendBtn.disabled = false;
+          if (voiceBtn) voiceBtn.disabled = false;
+        }
+      }
+    }
+
+    /* UC-05 Step 3: Send message to AI (works for visitors and logged-in users) */
+    async function sendMessage() {
+      if (isListening || isProcessing) return;
+
+      const input = document.getElementById("chat-input");
+      const message = input.value.trim();
+      
+      if (!message) return;
+
+      addMessage(message, 'user');
+      input.value = '';
+
+      isProcessing = true;
+      updateInputState();
+
       try {
-        const response = await fetch(`${API_URL}/api/visitor/chat/${answerId}/rate`, {
-          method: "POST",
+        const history = loadHistory();
+        
+        const res = await fetch(`${AI_API_URL}/chat`, {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json"
+            'content-type': 'application/json'
           },
-          body: JSON.stringify({ rating })
+          credentials: 'include',
+          body: JSON.stringify({ 
+            message: message,
+            history: history
+          })
         });
 
-        if (response.ok) {
-          const ratingText = rating === 5 ? "Excellent" : rating === 3 ? "Okay" : "Poor";
-          alert(`Thank you! You rated this response as: ${ratingText}`);
-          // Log visitor action
-          logVisitorAction("chat_rating", { answer_id: answerId, rating });
+        const data = await res.json();
+        
+        if (data.source === 'error') {
+          addMessage(data.answer || 'error processing request.', 'error');
+          isProcessing = false;
+          updateInputState();
+          return;
         }
-      } catch (error) {
-        console.error("Error rating answer:", error);
+        
+        if (data.history) {
+          saveHistory(data.history);
+        } else {
+          const history = loadHistory();
+          history.push({ role: 'assistant', content: data.answer, source: data.source });
+          saveHistory(history);
+        }
+        
+        const senderLabel = data.source === 'kb' ? 'kb' : 'ai';
+        addMessage(data.answer, senderLabel);
+
+        isProcessing = false;
+        updateInputState();
+      } catch (err) {
+        console.error('error sending message:', err);
+        addMessage('error processing request. please check if the ai service is running on port 3000.', 'error');
+        isProcessing = false;
+        updateInputState();
       }
     }
 
-    /* UC-05 Postcondition: Flag AI response */
-    async function flagAnswer(answerId) {
-      const reason = prompt("Please tell us what's wrong with this response:");
-      if (!reason) return;
-
-      try {
-        const response = await fetch(`${API_URL}/api/visitor/chat/${answerId}/flag`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ reason })
-        });
-
-        if (response.ok) {
-          alert("Thank you for your feedback. Our management team will review this response.");
-          // Log visitor action
-          logVisitorAction("chat_flag", { answer_id: answerId, reason });
-        }
-      } catch (error) {
-        console.error("Error flagging answer:", error);
-      }
+    // event listeners
+    document.getElementById("send-btn").addEventListener("click", sendMessage);
+    const voiceBtn = document.getElementById("voice-btn");
+    if (voiceBtn) {
+      voiceBtn.addEventListener("click", toggleVoiceRecognition);
     }
-
-    /* UC-05 Postcondition: Log visitor actions */
-    function logVisitorAction(actionType, details) {
-      fetch(`${API_URL}/api/visitor/action`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          action_type: actionType,
-          details
-        })
-      }).catch(err => console.error("Error logging action:", err));
-    }
-
+    
     document.getElementById("chat-input").addEventListener("keypress", function(event) {
-      if (event.key === "Enter") {
+      if (event.key === "Enter" && !isListening && !isProcessing) {
         sendMessage();
       }
     });
