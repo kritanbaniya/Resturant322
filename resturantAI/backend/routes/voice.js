@@ -2,122 +2,27 @@
  * voice route - wrapper around chat functionality with text-to-speech
  * 
  * flow:
- * 1. user speaks → speech-to-text (handled in frontend)
- * 2. text sent to /voice endpoint with conversation history
- * 3. same processing as /chat: normalize → kb check → llm if needed
- * 4. response converted to speech via eleven labs
- * 5. returns text response + audio + updated history
- * 
- * important: history is now stored in localStorage on frontend
- * and sent with each request to maintain conversation context
+ * 1. user message
+ * 2. vector search against kb (embeddings) → top k relevant kb facts
+ * 3. build llm prompt:
+ *    - system prompt
+ *    - last 10 messages
+ *    - kb facts
+ *    - user message
+ * 4. llm generates final response
+ * 5. (voice mode) → convert to audio with elevenlabs
+ * 6. return text response + audio + updated history
  */
 
 import express from 'express';
 import fs from 'fs';
 import fetch from 'node-fetch';
-import { normalizeMessage } from './utils/normalize.js';
-import { getKbAnswer } from './utils/knowledgeBase.js';
+import { searchKb, formatKbAnswer } from './utils/vectorSearch.js';
 import { callLLM } from './utils/llmService.js';
-import { searchKb } from './utils/semanticSearch.js';
-
-/**
- * check if message should skip kb lookup (personal/memory questions)
- * @param {string} text - normalized message text
- * @returns {boolean} - true if should skip kb lookup
- */
-function shouldSkipKbLookup(text) {
-  const lower = text.toLowerCase();
-  
-  // personal/identity questions
-  const personalPatterns = [
-    /^(my name is|i'm|i am|call me|name is) /i,
-    /^what'?s? my name$/i,
-    /^what is my name$/i,
-    /^who am i$/i,
-    /^what am i$/i
-  ];
-  
-  // memory questions
-  const memoryPatterns = [
-    /what (did|do|does) (i|you|we) (ask|asked|say|said|tell|told|mention|mentioned|discuss|discussed)/i,
-    /what (was|were) (i|you|we) (talking|discussing|saying|asking) (about|earlier|before)/i,
-    /(earlier|before|previously|just now|a moment ago)/i,
-    /what (did|do) (i|you) (ask|say|tell|mention) (about|earlier|before)/i,
-    /(remind|remember|recall|recap) (me|us) (what|about)/i,
-    /what (was|were) (that|this|it) (i|you|we) (asked|said|talked|discussed)/i
-  ];
-  
-  return personalPatterns.some(p => p.test(text)) || 
-         memoryPatterns.some(p => p.test(text));
-}
-
-/**
- * detect if llm response contains restaurant information from kb
- * @param {string} response - llm response text
- * @param {object} kb - knowledge base object
- * @returns {boolean} - true if kb content detected
- */
-function detectKbHitInResponse(response, kb) {
-  if (!response || !kb) return false;
-  
-  const lowerResponse = response.toLowerCase();
-  
-  // check if response mentions specific menu items
-  if (kb.menu && kb.menu.categories) {
-    const allMenuItems = [];
-    Object.values(kb.menu.categories).forEach(category => {
-      if (Array.isArray(category)) {
-        category.forEach(item => {
-          if (item && typeof item === 'object' && item.name) {
-            allMenuItems.push(item.name.toLowerCase());
-          } else if (typeof item === 'string') {
-            allMenuItems.push(item.toLowerCase());
-          }
-        });
-      }
-    });
-    
-    // check if any menu item is mentioned
-    if (allMenuItems.some(item => lowerResponse.includes(item))) {
-      return true;
-    }
-  }
-  
-  // check if response mentions restaurant name
-  if (kb.restaurant && kb.restaurant.name) {
-    const restaurantName = kb.restaurant.name.toLowerCase();
-    if (lowerResponse.includes(restaurantName)) {
-      return true;
-    }
-  }
-  
-  // check if response mentions location/address
-  if (kb.locations && Array.isArray(kb.locations)) {
-    for (const loc of kb.locations) {
-      if (loc.address && lowerResponse.includes(loc.address.toLowerCase())) {
-        return true;
-      }
-      if (loc.neighborhood && lowerResponse.includes(loc.neighborhood.toLowerCase())) {
-        return true;
-      }
-    }
-  }
-  
-  // check if response mentions signature dishes
-  if (kb.menu && kb.menu.signature_dishes && Array.isArray(kb.menu.signature_dishes)) {
-    for (const dish of kb.menu.signature_dishes) {
-      if (lowerResponse.includes(dish.toLowerCase())) {
-        return true;
-      }
-    }
-  }
-  
-  return false;
-}
 
 const router = express.Router();
 
-// load knowledge base (structured json)
+// load knowledge base
 const kb = JSON.parse(fs.readFileSync('./kb/knowledge.json', 'utf-8'));
 
 // load system prompt
@@ -128,7 +33,17 @@ const modelName = process.env.OLLAMA_MODEL || 'llama3.2:3b';
 
 // eleven labs api key
 const elevenLabsApiKey = process.env.ELEVEN_LABS_API_KEY;
-const elevenLabsVoiceId = process.env.ELEVEN_LABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM'; // default voice
+const elevenLabsVoiceId = process.env.ELEVEN_LABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM';
+
+/**
+ * normalize message - simple trim and lowercase
+ * @param {string} message - user message
+ * @returns {string} - normalized message
+ */
+function normalizeMessage(message) {
+  if (!message) return '';
+  return message.trim().toLowerCase();
+}
 
 /**
  * generate speech using eleven labs api
@@ -151,7 +66,7 @@ async function generateSpeech(text) {
     },
     body: JSON.stringify({
       text: text,
-      model_id: 'eleven_turbo_v2_5', // updated to newer model available on free tier
+      model_id: 'eleven_turbo_v2_5',
       voice_settings: {
         stability: 0.5,
         similarity_boost: 0.5
@@ -164,7 +79,6 @@ async function generateSpeech(text) {
     throw new Error(`eleven labs api error: ${response.status} - ${errorText}`);
   }
 
-  // use arrayBuffer instead of deprecated buffer()
   const arrayBuffer = await response.arrayBuffer();
   return Buffer.from(arrayBuffer);
 }
@@ -183,159 +97,104 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // initialize history from request (or empty array)
+    // initialize history from request
     let history = Array.isArray(requestHistory) ? [...requestHistory] : [];
     
-    // extract lastContext from history (last menu item mentioned)
-    let lastContext = null;
-    for (let i = history.length - 1; i >= 0; i--) {
-      if (history[i].source === 'kb' && history[i].kbItem) {
-        // check for menu item paths in new structure: menu.categories.*
-        if (history[i].kbItem.includes('menu.categories')) {
-          // extract menu item name from answer or metadata
-          if (history[i].metadata && history[i].metadata.item && history[i].metadata.item.name) {
-            lastContext = history[i].metadata.item.name;
-            break;
-          }
-          // fallback: try to extract from answer
-          const answer = history[i].content || '';
-          const nameMatch = answer.match(/^([^:]+):/);
-          if (nameMatch) {
-            lastContext = nameMatch[1].trim();
-            break;
-          }
-        }
-      }
-    }
-
-    console.log(`[voice] history from localStorage: ${history.length} messages`);
-    if (history.length > 0) {
-      console.log(`[voice] last context from history: ${lastContext || 'none'}`);
-    }
-
     const totalStart = Date.now();
 
-    // step 1: normalize message
-    let normalized = normalizeMessage(message);
+    // step 1: normalize message (trim + lowercase)
+    const normalized = normalizeMessage(message);
     console.log(`[voice] stt prompt: ${message}`);
     console.log(`[voice] normalized: ${normalized}`);
 
-    // step 2: context injection
-    let searchMessage = normalized;
-    if (lastContext) {
-      const pronouns = ['it', 'they', 'them', 'that', 'this', 'these', 'those'];
-      const hasPronoun = pronouns.some(p => new RegExp(`\\b${p}\\b`, 'i').test(normalized));
-      
-      if (hasPronoun) {
-        searchMessage = `${normalized} ${lastContext}`;
-      }
-    }
-
-    // step 3: check if should skip kb lookup (personal/memory questions)
-    const skipKb = shouldSkipKbLookup(normalized);
-    
-    // step 4: try kb lookup first (skip for personal/memory questions)
-    let kbResult = null;
-    if (!skipKb) {
-      kbResult = getKbAnswer(searchMessage, kb);
-    } else {
-      console.log(`[voice] skipping kb lookup (personal/memory question)`);
-    }
-    
-    let answer = '';
-    let source = '';
-    let llmResponseTime = null;
+    // step 2: vector search against kb (embeddings) → top k relevant kb facts
+    // only include results above similarity threshold (default: 0.3)
+    let kbFacts = [];
+    let kbHitItems = [];
     let kbHit = false;
     
-    // step 5: kb hit handling
-    if (kbResult) {
-      answer = kbResult.answer;
-      source = 'kb';
-      kbHit = true;
-
-      // add to history
-      history.push({ role: 'user', content: normalized });
-      history.push({ 
-        role: 'assistant', 
-        content: answer,
-        source: 'kb',
-        kbItem: kbResult.kbItem,
-        kbHit: true,
-        metadata: kbResult.metadata || null
-      });
-
-      // keep history concise (last 10 messages)
-      if (history.length > 10) {
-        history = history.slice(-10);
-      }
-
-      console.log(`[voice] kb hit: ${kbResult.kbItem} (score: ${kbResult.score?.toFixed(3) || 'N/A'})`);
-      console.log(`[voice] response: ${answer}`);
-      console.log(`[voice] updated history (localStorage): ${history.length} messages`);
-    }
-    // step 6: no kb hit - fallback to llm (for all questions)
-    else {
-      // add user message to history for llm context
-      history.push({ role: 'user', content: normalized });
+    try {
+      const minScore = 0.3; // minimum similarity score to consider a hit
+      const kbResults = await searchKb(normalized, 3, minScore);
+      console.log(`[voice] vector search completed, found ${kbResults.length} results above threshold (${minScore})`);
       
-      // get history excluding the current message we just added (for llm context)
-      const historyForLLM = history.slice(0, -1); 
-      const safeHistory = historyForLLM.slice(-10);
-
-      // check if there was a recent kb hit in history to inform llm
-      const recentKbHit = safeHistory
-        .slice()
-        .reverse()
-        .find(msg => msg.kbHit === true);
-
-      console.log(`[voice] history from localStorage: ${history.length} messages`);
-      console.log(`[voice] history for llm (excluding current): ${historyForLLM.length} messages`);
-      console.log(`[voice] safe history (last 10 for llm): ${safeHistory.length} messages`);
-      if (recentKbHit) {
-        console.log(`[voice] recent kb hit detected in history: ${recentKbHit.kbItem}`);
+      if (kbResults.length > 0) {
+        kbHit = true;
+        
+        // track kb hit items
+        kbHitItems = kbResults.map(result => ({
+          path: result.metadata.path || 'unknown',
+          type: result.metadata.type || 'unknown',
+          field: result.metadata.field || 'unknown',
+          score: result.score.toFixed(4)
+        }));
+        
+        // format kb chunks into facts
+        kbFacts = kbResults.map(result => formatKbAnswer(result, kb));
+        
+        // log kb hit details
+        console.log(`[voice] ====== KB HIT DETECTED ======`);
+        console.log(`[voice] user query: "${normalized}"`);
+        console.log(`[voice] kb items matched: ${kbHitItems.length} (threshold: ${minScore})`);
+        kbHitItems.forEach((item, idx) => {
+          console.log(`[voice]   ${idx + 1}. ${item.type}.${item.field} (${item.path}) - score: ${item.score}`);
+        });
+        console.log(`[voice] ============================`);
+      } else {
+        console.log(`[voice] no kb hits found for query: "${normalized}" (all results below threshold ${minScore})`);
       }
-      if (safeHistory.length > 0) {
-        console.log(`[voice] history being passed to llm:`, JSON.stringify(safeHistory, null, 2));
-      }
-
-      console.log(`[voice] calling llm with model: ${modelName}`);
-      let llmResult;
-      try {
-        llmResult = await callLLM(normalized, safeHistory, systemPrompt, modelName, recentKbHit);
-        console.log(`[voice] llm call successful`);
-      } catch (llmError) {
-        console.error(`[voice] llm call failed:`, llmError.message);
-        console.error(`[voice] llm error stack:`, llmError.stack);
-        throw llmError;
-      }
-      
-      answer = llmResult.answer;
-      source = 'llm';
-      llmResponseTime = llmResult.responseTime;
-      
-      // detect if llm response mentions restaurant info (potential kb hit)
-      kbHit = detectKbHitInResponse(answer, kb);
-      
-      // add llm response to history
-      history.push({ 
-        role: 'assistant', 
-        content: answer,
-        source: 'llm',
-        kbHit: kbHit
-      });
-
-      // final history cleanup
-      if (history.length > 10) {
-        history = history.slice(-10);
-      }
-
-      console.log(`[voice] kb miss: using llm`);
-      console.log(`[voice] kb hit detected in response: ${kbHit}`);
-      console.log(`[voice] response: ${answer}`);
-      console.log(`[voice] llm response time: ${llmResponseTime}ms`);
-      console.log(`[voice] updated history (localStorage): ${history.length} messages`);
+    } catch (searchError) {
+      console.error('[voice] vector search error:', searchError.message);
+      // continue without kb facts
     }
 
+    // step 3: add user message to history
+    history.push({ role: 'user', content: normalized });
+    
+    // get recent history for llm (last 10 messages, excluding current)
+    const historyForLLM = history.slice(0, -1).slice(-10);
+
+    // step 4: build llm prompt (system prompt + last 10 messages + kb facts + user message)
+    // call llm with kb facts
+    console.log(`[voice] calling llm with ${kbFacts.length} kb facts`);
+    let llmResult;
+    try {
+      llmResult = await callLLM(normalized, historyForLLM, systemPrompt, modelName, kbFacts);
+      console.log(`[voice] llm call successful`);
+    } catch (llmError) {
+      console.error(`[voice] llm call failed:`, llmError.message);
+      throw llmError;
+    }
+    
+    const answer = llmResult.answer;
+    
+    // step 5: llm generates final response
+    // add llm response to history
+    history.push({ 
+      role: 'assistant', 
+      content: answer,
+      source: 'llm',
+      kbHit: kbHit,
+      kbItems: kbHitItems
+    });
+
+    // keep history concise (last 10 messages)
+    if (history.length > 10) {
+      history = history.slice(-10);
+    }
+
+    // log final response with kb hit status
+    console.log(`[voice] ====== RESPONSE SUMMARY ======`);
+    console.log(`[voice] kb hit: ${kbHit ? 'YES' : 'NO'}`);
+    if (kbHit) {
+      console.log(`[voice] kb items: ${kbHitItems.map(item => item.path).join(', ')}`);
+    }
+    console.log(`[voice] response: ${answer.substring(0, 100)}${answer.length > 100 ? '...' : ''}`);
+    console.log(`[voice] llm response time: ${llmResult.responseTime}ms`);
+    console.log(`[voice] total response time: ${Date.now() - totalStart}ms`);
+    console.log(`[voice] =============================`);
+
+    // step 6: (voice mode) → convert to audio with elevenlabs
     // generate speech using eleven labs
     let audioBuffer = null;
     let ttsSuccess = false;
@@ -343,6 +202,7 @@ router.post('/', async (req, res) => {
       audioBuffer = await generateSpeech(answer);
       ttsSuccess = true;
     } catch (speechError) {
+      console.error('[voice] tts error:', speechError.message);
       ttsSuccess = false;
     }
     
@@ -350,20 +210,17 @@ router.post('/', async (req, res) => {
 
     // return response with text, audio, and updated history
     const response = {
-      source: source,
+      source: 'llm',
       answer: answer,
       kbHit: kbHit,
-      history: history, // return updated history
-      responseTime: Date.now() - totalStart
+      kbItems: kbHitItems,
+      history: history,
+      responseTime: Date.now() - totalStart,
+      llmResponseTime: llmResult.responseTime
     };
-    
-    if (llmResponseTime !== null) {
-      response.llmResponseTime = llmResponseTime;
-    }
 
-    // if audio was generated, send it as base64 or return it directly
+    // if audio was generated, send it as base64
     if (audioBuffer) {
-      // send audio as base64 for frontend to decode
       response.audioBase64 = audioBuffer.toString('base64');
       response.audioMimeType = 'audio/mpeg';
     }
@@ -372,7 +229,6 @@ router.post('/', async (req, res) => {
 
   } catch (err) {
     console.error('[voice] error:', err);
-    // return current history even on error to maintain state
     const { history: requestHistory = [] } = req.body || {};
     return res.json({
       source: 'error',
