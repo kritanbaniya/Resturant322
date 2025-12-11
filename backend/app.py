@@ -5,6 +5,9 @@ from mongoengine.errors import ValidationError, DoesNotExist
 from config import MONGO_URI, DEBUG, JWT_SECRET_KEY
 from werkzeug.exceptions import HTTPException
 
+from dotenv import load_dotenv
+load_dotenv()
+
 
 def create_app():
     app = Flask(__name__)
