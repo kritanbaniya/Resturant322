@@ -10,7 +10,7 @@ def generate_token(user):
         "role": user.role,
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
     }
-    token = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
+    token = jwt.encode(payload, JWT_SECRET_KEY, algorithm='HS256')
     return token
 
 # Register new customer
@@ -26,13 +26,13 @@ def register_customer(data):
 
     user = User(
         email=email,
-        password_hashed=hashed,
+        password_hash=hashed,
         name=name,
         role="Customer",
         status="PendingApproval"
     ).save()
 
-    return {"message": "Registration successful, pending approval."}
+    return {"message": "Registration successful, pending approval.", "user_id": str(user.id)}
 
 def process_registration_approval(manager_id, user_id, decision, reason=None):
     # Verify manager role
@@ -66,7 +66,7 @@ def login_user(email, password):
         return {"error": "Invalid email or password."}, 401
         
     token = generate_token(user)
-    return {"token": token, "role": user.role, "user_id": str(user.id)}
+    return {"token": token, "role": user.role, "user_id": str(user.id)}, 200
     
 def deposit_money(user_id, amount):
     user = User.objects(id=user_id).first()
