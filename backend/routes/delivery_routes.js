@@ -10,7 +10,8 @@ const {
   updateDeliveryStatus,
   evaluateDeliveryPerformance,
   getDeliveryHistory,
-  getAvailableOrders
+  getAvailableOrders,
+  getCompletedTodayCount
 } = require('../services/delivery_service');
 const { tokenRequired } = require('../utils/auth');
 
@@ -133,6 +134,15 @@ router.get('/history/:delivery_person_id', tokenRequired, async (req, res) => {
     deliveries,
     total: deliveries.length
   });
+});
+
+router.get('/completed-today', tokenRequired, async (req, res) => {
+  if (!["DeliveryPerson", "Demoted_DeliveryPerson"].includes(req.current_user.role)) {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+  
+  const count = await getCompletedTodayCount(req.current_user.id);
+  return res.status(200).json({ count });
 });
 
 router.post("/bid", tokenRequired, async (req, res) => {

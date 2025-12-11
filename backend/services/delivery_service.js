@@ -40,48 +40,60 @@ async function submitBid(deliveryPersonId, orderId, bidAmount) {
 
 // manager assigns a delivery person based on bids
 async function assignDelivery(managerId, bidId, justification = null) {
-  const manager = await User.findById(managerId);
-  if (!manager || manager.role !== "Manager") {
-    return [{ error: "Unauthorized: Manager not found" }, 403];
-  }
-  
-  const bid = await DeliveryBid.findById(bidId).populate('order');
-  if (!bid) {
-    return [{ error: "Bid not found" }, 404];
-  }
-  
-  const lowestBid = await DeliveryBid.findOne({ order: bid.order._id })
-    .sort({ bid_amount: 1 });
-  
-  if (bid.bid_amount > lowestBid.bid_amount && !justification) {
-    return [{ error: "Justification required for accepting a higher bid" }, 400];
-  }
-  
-  const otherBids = await DeliveryBid.find({ order: bid.order._id, status: "Pending" });
-  for (const other of otherBids) {
-    if (other._id.toString() !== bidId) {
+  try {
+    const manager = await User.findById(managerId);
+    if (!manager || manager.role !== "Manager") {
+      return [{ error: "Unauthorized: Manager not found" }, 403];
+    }
+    
+    const bid = await DeliveryBid.findById(bidId).populate('order');
+    if (!bid) {
+      return [{ error: "Bid not found" }, 404];
+    }
+    
+    // check if order is still ready for delivery
+    if (bid.order.status !== "Ready_For_Delivery") {
+      return [{ error: "Order is no longer available for delivery assignment" }, 400];
+    }
+    
+    // reject all other pending bids for this order
+    const otherBids = await DeliveryBid.find({ 
+      order: bid.order._id, 
+      status: "Pending",
+      _id: { $ne: bidId }
+    });
+    
+    for (const other of otherBids) {
       other.status = "Rejected";
       await other.save();
     }
+    
+    // mark selected bid as accepted
+    bid.status = "Accepted";
+    await bid.save();
+    
+    // create delivery record
+    const delivery = new Delivery({
+      order: bid.order._id,
+      deliveryPerson: bid.deliveryPerson,
+      bidAmount: bid.bid_amount,
+      status: "Assigned"
+    });
+    
+    await delivery.save();
+    
+    // update order status to awaiting pickup
+    await bid.order.set_status("Awaiting_Pickup");
+    
+    return [{
+      message: "Delivery assigned successfully",
+      delivery_id: delivery._id.toString(),
+      order_id: bid.order._id.toString()
+    }, 200];
+  } catch (error) {
+    console.error("Error assigning delivery:", error);
+    return [{ error: "Failed to assign delivery", details: error.message }, 500];
   }
-  
-  bid.status = "Accepted";
-  await bid.save();
-  
-  const delivery = new Delivery({
-    order: bid.order._id,
-    deliveryPerson: bid.deliveryPerson,
-    bidAmount: bid.bid_amount,
-    status: "Assigned"
-  });
-  
-  await delivery.save();
-  await bid.order.set_status("Awaiting_Pickup");
-  
-  return [{
-    message: "Delivery assigned successfully",
-    delivery_id: delivery._id.toString()
-  }, 200];
 }
 
 // get assigned deliveries for delivery person
@@ -290,6 +302,26 @@ async function getDeliveryHistory(deliveryPersonId, limit = 20) {
   }));
 }
 
+// get count of deliveries completed today by delivery person
+async function getCompletedTodayCount(deliveryPersonId) {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+  
+  const count = await Delivery.countDocuments({
+    deliveryPerson: deliveryPersonId,
+    status: "Delivered",
+    updated_at: {
+      $gte: startOfToday,
+      $lte: endOfToday
+    }
+  });
+  
+  return count;
+}
+
 // get available orders for delivery persons to bid on
 async function getAvailableOrders(deliveryPersonId) {
   try {
@@ -334,5 +366,6 @@ module.exports = {
   updateDeliveryStatus,
   evaluateDeliveryPerformance,
   getDeliveryHistory,
-  getAvailableOrders
+  getAvailableOrders,
+  getCompletedTodayCount
 };

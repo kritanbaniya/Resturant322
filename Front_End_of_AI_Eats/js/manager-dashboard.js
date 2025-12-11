@@ -397,7 +397,7 @@ async function loadDeliveryBids() {
               Items: ${bid.items_count} | Status: ${bid.order_status}
             </div>
             <div class="item-actions">
-              <button class="btn-small btn-assign" onclick="showAssignModal('${bid.bid_id}', ${bid.bid_amount})">Assign</button>
+              <button class="btn-small btn-assign" data-bid-id="${bid.bid_id}" data-bid-amount="${bid.bid_amount}" type="button">Assign</button>
             </div>
           </div>
         `).join('');
@@ -411,31 +411,160 @@ async function loadDeliveryBids() {
   }
 }
 
+// store current bid info for modal
+let currentBidId = null;
+let currentBidAmount = null;
+
 // UC-04 Step 7-8: Show assignment modal with justification
 function showAssignModal(bidId, bidAmount) {
-  const justification = prompt(`UC-04 Step 7-8: Assign delivery bid. If this is not the lowest bid, provide justification (or leave blank for lowest bid):`);
-  if (justification === null) return;
-  assignDeliveryBid(bidId, justification || null);
+  console.log('showAssignModal called with bidId:', bidId, 'bidAmount:', bidAmount);
+  
+  if (!bidId) {
+    alert('Error: Invalid bid ID');
+    console.error('showAssignModal: bidId is missing');
+    return;
+  }
+  
+  // store for use in confirm function
+  currentBidId = bidId;
+  currentBidAmount = bidAmount;
+  
+  // show modal
+  const modal = document.getElementById('assignModal');
+  const bidAmountSpan = document.getElementById('modalBidAmount');
+  const justificationInput = document.getElementById('justificationInput');
+  
+  if (modal && bidAmountSpan) {
+    bidAmountSpan.textContent = bidAmount.toFixed(2);
+    justificationInput.value = ''; // clear previous input
+    modal.style.display = 'block';
+  } else {
+    console.error('Modal elements not found');
+    alert('Error: Modal not found. Please refresh the page.');
+  }
 }
+
+// close assign modal
+function closeAssignModal() {
+  const modal = document.getElementById('assignModal');
+  if (modal) {
+    modal.style.display = 'none';
+    currentBidId = null;
+    currentBidAmount = null;
+  }
+}
+
+// confirm assign delivery from modal
+function confirmAssignDelivery() {
+  if (!currentBidId) {
+    alert('Error: No bid selected');
+    console.error('confirmAssignDelivery: currentBidId is null or undefined');
+    return;
+  }
+  
+  console.log('confirmAssignDelivery: currentBidId type:', typeof currentBidId, 'value:', currentBidId);
+  
+  const justificationInput = document.getElementById('justificationInput');
+  const justification = justificationInput ? justificationInput.value.trim() : '';
+  const justificationValue = justification === '' ? null : justification;
+  
+  // save bidId before closing modal (since closeAssignModal clears it)
+  const bidIdToAssign = String(currentBidId).trim();
+  
+  console.log('Calling assignDeliveryBid with bidId:', bidIdToAssign, 'type:', typeof bidIdToAssign, 'justification:', justificationValue);
+  
+  // close modal
+  closeAssignModal();
+  
+  // assign delivery - use saved bidId
+  assignDeliveryBid(bidIdToAssign, justificationValue);
+}
+
+// make functions globally accessible
+window.showAssignModal = showAssignModal;
+window.closeAssignModal = closeAssignModal;
+window.confirmAssignDelivery = confirmAssignDelivery;
 
 // UC-04 Step 7-8: Assign delivery bid
 async function assignDeliveryBid(bidId, justification) {
+  console.log('assignDeliveryBid called with bidId:', bidId, 'type:', typeof bidId, 'justification:', justification);
+  
+  if (!bidId) {
+    alert('Error: Invalid bid ID');
+    console.error('assignDeliveryBid: bidId is missing');
+    return;
+  }
+  
+  // ensure bidId is a string and trim whitespace
+  const cleanBidId = String(bidId).trim();
+  
+  if (!cleanBidId || cleanBidId.length !== 24) {
+    alert('Error: Invalid bid ID format. Bid ID must be 24 characters.');
+    console.error('assignDeliveryBid: Invalid bidId format:', cleanBidId, 'length:', cleanBidId.length);
+    return;
+  }
+  
+  if (!token) {
+    alert('Error: Not authenticated. Please log in again.');
+    console.error('assignDeliveryBid: token is missing');
+    return;
+  }
+  
   try {
-    const response = await fetch(`${API_URL}/api/manager/delivery-bids/${bidId}/assign`, {
+    const url = `${API_URL}/api/manager/delivery-bids/${cleanBidId}/assign`;
+    console.log('Sending request to:', url);
+    console.log('Request body:', JSON.stringify({ justification: justification || null }));
+    
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
-      body: JSON.stringify({ justification })
+      body: JSON.stringify({ justification: justification || null })
     });
 
-    const data = await response.json();
-    showMessage(data.message || data.error, response.ok);
-    if (response.ok) loadDeliveryBids();
+    console.log('Response status:', response.status);
+    
+    let data;
+    try {
+      data = await response.json();
+      console.log('Response data:', data);
+    } catch (parseError) {
+      console.error('Error parsing response:', parseError);
+      const text = await response.text();
+      console.error('Response text:', text);
+      showMessage('Error: Invalid response from server', false);
+      return;
+    }
+    
+    if (response.ok) {
+      showMessage(data.message || 'Delivery assigned successfully!', true);
+      setTimeout(() => {
+        loadDeliveryBids(); // reload the list to show updated status
+      }, 500);
+    } else {
+      let errorMsg = 'Failed to assign delivery';
+      if (data.error) {
+        errorMsg = data.error;
+      } else if (data.details) {
+        errorMsg = data.details;
+      } else if (data.message) {
+        errorMsg = data.message;
+      }
+      
+      // check for specific error messages
+      if (errorMsg.includes('Invalid bid ID') || errorMsg.includes('Bid not found')) {
+        errorMsg = 'Invalid bid ID. The bid may have already been assigned or no longer exists.';
+      }
+      
+      showMessage(errorMsg, false);
+      console.error('Assign delivery error - Full response:', data);
+      console.error('BidId that was sent:', cleanBidId);
+    }
   } catch (error) {
     console.error('Error assigning bid:', error);
-    showMessage('Error assigning delivery bid', false);
+    showMessage('Error assigning delivery bid: ' + error.message, false);
   }
 }
 
@@ -553,6 +682,45 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     console.log('Event delegation set up for employee buttons');
+  }
+
+  // setup event delegation for delivery bid assign buttons
+  const bidsContainer = document.getElementById('bidsList');
+  if (bidsContainer) {
+    bidsContainer.addEventListener('click', function(e) {
+      const button = e.target.closest('.btn-assign');
+      if (!button) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const bidId = button.getAttribute('data-bid-id');
+      const bidAmount = parseFloat(button.getAttribute('data-bid-amount'));
+      
+      console.log('Assign button clicked - Bid ID:', bidId, 'type:', typeof bidId, 'Bid Amount:', bidAmount);
+      console.log('Button attributes:', {
+        'data-bid-id': button.getAttribute('data-bid-id'),
+        'data-bid-amount': button.getAttribute('data-bid-amount')
+      });
+      
+      if (bidId && bidId.trim() !== '') {
+        showAssignModal(bidId.trim(), bidAmount);
+      } else {
+        console.error('Bid ID is missing or empty from button');
+        alert('Error: Invalid bid ID');
+      }
+    });
+    console.log('Event delegation set up for delivery bid assign buttons');
+  }
+
+  // close modal when clicking outside
+  const assignModal = document.getElementById('assignModal');
+  if (assignModal) {
+    assignModal.addEventListener('click', function(e) {
+      if (e.target === assignModal) {
+        closeAssignModal();
+      }
+    });
   }
 
   // Load dashboard on page load

@@ -163,10 +163,13 @@ async function loadAssignedDeliveries() {
         }).join('');
 
         document.getElementById('statAssigned').textContent = data.deliveries.filter(d => d.status === 'Assigned').length;
-        document.getElementById('statCompleted').textContent = data.deliveries.filter(d => d.status === 'Delivered').length;
+        // load completed today count separately
+        loadCompletedTodayCount();
       } else {
         container.innerHTML = '<p>No assigned deliveries at this moment</p>';
         document.getElementById('statAssigned').textContent = '0';
+        // still load completed count even if no assigned deliveries
+        loadCompletedTodayCount();
       }
     } else {
       showMessage('Error loading deliveries', false);
@@ -230,6 +233,26 @@ Total: $${data.final_price.toFixed(2)}`);
   }
 }
 
+// Load completed deliveries count for today
+async function loadCompletedTodayCount() {
+  try {
+    const response = await fetch(`${API_URL}/api/delivery/completed-today`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      document.getElementById('statCompleted').textContent = data.count || 0;
+    } else {
+      console.error('Error loading completed today count');
+      document.getElementById('statCompleted').textContent = '0';
+    }
+  } catch (error) {
+    console.error('Error loading completed today count:', error);
+    document.getElementById('statCompleted').textContent = '0';
+  }
+}
+
 // UC-03 Step 6: Mark delivery as completed
 async function markDelivered(deliveryId) {
   if (!confirm('Confirm that the customer has received the order?')) return;
@@ -247,6 +270,7 @@ async function markDelivered(deliveryId) {
     showMessage(data.message || 'Delivery marked as completed!', response.ok);
     if (response.ok) {
       loadAssignedDeliveries();
+      loadCompletedTodayCount(); // update completed count
       setTimeout(() => loadDeliveryHistory(), 500);
     }
   } catch (error) {
@@ -431,4 +455,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
   loadAvailableOrders();
   loadAssignedDeliveries();
+  loadCompletedTodayCount(); // load completed count on page load
 });

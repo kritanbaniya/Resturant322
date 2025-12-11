@@ -257,28 +257,41 @@ async function getPendingDeliveryBids() {
 
 // assign delivery with justification
 async function assignDeliveryWithJustification(managerId, bidId, justification = null) {
-  const manager = await User.findById(managerId);
-  if (!manager || manager.role !== "Manager") {
-    return [{ error: "Unauthorized" }, 403];
+  try {
+    const manager = await User.findById(managerId);
+    if (!manager || manager.role !== "Manager") {
+      return [{ error: "Unauthorized" }, 403];
+    }
+    
+    const bid = await DeliveryBid.findById(bidId).populate('order');
+    if (!bid) {
+      return [{ error: "Bid not found" }, 404];
+    }
+    
+    // check if bid is still pending
+    if (bid.status !== "Pending") {
+      return [{ error: "Bid has already been processed" }, 400];
+    }
+    
+    // check if this is higher than lowest bid and requires justification
+    const lowestBid = await DeliveryBid.findOne({ 
+      order: bid.order._id, 
+      status: "Pending" 
+    }).sort({ bid_amount: 1 });
+    
+    if (lowestBid && bid.bid_amount > lowestBid.bid_amount && !justification) {
+      return [{
+        error: "Justification required for accepting higher bid",
+        lowest_bid: lowestBid.bid_amount,
+        selected_bid: bid.bid_amount
+      }, 400];
+    }
+    
+    return await assignDelivery(managerId, bidId, justification);
+  } catch (error) {
+    console.error("Error in assignDeliveryWithJustification:", error);
+    return [{ error: "Failed to assign delivery", details: error.message }, 500];
   }
-  
-  const bid = await DeliveryBid.findById(bidId).populate('order');
-  if (!bid) {
-    return [{ error: "Bid not found" }, 404];
-  }
-  
-  const lowestBid = await DeliveryBid.findOne({ order: bid.order._id, status: "Pending" })
-    .sort({ bid_amount: 1 });
-  
-  if (bid.bid_amount > lowestBid.bid_amount && !justification) {
-    return [{
-      error: "Justification required for accepting higher bid",
-      lowest_bid: lowestBid.bid_amount,
-      selected_bid: bid.bid_amount
-    }, 400];
-  }
-  
-  return await assignDelivery(managerId, bidId, justification);
 }
 
 // get flagged ai responses
