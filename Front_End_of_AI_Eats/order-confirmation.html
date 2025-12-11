@@ -116,10 +116,12 @@
     function updateAuthStatus() {
       const isLoggedIn = localStorage.getItem("isLoggedIn");
       const username = localStorage.getItem("username");
+      const isVIP = localStorage.getItem("isVIP") === "true";
       const authLink = document.getElementById("auth-link");
       
       if (isLoggedIn === "true" && username) {
-        authLink.textContent = `👤 ${username}`;
+        const vipIcon = isVIP ? "👑 " : "";
+        authLink.textContent = `👤 ${vipIcon}${username}`;
         authLink.href = "profile.html";
       } else {
         authLink.textContent = "Login/Register";

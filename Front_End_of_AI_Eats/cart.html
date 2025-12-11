@@ -116,10 +116,26 @@
         `;
       });
       
-      const tax = subtotal * 0.08;
-      const total = subtotal + 2.99 + tax;
+      const isVIP = localStorage.getItem("isVIP") === "true";
+      let finalSubtotal = subtotal;
       
-      document.getElementById("subtotal").textContent = `$${subtotal.toFixed(2)}`;
+      // Apply VIP 10% discount
+      if (isVIP) {
+        finalSubtotal = subtotal * 0.9;
+      }
+      
+      const deliveryFee = isVIP ? 0 : 2.99;
+      const tax = finalSubtotal * 0.08;
+      const total = finalSubtotal + deliveryFee + tax;
+      
+      document.getElementById("subtotal").textContent = `$${finalSubtotal.toFixed(2)}`;
+      if (isVIP && subtotal !== finalSubtotal) {
+        document.getElementById("subtotal").innerHTML += ' <span class="vip-discount">(10% VIP discount)</span>';
+      }
+      
+      const deliveryElement = document.querySelector('.summary-row:nth-child(2) span:last-child');
+      deliveryElement.textContent = isVIP ? 'FREE (VIP)' : '$2.99';
+      
       document.getElementById("tax").textContent = `$${tax.toFixed(2)}`;
       document.getElementById("total").textContent = `$${total.toFixed(2)}`;
       
@@ -165,10 +181,12 @@
     function updateAuthStatus() {
       const isLoggedIn = localStorage.getItem("isLoggedIn");
       const username = localStorage.getItem("username");
+      const isVIP = localStorage.getItem("isVIP") === "true";
       const authLink = document.getElementById("auth-link");
       
       if (isLoggedIn === "true" && username) {
-        authLink.textContent = `👤 ${username}`;
+        const vipIcon = isVIP ? "👑 " : "";
+        authLink.textContent = `👤 ${vipIcon}${username}`;
         authLink.href = "profile.html";
       } else {
         authLink.textContent = "Login/Register";

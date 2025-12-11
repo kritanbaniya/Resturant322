@@ -1187,6 +1187,288 @@ footer a:hover {
   background: #c82333;
 }
 
+.btn-vip {
+  background: linear-gradient(135deg, #ff6b6b, #ffa500);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.btn-vip:hover {
+  transform: translateY(-2px);
+}
+
+.vip-status {
+  background: linear-gradient(135deg, #ff6b6b, #ffa500);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.vip-discount {
+  color: #28a745;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.vip-locked {
+  text-align: center;
+  padding: 60px 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  margin: 20px;
+}
+
+.lock-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.vip-locked h3 {
+  font-size: 24px;
+  color: #333;
+  margin: 0 0 12px 0;
+}
+
+.vip-locked p {
+  color: #666;
+  margin: 0 0 24px 0;
+  font-size: 16px;
+}
+
+.vip-upgrade-btn {
+  background: linear-gradient(135deg, #ff6b6b, #ffa500);
+  color: white;
+  padding: 16px 32px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+  transition: transform 0.2s;
+}
+
+.vip-upgrade-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* --- VIP Membership Styles --- */
+.vip-membership-section {
+  min-height: calc(100vh - 200px);
+  background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%);
+  padding: 60px 20px;
+}
+
+.vip-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.vip-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 60px;
+}
+
+.vip-icon {
+  font-size: 60px;
+  margin-bottom: 20px;
+}
+
+.vip-header h1 {
+  font-size: 48px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+.vip-header p {
+  font-size: 20px;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.membership-plans {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 80px;
+}
+
+.plan-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px 30px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+}
+
+.plan-card:hover {
+  transform: translateY(-8px);
+}
+
+.premium-plan {
+  border: 3px solid #ffe66d;
+  transform: scale(1.05);
+}
+
+.popular-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffe66d;
+  color: #333;
+  padding: 8px 24px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.plan-card h3 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: #333;
+}
+
+.price {
+  font-size: 36px;
+  font-weight: 700;
+  color: #ff6b6b;
+  margin-bottom: 24px;
+}
+
+.price span {
+  font-size: 16px;
+  color: #666;
+}
+
+.benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px 0;
+  text-align: left;
+}
+
+.benefits li {
+  padding: 8px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.plan-btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.vip-btn {
+  background: #ff6b6b;
+  color: white;
+}
+
+.vip-btn:hover {
+  background: #ff4b4b;
+}
+
+.plan-btn:disabled {
+  background: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+  margin-top: 12px;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+}
+
+.current-plan {
+  border: 3px solid #28a745;
+}
+
+.vip-features {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+}
+
+.vip-features h2 {
+  font-size: 32px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 40px 0;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+}
+
+.feature-card {
+  text-align: center;
+}
+
+.feature-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.feature-card h4 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 12px 0;
+}
+
+.feature-card p {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media screen and (max-width: 768px) {
+  .membership-plans {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .premium-plan {
+    transform: none;
+  }
+  
+  .vip-header h1 {
+    font-size: 36px;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
 @media screen and (max-width: 600px) {
   .profile-header {
     padding: 30px 20px;

@@ -67,35 +67,44 @@
 </section>
 
 <!-- VIP SECTION -->
-<section class="vip-section">
+<section class="vip-section" id="vip-section">
   <h2>VIP Specials</h2>
-  <div class="menu-grid">
-    <div class="menu-card">
-      <img src="images/lobster.jpeg" alt="Grilled Lobster">
-      <h3>Grilled Lobster</h3>
-      <p>Succulent lobster grilled to perfection.</p>
-      <span>$35.99</span>
-      <span class="vip-badge">VIP</span>
-      <button class="like-btn">♡ Like</button>
-    </div>
+  <div id="vip-content">
+    <div class="menu-grid">
+      <div class="menu-card">
+        <img src="images/lobster.jpeg" alt="Grilled Lobster">
+        <h3>Grilled Lobster</h3>
+        <p>Succulent lobster grilled to perfection.</p>
+        <span>$35.99</span>
+        <span class="vip-badge">VIP</span>
+        <button class="like-btn">♡ Like</button>
+      </div>
 
-    <div class="menu-card">
-      <img src="images/ribeye.jpeg" alt="Ribeye Steak">
-      <h3>Ribeye Steak</h3>
-      <p>Juicy ribeye steak, perfectly seared.</p>
-      <span>$29.99</span>
-      <span class="vip-badge">VIP</span>
-      <button class="like-btn">♡ Like</button>
-    </div>
+      <div class="menu-card">
+        <img src="images/ribeye.jpeg" alt="Ribeye Steak">
+        <h3>Ribeye Steak</h3>
+        <p>Juicy ribeye steak, perfectly seared.</p>
+        <span>$29.99</span>
+        <span class="vip-badge">VIP</span>
+        <button class="like-btn">♡ Like</button>
+      </div>
 
-    <div class="menu-card">
-      <img src="images/tomahawk.jpeg" alt="Tomahawk Steak">
-      <h3>Tomahawk Steak</h3>
-      <p>Premium tomahawk cut with rich marbling.</p>
-      <span>$49.99</span>
-      <span class="vip-badge">VIP</span>
-      <button class="like-btn">♡ Like</button>
+      <div class="menu-card">
+        <img src="images/tomahawk.jpeg" alt="Tomahawk Steak">
+        <h3>Tomahawk Steak</h3>
+        <p>Premium tomahawk cut with rich marbling.</p>
+        <span>$49.99</span>
+        <span class="vip-badge">VIP</span>
+        <button class="like-btn">♡ Like</button>
+      </div>
     </div>
+  </div>
+  
+  <div id="vip-locked" class="vip-locked" style="display: none;">
+    <div class="lock-icon">🔒</div>
+    <h3>VIP Members Only</h3>
+    <p>Unlock exclusive premium dishes with VIP membership</p>
+    <a href="vip-membership.html" class="btn vip-upgrade-btn">Upgrade to VIP - $9.99/month</a>
   </div>
 </section>
 
@@ -148,10 +157,12 @@
   function updateAuthStatus() {
     const isLoggedIn = localStorage.getItem("isLoggedIn");
     const username = localStorage.getItem("username");
+    const isVIP = localStorage.getItem("isVIP") === "true";
     const authLink = document.getElementById("auth-link");
     
     if (isLoggedIn === "true" && username) {
-      authLink.textContent = `👤 ${username}`;
+      const vipIcon = isVIP ? "👑 " : "";
+      authLink.textContent = `👤 ${vipIcon}${username}`;
       authLink.href = "profile.html";
     } else {
       authLink.textContent = "Login/Register";
@@ -159,8 +170,23 @@
     }
   }
 
+  function checkVIPAccess() {
+    const isVIP = localStorage.getItem("isVIP") === "true";
+    const vipContent = document.getElementById("vip-content");
+    const vipLocked = document.getElementById("vip-locked");
+    
+    if (isVIP) {
+      vipContent.style.display = "block";
+      vipLocked.style.display = "none";
+    } else {
+      vipContent.style.display = "none";
+      vipLocked.style.display = "block";
+    }
+  }
+
   updateCartCount();
   updateAuthStatus();
+  checkVIPAccess();
 </script>
 
 </body>

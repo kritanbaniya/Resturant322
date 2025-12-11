@@ -105,43 +105,57 @@
         name: 'Spaghetti Bolognese',
         price: 12.99,
         description: 'Classic Italian pasta with meat sauce.',
-        image: 'images/spaghetti_bolognese.jpeg'
+        image: 'images/spaghetti_bolognese.jpeg',
+        vipOnly: true
       },
       'Grilled Chicken Salad': {
         name: 'Grilled Chicken Salad',
         price: 10.99,
         description: 'Fresh greens with chicken and dressing.',
-        image: 'images/salad.jpeg'
+        image: 'images/salad.jpeg',
+        vipOnly: false
       },
       'Margherita Pizza': {
         name: 'Margherita Pizza',
         price: 14.99,
         description: 'Tomatoes, mozzarella, and fresh basil.',
-        image: 'images/margherita_pizza.jpeg'
+        image: 'images/margherita_pizza.jpeg',
+        vipOnly: true
       },
       'Chicken Parmesan': {
         name: 'Chicken Parmesan',
         price: 15.99,
         description: 'Breaded chicken topped with marinara and cheese.',
-        image: 'images/chicken_parmesan.jpeg'
+        image: 'images/chicken_parmesan.jpeg',
+        vipOnly: false
       },
       'Penne alla Vodka': {
         name: 'Penne alla Vodka',
         price: 13.99,
         description: 'Pasta in a creamy tomato-vodka sauce.',
-        image: 'images/penne_alla_vodka.jpeg'
+        image: 'images/penne_alla_vodka.jpeg',
+        vipOnly: false
       },
       'Chicken Wings': {
         name: 'Chicken Wings',
         price: 11.99,
         description: 'Spicy and crispy chicken wings with dipping sauce.',
-        image: 'images/chicken_wings.jpeg'
+        image: 'images/chicken_wings.jpeg',
+        vipOnly: false
       }
     };
 
     function addToCart(itemName) {
-      let cart = JSON.parse(localStorage.getItem("cart")) || [];
       const item = menuItems[itemName];
+      const isVIP = localStorage.getItem("isVIP") === "true";
+      
+      // Check if item is VIP-only and user is not VIP
+      if (item.vipOnly && !isVIP) {
+        alert("This item is exclusive to VIP members!\n\nUpgrade to VIP membership to access premium dishes.");
+        return;
+      }
+      
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
       
       // Check if item already exists in cart
       const existingItem = cart.find(cartItem => cartItem.name === itemName);
@@ -179,10 +193,12 @@
     function updateAuthStatus() {
       const isLoggedIn = localStorage.getItem("isLoggedIn");
       const username = localStorage.getItem("username");
+      const isVIP = localStorage.getItem("isVIP") === "true";
       const authLink = document.getElementById("auth-link");
       
       if (isLoggedIn === "true" && username) {
-        authLink.textContent = `👤 ${username}`;
+        const vipIcon = isVIP ? "👑 " : "";
+        authLink.textContent = `👤 ${vipIcon}${username}`;
         authLink.href = "profile.html";
       } else {
         authLink.textContent = "Login/Register";
